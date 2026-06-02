@@ -5,3 +5,4 @@ pymysql
 python-jose
 passlib
 bcrypt
+python-dotenv
