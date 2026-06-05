@@ -11,6 +11,8 @@ router = APIRouter()
 class PosVendaCreate(BaseModel):
     cliente_id: int
     feedback: str | None = None
+    status: str = "pendente"
+    data_retorno: datetime | None = None
 
 @router.post("/pos_venda/")
 def create_pos_venda(pos_venda: PosVendaCreate, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):

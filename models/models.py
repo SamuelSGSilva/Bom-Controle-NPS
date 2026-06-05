@@ -26,6 +26,8 @@ class PosVenda(Base):
     id = Column(Integer, primary_key=True, index=True)
     cliente_id = Column(Integer, ForeignKey("clientes.id"), nullable=False)
     feedback = Column(String(255), nullable=True)
+    status = Column(String(20), nullable=False, default="pendente")
+    data_retorno = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
 class AvaliacaoNPS(Base):
