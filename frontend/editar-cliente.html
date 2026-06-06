@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -131,6 +132,7 @@
         }
     </style>
 </head>
+
 <body>
     <header>
         <img src="assets/logo.png" style="height: 40px;">
@@ -145,7 +147,7 @@
         <button onclick="logout()">Sair</button>
     </header>
 
-     <main>
+    <main>
         <h2>Novo Cliente</h2>
         <form id="form-cliente">
             <div class="form-group">
@@ -211,90 +213,148 @@
     </main>
 
     <script>
-    const token = localStorage.getItem('token');
-    if (!token) window.location.href = 'index.html';
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'index.html';
 
-    const params = new URLSearchParams(window.location.search);
-    const clienteId = params.get('id');
+        const params = new URLSearchParams(window.location.search);
+        const clienteId = params.get('id');
 
-    // Carrega os dados do cliente
-    async function carregarCliente() {
-        const response = await fetch(`http://localhost:8000/clientes/${clienteId}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const cliente = await response.json();
+        // Carrega os dados do cliente
+        async function carregarCliente() {
+            const response = await fetch(`http://localhost:8000/clientes/${clienteId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const cliente = await response.json();
 
-        document.getElementById('nome').value = cliente.nome || '';
-        document.getElementById('email').value = cliente.email || '';
-        document.getElementById('telefone').value = cliente.telefone || '';
-        document.getElementById('cpf').value = cliente.cpf || '';
-        document.getElementById('cnpj').value = cliente.cnpj || '';
-        document.getElementById('cep').value = cliente.cep || '';
-        document.getElementById('logradouro').value = cliente.logradouro || '';
-        document.getElementById('numero').value = cliente.numero || '';
-        document.getElementById('bairro').value = cliente.bairro || '';
-        document.getElementById('cidade').value = cliente.cidade || '';
-        document.getElementById('estado').value = cliente.estado || '';
-        document.getElementById('data_nascimento').value = cliente.data_nascimento ? cliente.data_nascimento.split('T')[0] : '';
-    }
-
-    // Salva as alterações
-    document.getElementById('form-cliente').addEventListener('submit', async function(e) {
-        e.preventDefault();
-
-        const cliente = {
-            nome: document.getElementById('nome').value,
-            email: document.getElementById('email').value,
-            telefone: document.getElementById('telefone').value || null,
-            cpf: document.getElementById('cpf').value || null,
-            cnpj: document.getElementById('cnpj').value || null,
-            cep: document.getElementById('cep').value || null,
-            logradouro: document.getElementById('logradouro').value || null,
-            numero: document.getElementById('numero').value || null,
-            bairro: document.getElementById('bairro').value || null,
-            cidade: document.getElementById('cidade').value || null,
-            estado: document.getElementById('estado').value || null,
-            data_nascimento: document.getElementById('data_nascimento').value || null
-        };
-
-        const response = await fetch(`http://localhost:8000/clientes/${clienteId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(cliente)
-        });
-
-        if (response.ok) {
-            alert('Cliente atualizado com sucesso!');
-            window.location.href = 'clientes.html';
-        } else {
-            alert('Erro ao atualizar cliente!');
+            document.getElementById('nome').value = cliente.nome || '';
+            document.getElementById('email').value = cliente.email || '';
+            document.getElementById('telefone').value = cliente.telefone || '';
+            document.getElementById('cpf').value = cliente.cpf || '';
+            document.getElementById('cnpj').value = cliente.cnpj || '';
+            document.getElementById('cep').value = cliente.cep || '';
+            document.getElementById('logradouro').value = cliente.logradouro || '';
+            document.getElementById('numero').value = cliente.numero || '';
+            document.getElementById('bairro').value = cliente.bairro || '';
+            document.getElementById('cidade').value = cliente.cidade || '';
+            document.getElementById('estado').value = cliente.estado || '';
+            document.getElementById('data_nascimento').value = cliente.data_nascimento ? cliente.data_nascimento.split('T')[0] : '';
         }
-    });
 
-    function logout() {
-        localStorage.removeItem('token');
-        window.location.href = 'index.html';
-    }
+        // Salva as alterações
+        document.getElementById('form-cliente').addEventListener('submit', async function (e) {
+            e.preventDefault();
 
-    carregarCliente();
+            const cpf = document.getElementById('cpf').value;
+            const cnpj = document.getElementById('cnpj').value;
 
-    document.getElementById('cep').addEventListener('blur', async function() {
-    const cep = this.value.replace(/\D/g, '');
-    if (cep.length !== 8) return;
+            if (cpf && !validarCPF(cpf)) {
+                alert('CPF inválido!');
+                return;
+            }
 
-    const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-    const data = await response.json();
+            if (cnpj && !validarCNPJ(cnpj)) {
+                alert('CNPJ inválido!');
+                return;
+            }
 
-    if (!data.erro) {
-        document.getElementById('logradouro').value = data.logradouro;
-        document.getElementById('bairro').value = data.bairro;
-        document.getElementById('cidade').value = data.localidade;
-        document.getElementById('estado').value = data.uf;
-    }
-});
-</script>
+            const cliente = {
+                nome: document.getElementById('nome').value,
+                email: document.getElementById('email').value,
+                telefone: document.getElementById('telefone').value || null,
+                cpf: document.getElementById('cpf').value || null,
+                cnpj: document.getElementById('cnpj').value || null,
+                cep: document.getElementById('cep').value || null,
+                logradouro: document.getElementById('logradouro').value || null,
+                numero: document.getElementById('numero').value || null,
+                bairro: document.getElementById('bairro').value || null,
+                cidade: document.getElementById('cidade').value || null,
+                estado: document.getElementById('estado').value || null,
+                data_nascimento: document.getElementById('data_nascimento').value || null
+            };
+
+            const response = await fetch(`http://localhost:8000/clientes/${clienteId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(cliente)
+            });
+
+            if (response.ok) {
+                alert('Cliente atualizado com sucesso!');
+                window.location.href = 'clientes.html';
+            } else {
+                alert('Erro ao atualizar cliente!');
+            }
+        });
+
+        function validarCPF(cpf) {
+            cpf = cpf.replace(/\D/g, '');
+            if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
+
+            let soma = 0;
+            for (let i = 0; i < 9; i++) soma += parseInt(cpf[i]) * (10 - i);
+            let resto = (soma * 10) % 11;
+            if (resto === 10 || resto === 11) resto = 0;
+            if (resto !== parseInt(cpf[9])) return false;
+
+            soma = 0;
+            for (let i = 0; i < 10; i++) soma += parseInt(cpf[i]) * (11 - i);
+            resto = (soma * 10) % 11;
+            if (resto === 10 || resto === 11) resto = 0;
+            return resto === parseInt(cpf[10]);
+        }
+
+        function validarCNPJ(cnpj) {
+            cnpj = cnpj.replace(/\D/g, '');
+            if (cnpj.length !== 14 || /^(\d)\1+$/.test(cnpj)) return false;
+
+            let tamanho = cnpj.length - 2;
+            let numeros = cnpj.substring(0, tamanho);
+            const digitos = cnpj.substring(tamanho);
+            let soma = 0, pos = tamanho - 7;
+
+            for (let i = tamanho; i >= 1; i--) {
+                soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
+                if (pos < 2) pos = 9;
+            }
+            let resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11);
+            if (resultado !== parseInt(digitos.charAt(0))) return false;
+
+            tamanho++;
+            numeros = cnpj.substring(0, tamanho);
+            soma = 0; pos = tamanho - 7;
+            for (let i = tamanho; i >= 1; i--) {
+                soma += parseInt(numeros.charAt(tamanho - i)) * pos--;
+                if (pos < 2) pos = 9;
+            }
+            resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11);
+            return resultado === parseInt(digitos.charAt(1));
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'index.html';
+        }
+
+        carregarCliente();
+
+        document.getElementById('cep').addEventListener('blur', async function () {
+            const cep = this.value.replace(/\D/g, '');
+            if (cep.length !== 8) return;
+
+            const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+            const data = await response.json();
+
+            if (!data.erro) {
+                document.getElementById('logradouro').value = data.logradouro;
+                document.getElementById('bairro').value = data.bairro;
+                document.getElementById('cidade').value = data.localidade;
+                document.getElementById('estado').value = data.uf;
+            }
+        });
+    </script>
 </body>
+
 </html>
