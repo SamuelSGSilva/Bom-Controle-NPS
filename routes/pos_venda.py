@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
 from models.models import PosVenda
@@ -29,3 +29,12 @@ def create_pos_venda(pos_venda: PosVendaCreate, db: Session = Depends(get_db), t
     db.commit()
     db.refresh(novo)
     return novo
+
+@router.delete("/pos-venda/{id}")
+def deletar_pos_venda(id: int, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
+    pv = db.query(PosVenda).filter(PosVenda.id == id).first()
+    if not pv:
+        raise HTTPException(status_code=404, detail="Pós-venda não encontrado")
+    db.delete(pv)
+    db.commit()
+    return {"message": "Pós-venda deletado com sucesso"}

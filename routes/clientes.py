@@ -30,3 +30,12 @@ def buscar_cliente(id: int, db: Session = Depends(get_db), token: dict = Depends
     if not cliente:
         raise HTTPException(status_code=404, detail="Cliente não encontrado")
     return cliente
+
+@router.delete("/clientes/{id}")
+def deletar_cliente(id: int, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
+    cliente = db.query(Cliente).filter(Cliente.id == id).first()
+    if not cliente:
+        raise HTTPException(status_code=404, detail="Cliente não encontrado")
+    db.delete(cliente)
+    db.commit()
+    return {"message": "Cliente deletado com sucesso"}

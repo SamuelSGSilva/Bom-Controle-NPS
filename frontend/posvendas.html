@@ -153,6 +153,23 @@
                 transform: rotate(360deg);
             }
         }
+
+        .btn-deletar {
+            background: transparent;
+            border: 1px solid #888888;
+            color: #888888;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-deletar:hover {
+            border-color: #cc0000;
+            color: #cc0000;
+        }
     </style>
 </head>
 
@@ -209,7 +226,6 @@
         let todosClientesPV = [];
 
         async function carregarPosVendas() {
-
             document.getElementById('loading').style.display = 'block';
             document.getElementById('tabela-posvendas').innerHTML = '';
 
@@ -223,6 +239,22 @@
             todosPosVendas = await resPV.json();
             todosClientesPV = await resCli.json();
             renderizarPosVendas(todosPosVendas);
+        }
+
+        async function deletarPosVenda(id) {
+            if (!confirm('Tem certeza que deseja excluir este pós-venda?')) return;
+
+            const response = await fetch(`http://localhost:8000/pos-venda/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                alert('Pós-venda excluído com sucesso!');
+                carregarPosVendas();
+            } else {
+                alert('Erro ao excluir pós-venda!');
+            }
         }
 
         function filtrarPorStatus() {
@@ -253,15 +285,19 @@
                 const cor = cores[pv.status] || '#888888';
 
                 row.innerHTML = `
-        <td>${nomeCliente}</td>
-        <td><span style="color: ${cor}; font-weight: 600;">● ${pv.status}</span></td>
-        <td>${pv.data_retorno ? new Date(pv.data_retorno).toLocaleDateString('pt-BR') : '--'}</td>
-        <td>${pv.feedback || '--'}</td>
-        <td><button class="btn-ver">Ver</button></td>
-    `;
+            <td>${nomeCliente}</td>
+            <td><span style="color: ${cor}; font-weight: 600;">● ${pv.status}</span></td>
+            <td>${pv.data_retorno ? new Date(pv.data_retorno).toLocaleDateString('pt-BR') : '--'}</td>
+            <td>${pv.feedback || '--'}</td>
+            <td>
+                <button class="btn-ver">Ver</button>
+                <button class="btn-deletar" onclick="deletarPosVenda(${pv.id})">Excluir</button>
+            </td>
+        `;
                 tabela.appendChild(row);
             });
         }
+
         function novoPosVendas() {
             window.location.href = 'novo-posvendas.html';
         }

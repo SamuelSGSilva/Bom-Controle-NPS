@@ -137,6 +137,23 @@
         .btn-novo:hover {
             background: #aa0000;
         }
+
+        .btn-deletar {
+            background: transparent;
+            border: 1px solid #888888;
+            color: #888888;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-deletar:hover {
+            border-color: #cc0000;
+            color: #cc0000;
+        }
     </style>
 </head>
 
@@ -183,32 +200,6 @@
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'index.html';
 
-        async function carregarClientes() {
-            const response = await fetch('http://localhost:8000/clientes', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const clientes = await response.json();
-            const tabela = document.getElementById('tabela-clientes');
-
-            if (clientes.length === 0) {
-                tabela.innerHTML = '<tr><td colspan="6" style="text-align:center">Nenhum cliente cadastrado</td></tr>';
-                return;
-            }
-
-            clientes.forEach(cliente => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                <td>${cliente.nome}</td>
-                <td>${cliente.email}</td>
-                <td>${cliente.telefone || '--'}</td>
-                <td>${cliente.cpf || cliente.cnpj || '--'}</td>
-                <td>${cliente.cidade || '--'}/${cliente.estado || '--'}</td>
-                <td><button class="btn-ver" onclick="verHistorico(${cliente.id})">Ver</button></td>
-            `;
-                tabela.appendChild(row);
-            });
-        }
-
         let todosClientes = [];
 
         async function carregarClientes() {
@@ -217,12 +208,6 @@
             });
             todosClientes = await response.json();
             renderizarClientes(todosClientes);
-        }
-
-        function filtrarClientes() {
-            const busca = document.getElementById('busca').value.toLowerCase();
-            const filtrados = todosClientes.filter(c => c.nome.toLowerCase().includes(busca));
-            renderizarClientes(filtrados);
         }
 
         function renderizarClientes(clientes) {
@@ -242,10 +227,35 @@
             <td>${cliente.telefone || '--'}</td>
             <td>${cliente.cpf || cliente.cnpj || '--'}</td>
             <td>${cliente.cidade || '--'}/${cliente.estado || '--'}</td>
-            <td><button class="btn-ver" onclick="verHistorico(${cliente.id})">Ver</button></td>
+            <td>
+                <button class="btn-ver" onclick="verHistorico(${cliente.id})">Ver</button>
+                <button class="btn-deletar" onclick="deletarCliente(${cliente.id})">Excluir</button>
+            </td>
         `;
                 tabela.appendChild(row);
             });
+        }
+
+        function filtrarClientes() {
+            const busca = document.getElementById('busca').value.toLowerCase();
+            const filtrados = todosClientes.filter(c => c.nome.toLowerCase().includes(busca));
+            renderizarClientes(filtrados);
+        }
+
+        async function deletarCliente(id) {
+            if (!confirm('Tem certeza que deseja excluir este cliente?')) return;
+
+            const response = await fetch(`http://localhost:8000/clientes/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                alert('Cliente excluído com sucesso!');
+                carregarClientes();
+            } else {
+                alert('Erro ao excluir cliente!');
+            }
         }
 
         function verHistorico(id) {
