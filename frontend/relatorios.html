@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatório</title>
 
-     <style>
+    <style>
         * {
             margin: 0;
             padding: 0;
@@ -166,6 +167,7 @@
         }
     </style>
 </head>
+
 <body>
     <header>
         <img src="assets/logo.png" style="height: 40px;">
@@ -202,6 +204,10 @@
                 <h3>Total de Respostas</h3>
                 <p id="total">--</p>
             </div>
+            <div class="card">
+            <h3>Zona NPS</h3>
+            <p id="classificacao" style="font-size: 20px;">--</p>
+        </div>
         </div>
 
         <h2>Histórico do Cliente</h2>
@@ -239,6 +245,28 @@
             document.getElementById('total').textContent = data.total_avaliacoes;
         }
 
+        // Classificação NPS
+        const npsValor = data.nps;
+        let classificacao = '';
+        let cor = '';
+
+        if (npsValor >= 75) {
+            classificacao = '🏆 Excelência';
+            cor = '#00cc66';
+        } else if (npsValor >= 50) {
+            classificacao = '✅ Qualidade';
+            cor = '#38bdf8';
+        } else if (npsValor >= 0) {
+            classificacao = '⚠️ Aperfeiçoamento';
+            cor = '#f59e0b';
+        } else {
+            classificacao = '🚨 Crítico';
+            cor = '#cc0000';
+        }
+
+        document.getElementById('classificacao').textContent = classificacao;
+        document.getElementById('classificacao').style.color = cor;
+
         async function buscarHistorico() {
             const id = document.getElementById('cliente-id').value;
             if (!id) return alert('Digite o ID do cliente!');
@@ -273,5 +301,6 @@
 
         carregarNPS();
     </script>
-</body> 
+</body>
+
 </html>
