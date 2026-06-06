@@ -118,6 +118,10 @@
     </header>
 
     <main>
+        <div style="margin-bottom: 24px;">
+            <h2 id="boas-vindas" style="font-size: 22px; color: #ffffff;">Olá! 👋</h2>
+            <p style="color: #888888; font-size: 14px;">Aqui está o resumo do dia.</p>
+        </div>
         <div class="cards">
             <div class="card">
                 <h3>Índice NPS</h3>
@@ -180,6 +184,10 @@
             const resClientes = await fetch('http://localhost:8000/clientes', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
+
+            const username = localStorage.getItem('username');
+            document.getElementById('boas-vindas').textContent = `Olá, ${username}! 👋`;
+            
             const clientes = await resClientes.json();
             document.getElementById('total-clientes').textContent = clientes.length;
 

@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pós-Vendas</title>
 
-     <style>
+    <style>
         * {
             margin: 0;
             padding: 0;
@@ -136,10 +137,27 @@
         .btn-novo:hover {
             background: #aa0000;
         }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #2a2a2a;
+            border-top: 4px solid #cc0000;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
+
 <body>
-     <header>
+    <header>
         <img src="../frontend/assets/logo.png" style="height: 40px;">
         <nav>
             <a href="dashboard.html">Dashboard</a>
@@ -150,90 +168,111 @@
         <button onclick="logout()"> Sair</button>
     </header>
 
-  <main>
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-         <div style="display: flex; gap: 12px;">
-        <select id="filtro-status" onchange="filtrarPorStatus()" style="padding: 10px 16px; background: #141414; border: 1px solid #2a2a2a; border-radius: 8px; color: #f1f1f1; font-size: 14px; outline: none; cursor: pointer;">
-            <option value="">Todos</option>
-            <option value="pendente">Pendente</option>
-            <option value="em andamento">Em Andamento</option>
-            <option value="concluido">Concluído</option>
-        </select>
-        <button class="btn-novo" onclick="novoPosVendas()">+ Novo Pós-Vendas</button>
-    </div>
-    </div>
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>Cliente</th>
-                    <th>Status</th>
-                    <th>Data de Retorno</th>
-                    <th>Feedback</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody id="tabela-posvendas"></tbody>
-        </table>
-    </div>
-  </main>
+    <main>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div style="display: flex; gap: 12px;">
+                <select id="filtro-status" onchange="filtrarPorStatus()"
+                    style="padding: 10px 16px; background: #141414; border: 1px solid #2a2a2a; border-radius: 8px; color: #f1f1f1; font-size: 14px; outline: none; cursor: pointer;">
+                    <option value="">Todos</option>
+                    <option value="pendente">Pendente</option>
+                    <option value="em andamento">Em Andamento</option>
+                    <option value="concluido">Concluído</option>
+                </select>
+                <button class="btn-novo" onclick="novoPosVendas()">+ Novo Pós-Vendas</button>
+            </div>
+            <div id="loading" style="text-align: center; padding: 40px; display: none;">
+                <div class="spinner"></div>
+                <p style="color: #888888; margin-top: 12px;">Carregando...</p>
+            </div>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Status</th>
+                        <th>Data de Retorno</th>
+                        <th>Feedback</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-posvendas"></tbody>
+            </table>
+        </div>
+    </main>
 
-  <script>
-    const token = localStorage.getItem('token');
-    if (!token) window.location.href = 'index.html';
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'index.html';
 
-    let todosPosVendas = [];
-let todosClientesPV = [];
+        let todosPosVendas = [];
+        let todosClientesPV = [];
 
-async function carregarPosVendas() {
-    const [resPV, resCli] = await Promise.all([
-        fetch('http://localhost:8000/pos-venda', { headers: { 'Authorization': `Bearer ${token}` } }),
-        fetch('http://localhost:8000/clientes', { headers: { 'Authorization': `Bearer ${token}` } })
-    ]);
-    todosPosVendas = await resPV.json();
-    todosClientesPV = await resCli.json();
-    renderizarPosVendas(todosPosVendas);
-}
+        async function carregarPosVendas() {
 
-function filtrarPorStatus() {
-    const status = document.getElementById('filtro-status').value;
-    const filtrados = status ? todosPosVendas.filter(pv => pv.status === status) : todosPosVendas;
-    renderizarPosVendas(filtrados);
-}
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('tabela-posvendas').innerHTML = '';
 
-function renderizarPosVendas(posvendas) {
-    const tabela = document.getElementById('tabela-posvendas');
-    tabela.innerHTML = '';
+            const [resPV, resCli] = await Promise.all([
+                fetch('http://localhost:8000/pos-venda', { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch('http://localhost:8000/clientes', { headers: { 'Authorization': `Bearer ${token}` } })
+            ]);
 
-    if (posvendas.length === 0) {
-        tabela.innerHTML = '<tr><td colspan="5" style="text-align:center">Nenhum pós-venda encontrado</td></tr>';
-        return;
-    }
+            document.getElementById('loading').style.display = 'none';
 
-    posvendas.forEach(pv => {
-        const cliente = todosClientesPV.find(c => c.id === pv.cliente_id);
-        const nomeCliente = cliente ? cliente.nome : `ID ${pv.cliente_id}`;
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${nomeCliente}</td>
-            <td>${pv.status}</td>
-            <td>${pv.data_retorno ? new Date(pv.data_retorno).toLocaleDateString('pt-BR') : '--'}</td>
-            <td>${pv.feedback || '--'}</td>
-            <td><button class="btn-ver">Ver</button></td>
-        `;
-        tabela.appendChild(row);
-    });
-}
-    function novoPosVendas() {
-        window.location.href = 'novo-posvendas.html';
-    }
+            todosPosVendas = await resPV.json();
+            todosClientesPV = await resCli.json();
+            renderizarPosVendas(todosPosVendas);
+        }
 
-    function logout() {
-        localStorage.removeItem('token');
-        window.location.href = 'index.html';
-    }
+        function filtrarPorStatus() {
+            const status = document.getElementById('filtro-status').value;
+            const filtrados = status ? todosPosVendas.filter(pv => pv.status === status) : todosPosVendas;
+            renderizarPosVendas(filtrados);
+        }
 
-    carregarPosVendas();
-</script>
+        function renderizarPosVendas(posvendas) {
+            const tabela = document.getElementById('tabela-posvendas');
+            tabela.innerHTML = '';
+
+            if (posvendas.length === 0) {
+                tabela.innerHTML = '<tr><td colspan="5" style="text-align:center">Nenhum pós-venda encontrado</td></tr>';
+                return;
+            }
+
+            posvendas.forEach(pv => {
+                const cliente = todosClientesPV.find(c => c.id === pv.cliente_id);
+                const nomeCliente = cliente ? cliente.nome : `ID ${pv.cliente_id}`;
+                const row = document.createElement('tr');
+
+                const cores = {
+                    'pendente': '#f59e0b',
+                    'em andamento': '#38bdf8',
+                    'concluido': '#00cc66'
+                };
+                const cor = cores[pv.status] || '#888888';
+
+                row.innerHTML = `
+        <td>${nomeCliente}</td>
+        <td><span style="color: ${cor}; font-weight: 600;">● ${pv.status}</span></td>
+        <td>${pv.data_retorno ? new Date(pv.data_retorno).toLocaleDateString('pt-BR') : '--'}</td>
+        <td>${pv.feedback || '--'}</td>
+        <td><button class="btn-ver">Ver</button></td>
+    `;
+                tabela.appendChild(row);
+            });
+        }
+        function novoPosVendas() {
+            window.location.href = 'novo-posvendas.html';
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'index.html';
+        }
+
+        carregarPosVendas();
+    </script>
 </body>
+
 </html>

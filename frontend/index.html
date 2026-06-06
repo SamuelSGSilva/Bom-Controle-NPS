@@ -108,6 +108,7 @@ button:hover{
 
             if (response.ok) {
                 localStorage.setItem('token', data.access_token);
+                localStorage.setItem('username', username);
                 window.location.href = 'dashboard.html';
             } else {
                 document.getElementById('erro-login').textContent = 'Usuário ou senha inválidos';
