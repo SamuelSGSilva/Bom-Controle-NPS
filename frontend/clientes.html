@@ -227,16 +227,26 @@
             renderizarClientes(todosClientes);
         }
 
+        let paginaAtual = 1;
+        const itensPorPagina = 10;
+
         function renderizarClientes(clientes) {
             const tabela = document.getElementById('tabela-clientes');
+            const total = clientes.length;
+            const totalPaginas = Math.ceil(total / itensPorPagina);
+            const inicio = (paginaAtual - 1) * itensPorPagina;
+            const fim = inicio + itensPorPagina;
+            const clientesPagina = clientes.slice(inicio, fim);
+
             tabela.innerHTML = '';
 
             if (clientes.length === 0) {
                 tabela.innerHTML = '<tr><td colspan="6" style="text-align:center">Nenhum cliente encontrado</td></tr>';
+                renderizarPaginacao([], 0);
                 return;
             }
 
-            clientes.forEach(cliente => {
+            clientesPagina.forEach(cliente => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
             <td>${cliente.nome}</td>
@@ -252,9 +262,45 @@
         `;
                 tabela.appendChild(row);
             });
+
+            renderizarPaginacao(clientes, totalPaginas);
+        }
+
+        function renderizarPaginacao(clientes, totalPaginas) {
+            let paginacao = document.getElementById('paginacao');
+            if (!paginacao) {
+                paginacao = document.createElement('div');
+                paginacao.id = 'paginacao';
+                document.querySelector('main').appendChild(paginacao);
+            }
+
+            paginacao.innerHTML = '';
+            if (totalPaginas <= 1) return;
+
+            paginacao.style.cssText = 'display:flex; gap:8px; margin-top:20px; justify-content:center;';
+
+            for (let i = 1; i <= totalPaginas; i++) {
+                const btn = document.createElement('button');
+                btn.textContent = i;
+                btn.style.cssText = `
+            padding: 8px 14px;
+            border-radius: 6px;
+            border: 1px solid ${i === paginaAtual ? '#cc0000' : '#2a2a2a'};
+            background: ${i === paginaAtual ? '#cc0000' : 'transparent'};
+            color: #f1f1f1;
+            cursor: pointer;
+            font-size: 13px;
+        `;
+                btn.onclick = () => {
+                    paginaAtual = i;
+                    renderizarClientes(todosClientes);
+                };
+                paginacao.appendChild(btn);
+            }
         }
 
         function filtrarClientes() {
+            paginaAtual = 1;
             const busca = document.getElementById('busca').value.toLowerCase();
             const filtrados = todosClientes.filter(c => c.nome.toLowerCase().includes(busca));
             renderizarClientes(filtrados);
