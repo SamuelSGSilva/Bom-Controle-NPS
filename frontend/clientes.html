@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt_BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clientes</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #0a0a0a;
+            color: #f1f1f1;
+            min-height: 100vh;
+        }
+
+        header {
+            background: #141414;
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #cc0000;
+        }
+
+        header button {
+            background: transparent;
+            border: 1px solid #cc0000;
+            color: #cc0000;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        header button:hover {
+            background: #cc0000;
+            color: #fff;
+        }
+
+        main {
+            padding: 32px;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            font-size: 18px;
+            color: #ffffff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead th {
+            background: #cc0000;
+            color: #fff;
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #2a2a2a;
+            transition: background 0.2s;
+        }
+
+        tbody tr:hover {
+            background: #1a1a1a;
+        }
+
+        tbody td {
+            padding: 12px 16px;
+            font-size: 14px;
+            color: #cccccc;
+        }
+
+        .btn-ver {
+            background: transparent;
+            border: 1px solid #cc0000;
+            color: #cc0000;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .btn-ver:hover {
+            background: #cc0000;
+            color: #fff;
+        }
+
+        nav {
+            display: flex;
+            gap: 24px;
+        }
+
+        nav a {
+            color: #888888;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: #cc0000;
+        }
+
+        nav a.ativo {
+            color: #cc0000;
+            font-weight: 600;
+        }
+
+        .btn-novo {
+            background: #cc0000;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .btn-novo:hover {
+            background: #aa0000;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <img src="../frontend/assets/logo.png" style="height: 40px;">
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="clientes.html" class="ativo">Clientes</a>
+            <a href="posvendas.html">Pós-venda</a>
+            <a href="relatorios.html">Relatórios</a>
+        </nav>
+        <button onclick="logout()">Sair</button>
+    </header>
+
+    <main>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>Clientes</h2>
+            <button class="btn-novo" onclick="novoCliente()">+ Novo Cliente</button>
+        </div>
+        <div class="table-container">
+            <h2>Clientes</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>E-mail</th>
+                        <th>Telefone</th>
+                        <th>CPF/CNPJ</th>
+                        <th>Cidade/Estado</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-clientes">
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'index.html';
+
+        async function carregarClientes() {
+            const response = await fetch('http://localhost:8000/clientes', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const clientes = await response.json();
+            const tabela = document.getElementById('tabela-clientes');
+
+            if (clientes.length === 0) {
+                tabela.innerHTML = '<tr><td colspan="6" style="text-align:center">Nenhum cliente cadastrado</td></tr>';
+                return;
+            }
+
+            clientes.forEach(cliente => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                <td>${cliente.nome}</td>
+                <td>${cliente.email}</td>
+                <td>${cliente.telefone || '--'}</td>
+                <td>${cliente.cpf || cliente.cnpj || '--'}</td>
+                <td>${cliente.cidade || '--'}/${cliente.estado || '--'}</td>
+                <td><button class="btn-ver" onclick="verHistorico(${cliente.id})">Ver</button></td>
+            `;
+                tabela.appendChild(row);
+            });
+        }
+
+        function verHistorico(id) {
+            window.location.href = `historico.html?id=${id}`;
+        }
+
+        function novoCliente() {
+            window.location.href = 'novo-cliente.html';
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'index.html';
+        }
+
+        carregarClientes();
+    </script>
+</body>
+
+</html>

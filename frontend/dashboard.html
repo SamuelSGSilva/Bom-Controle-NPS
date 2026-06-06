@@ -1,15 +1,179 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #0a0a0a;
+            color: #f1f1f1;
+            min-height: 100vh;
+        }
+
+        header {
+            background: #141414;
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #cc0000;
+        }
+
+        header h1 {
+            color: #ffffff;
+            font-size: 20px;
+        }
+
+        header button {
+            background: transparent;
+            border: 1px solid #cc0000;
+            color: #cc0000;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        header button:hover {
+            background: #cc0000;
+            color: #fff;
+        }
+
+        main {
+            padding: 32px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: #141414;
+            border-radius: 12px;
+            padding: 24px;
+            border-left: 4px solid #cc0000;
+            text-align: center;
+        }
+
+        .card h3 {
+            color: #888888;
+            font-size: 13px;
+            margin-bottom: 12px;
+            text-trasnform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .card p {
+            color: #ffffff;
+            font-size: 36px;
+            font-weight: 700;
+        }
+
+        nav {
+            display: flex;
+            gap: 24px;
+        }
+
+        nav a {
+            color: #888888;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: #cc0000;
+        }
+
+        nav a.ativo {
+            color: #cc0000;
+            font-weight: 600;
+        }
+    </style>
 </head>
+
 <body>
-    <div class="dashboard-container">
-        <h1>Bem-vindo ao Dashboard</h1>
-        <p>Aqui você pode visualizar as métricas e análises do NPS.</p>
-        
-    </div>
+    <header>
+        <img src="../frontend/assets/logo.png" style="height: 40px;">
+        <nav>
+            <a href="dashboard.html" class="ativo">Dashboard</a>
+            <a href="clientes.html">Clientes</a>
+            <a href="posvendas.html">Pós-venda</a>
+            <a href="relatorios.html">Relatórios</a>
+        </nav>
+        <button onclick="logout()"> Sair</button>
+    </header>
+
+    <main>
+        <div class="cards">
+            <div class="card">
+                <h3>Índice NPS</h3>
+                <p id="nps-score">--</p>
+            </div>
+            <div class="card">
+                <h3>Clientes Satisfeitos</h3>
+                <p id="promotores">--</p>
+            </div>
+            <div class="card">
+                <h3>Clientes Indiferentes</h3>
+                <p id="neutros">--</p>
+            </div>
+            <div class="card">
+                <h3>Clientes Insatisfeitos</h3>
+                <p id="detratores">--</p>
+            </div>
+            <div class="card">
+                <h3>Total de Avaliações</h3>
+                <p id="total">--</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'index.html';
+
+        async function carregarNPS() {
+            const response = await fetch('http://localhost:8000/relatorios/nps', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+
+            if (data.message) {
+                document.getElementById('nps-score').textContent = '--';
+                document.getElementById('promotores').textContent = '--';
+                document.getElementById('neutros').textContent = '--';
+                document.getElementById('detratores').textContent = '--';
+                document.getElementById('total').textContent = '0';
+                return;
+            }
+
+            document.getElementById('nps-score').textContent = data.nps + '%';
+            document.getElementById('promotores').textContent = data.promotores;
+            document.getElementById('neutros').textContent = data.neutros;
+            document.getElementById('detratores').textContent = data.detratores;
+            document.getElementById('total').textContent = data.total_avaliacoes;
+        }
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'index.html';
+        }
+
+        carregarNPS();
+    </script>
 </body>
+
 </html>

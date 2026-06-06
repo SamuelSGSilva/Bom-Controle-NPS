@@ -78,7 +78,19 @@ button:hover{
 }
     </style>
 </head>
-<script>
+<body>
+
+    <div class="login-container">
+        <h1>Bom Controle NPS</h1>
+        <p class="subtitulo">Faça login para acessar o painel</p>
+        <form id="login-form">
+           <input type="text" id="username" placeholder="Usuário" required>
+           <input type="password" id="password" placeholder="Senha" required>
+           <button type="submit">Entrar</button>
+        </form>
+        <p id="erro-login"></p>
+
+        <script>
     document.getElementById('login-form').addEventListener('submit', async function(e) {
         e.preventDefault();
 
@@ -104,18 +116,7 @@ button:hover{
             document.getElementById('erro-login').textContent = 'Erro ao conectar com o servidor';
         }
     });
-</script>
-<body>
-
-    <div class="login-container">
-        <h1>Bom Controle NPS</h1>
-        <p class="subtitulo">Faça login para acessar o painel</p>
-        <form id="login-form">
-           <input type="text" id="username" placeholder="Usuário" required>
-           <input type="password" id="password" placeholder="Senha" required>
-           <button type="submit">Entrar</button>
-        </form>
-        <p id="erro-login"></p>
+</script>   
     </div>
 </body>
 </html>
