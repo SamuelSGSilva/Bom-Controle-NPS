@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="pt_BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histórico</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #0a0a0a;
+            color: #f1f1f1;
+            min-height: 100vh;
+        }
+
+        header {
+            background: #141414;
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #cc0000;
+        }
+
+        header button {
+            background: transparent;
+            border: 1px solid #cc0000;
+            color: #cc0000;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        header button:hover {
+            background: #cc0000;
+            color: #fff;
+        }
+
+        nav {
+            display: flex;
+            gap: 24px;
+        }
+
+        nav a {
+            color: #888888;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: #cc0000;
+        }
+
+        nav a.ativo {
+            color: #cc0000;
+            font-weight: 600;
+        }
+
+        main {
+            padding: 32px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .card-cliente {
+            background: #141414;
+            border-radius: 12px;
+            padding: 24px;
+            border-left: 4px solid #cc0000;
+            margin-bottom: 24px;
+        }
+
+        .card-cliente h2 {
+            font-size: 20px;
+            margin-bottom: 16px;
+            color: #ffffff;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .info-item label {
+            font-size: 12px;
+            color: #888888;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .info-item span {
+            font-size: 14px;
+            color: #f1f1f1;
+        }
+
+        .secao {
+            background: #141414;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .secao h3 {
+            font-size: 16px;
+            color: #cc0000;
+            margin-bottom: 16px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead th {
+            background: #1a1a1a;
+            color: #888888;
+            padding: 10px 14px;
+            text-align: left;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        tbody tr:hover {
+            background: #1a1a1a;
+        }
+
+        tbody td {
+            padding: 10px 14px;
+            font-size: 14px;
+            color: #cccccc;
+        }
+
+        .vazio {
+            color: #888888;
+            font-size: 14px;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <img src="assets/logo.png" style="height: 40px;">
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="clientes.html">Clientes</a>
+            <a href="novo-cliente.html">Novo Cliente</a>
+            <a href="posvendas.html">Pós-venda</a>
+            <a href="relatorios.html">Relatórios</a>
+            <a href="historico.html" class="ativo">Histórico</a>
+        </nav>
+        <button onclick="logout()">Sair</button>
+    </header>
+
+    <main>
+    <div class="card-cliente" id="dados-cliente">
+        <h2 id="nome-cliente">Carregando...</h2>
+        <div class="info-grid">
+            <div class="info-item">
+                <label>E-mail</label>
+                <span id="email-cliente">--</span>
+            </div>
+            <div class="info-item">
+                <label>Telefone</label>
+                <span id="telefone-cliente">--</span>
+            </div>
+            <div class="info-item">
+                <label>CPF</label>
+                <span id="cpf-cliente">--</span>
+            </div>
+            <div class="info-item">
+                <label>CNPJ</label>
+                <span id="cnpj-cliente">--</span>
+            </div>
+            <div class="info-item">
+                <label>Cidade/Estado</label>
+                <span id="cidade-cliente">--</span>
+            </div>
+            <div class="info-item">
+                <label>Cadastrado em</label>
+                <span id="data-cliente">--</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="secao">
+        <h3>Pós-vendas</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Feedback</th>
+                    <th>Data de Retorno</th>
+                </tr>
+            </thead>
+            <tbody id="tabela-posvendas"></tbody>
+        </table>
+    </div>
+
+    <div class="secao">
+        <h3>Avaliações NPS</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nota</th>
+                    <th>Feedback</th>
+                    <th>Data</th>
+                </tr>
+            </thead>
+            <tbody id="tabela-nps"></tbody>
+        </table>
+    </div>
+</main>
+
+<script>
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = 'index.html';
+
+    const params = new URLSearchParams(window.location.search);
+    const clienteId = params.get('id');
+
+    async function carregarHistorico() {
+        const response = await fetch(`http://localhost:8000/relatorios/clientes/${clienteId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+
+        const c = data.cliente;
+        document.getElementById('nome-cliente').textContent = c.nome;
+        document.getElementById('email-cliente').textContent = c.email || '--';
+        document.getElementById('telefone-cliente').textContent = c.telefone || '--';
+        document.getElementById('cpf-cliente').textContent = c.cpf || '--';
+        document.getElementById('cnpj-cliente').textContent = c.cnpj || '--';
+        document.getElementById('cidade-cliente').textContent = `${c.cidade || '--'}/${c.estado || '--'}`;
+        document.getElementById('data-cliente').textContent = c.created_at ? new Date(c.created_at).toLocaleDateString('pt-BR') : '--';
+
+        console.log(c.created_at);
+        // Pós-vendas
+        const tabelaPV = document.getElementById('tabela-posvendas');
+        if (data.pos_vendas.length === 0) {
+            tabelaPV.innerHTML = '<tr><td colspan="3" class="vazio">Nenhum pós-venda registrado</td></tr>';
+        } else {
+            const cores = { 'pendente': '#f59e0b', 'em andamento': '#38bdf8', 'concluido': '#00cc66' };
+            data.pos_vendas.forEach(pv => {
+                const cor = cores[pv.status] || '#888888';
+                tabelaPV.innerHTML += `
+                    <tr>
+                        <td><span style="color:${cor}; font-weight:600;">● ${pv.status}</span></td>
+                        <td>${pv.feedback || '--'}</td>
+                        <td>${pv.data_retorno ? new Date(pv.data_retorno).toLocaleDateString('pt-BR') : '--'}</td>
+                    </tr>`;
+            });
+        }
+
+        // NPS
+        const tabelaNPS = document.getElementById('tabela-nps');
+        if (data.avaliacoes_nps.length === 0) {
+            tabelaNPS.innerHTML = '<tr><td colspan="3" class="vazio">Nenhuma avaliação registrada</td></tr>';
+        } else {
+            data.avaliacoes_nps.forEach(a => {
+                tabelaNPS.innerHTML += `
+                    <tr>
+                        <td><strong>${a.score}</strong>/10</td>
+                        <td>${a.feedback || '--'}</td>
+                        <td>${new Date(a.created_at).toLocaleDateString('pt-BR')}</td>
+                    </tr>`;
+            });
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('token');
+        window.location.href = 'index.html';
+    }
+
+    carregarHistorico();
+</script>
+</body>
+</html>

@@ -38,14 +38,17 @@ def relatorio_cliente(cliente_id: int, db: Session = Depends(get_db), token: dic
     avaliacoes_nps = db.query(AvaliacaoNPS).filter(AvaliacaoNPS.cliente_id == cliente_id).all()
 
     return {
-        "cliente": {
-            "id": cliente.id,
-            "nome": cliente.nome,
-            "email": cliente.email,
-            "telefone": cliente.telefone,
-            "cpf": cliente.cpf
-
-        },
+       "cliente": {
+    "id": cliente.id,
+    "nome": cliente.nome,
+    "email": cliente.email,
+    "telefone": cliente.telefone,
+    "cpf": cliente.cpf,
+    "cnpj": cliente.cnpj,
+    "cidade": cliente.cidade,
+    "estado": cliente.estado,
+    "created_at": cliente.created_at.isoformat() if cliente.created_at else None
+},
         "pos_vendas": pos_vendas,
         "avaliacoes_nps": avaliacoes_nps
     }
