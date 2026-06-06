@@ -311,13 +311,17 @@
             <td>${pv.data_retorno ? new Date(pv.data_retorno).toLocaleDateString('pt-BR') : '--'}</td>
             <td>${pv.feedback || '--'}</td>
             <td>
-                <button class="btn-ver">Ver</button>
+               <button class="btn-ver" onclick="verCliente(${pv.cliente_id})">Ver</button>
                 <button class="btn-editar" onclick="editarPosVenda(${pv.id})">Editar</button>
                 <button class="btn-deletar" onclick="deletarPosVenda(${pv.id})">Excluir</button>
             </td>
         `;
                 tabela.appendChild(row);
             });
+        }
+
+        function verCliente(clienteId) {
+            window.location.href = `historico.html?id=${clienteId}`;
         }
 
         function novoPosVendas() {
