@@ -1,12 +1,11 @@
 <!DOCTYPE html>
-<html lang="pt_BR">
-
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clientes</title>
+    <title>Pós-Vendas</title>
 
-    <style>
+     <style>
         * {
             margin: 0;
             padding: 0;
@@ -139,87 +138,78 @@
         }
     </style>
 </head>
-
 <body>
-    <header>
+     <header>
         <img src="../frontend/assets/logo.png" style="height: 40px;">
         <nav>
             <a href="dashboard.html">Dashboard</a>
-            <a href="clientes.html" class="ativo">Clientes</a>
-            <a href="posvendas.html">Pós-venda</a>
+            <a href="clientes.html">Clientes</a>
+            <a href="posvendas.html" class="ativo">Pós-venda</a>
             <a href="relatorios.html">Relatórios</a>
         </nav>
-        <button onclick="logout()">Sair</button>
+        <button onclick="logout()"> Sair</button>
     </header>
 
-    <main>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2>Clientes</h2>
-            <button class="btn-novo" onclick="novoCliente()">+ Novo Cliente</button>
-        </div>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th>E-mail</th>
-                        <th>Telefone</th>
-                        <th>CPF/CNPJ</th>
-                        <th>Cidade/Estado</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="tabela-clientes">
-                </tbody>
-            </table>
-        </div>
-    </main>
+  <main>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2>Pós Vendas</h2>
+        <button class="btn-novo" onclick="novoPosVendas()">+ Novo Pós-Vendas</button>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Cliente</th>
+                    <th>Status</th>
+                    <th>Data de Retorno</th>
+                    <th>Feedback</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="tabela-posvendas"></tbody>
+        </table>
+    </div>
+  </main>
 
-    <script>
-        const token = localStorage.getItem('token');
-        if (!token) window.location.href = 'index.html';
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = 'index.html';
 
-        async function carregarClientes() {
-            const response = await fetch('http://localhost:8000/clientes', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const clientes = await response.json();
-            const tabela = document.getElementById('tabela-clientes');
+    async function carregarPosVendas() {
+        const response = await fetch('http://localhost:8000/pos-venda', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const posvendas = await response.json();
+        const tabela = document.getElementById('tabela-posvendas');
 
-            if (clientes.length === 0) {
-                tabela.innerHTML = '<tr><td colspan="6" style="text-align:center">Nenhum cliente cadastrado</td></tr>';
-                return;
-            }
+        if (posvendas.length === 0) {
+            tabela.innerHTML = '<tr><td colspan="5" style="text-align:center">Nenhum pós-venda cadastrado</td></tr>';
+            return;
+        }
 
-            clientes.forEach(cliente => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                <td>${cliente.nome}</td>
-                <td>${cliente.email}</td>
-                <td>${cliente.telefone || '--'}</td>
-                <td>${cliente.cpf || cliente.cnpj || '--'}</td>
-                <td>${cliente.cidade || '--'}/${cliente.estado || '--'}</td>
-                <td><button class="btn-ver" onclick="verHistorico(${cliente.id})">Ver</button></td>
+        posvendas.forEach(pv => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${pv.cliente_id}</td>
+                <td>${pv.status}</td>
+                <td>${pv.data_retorno ? new Date(pv.data_retorno).toLocaleDateString('pt-BR') : '--'}</td>
+                <td>${pv.feedback || '--'}</td>
+                <td><button class="btn-ver">Ver</button></td>
             `;
-                tabela.appendChild(row);
-            });
-        }
+            tabela.appendChild(row);
+        });
+    }
 
-        function verHistorico(id) {
-            window.location.href = `historico.html?id=${id}`;
-        }
+    function novoPosVendas() {
+        window.location.href = 'novo-posvendas.html';
+    }
 
-        function novoCliente() {
-            window.location.href = 'novo-cliente.html';
-        }
+    function logout() {
+        localStorage.removeItem('token');
+        window.location.href = 'index.html';
+    }
 
-        function logout() {
-            localStorage.removeItem('token');
-            window.location.href = 'index.html';
-        }
-
-        carregarClientes();
-    </script>
+    carregarPosVendas();
+</script>
 </body>
-
 </html>
