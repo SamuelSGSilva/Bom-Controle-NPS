@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Novo Cliente</title>
-
+    <script src="toast.js"></script>
     <style>
         * {
             margin: 0;
@@ -239,12 +239,12 @@
             const cnpj = document.getElementById('cnpj').value;
 
             if (cpf && !validarCPF(cpf)) {
-                alert('CPF inválido!');
+                toast('CPF inválido!', 'aviso');
                 return;
             }
 
             if (cnpj && !validarCNPJ(cnpj)) {
-                alert('CNPJ inválido!');
+               toast('CNPJ inválido!', 'aviso');
                 return;
             }
 
@@ -273,10 +273,10 @@
             });
 
             if (response.ok) {
-                alert('Cliente cadastrado com sucesso!');
+                toast('Cliente cadastrado com sucesso!');
                 window.location.href = 'clientes.html';
             } else {
-                alert('Erro ao cadastrar cliente!');
+                toast('Erro ao cadastrar cliente!', 'erro');
             }
         });
 

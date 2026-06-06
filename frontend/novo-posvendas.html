@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Novo Pós-Vendas</title>
-
+    <script src="toast.js"></script>
     <style>
         * {
             margin: 0;
@@ -217,10 +217,10 @@
             });
 
             if (response.ok) {
-                alert('Pós-venda cadastrado com sucesso!');
+                toast('Pós-venda cadastrado com sucesso!');
                 window.location.href = 'posvendas.html';
             } else {
-                alert('Erro ao cadastrar pós-venda!');
+                toast('Erro ao cadastrar pós-venda!', 'erro');
             }
         });
 

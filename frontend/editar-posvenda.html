@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Pós-Venda</title>
-
+    <script src="toast.js"></script>
     <style>
         * {
             margin: 0;
@@ -232,10 +232,10 @@
         });
 
         if (response.ok) {
-            alert('Pós-venda atualizado com sucesso!');
+            toast('Pós-venda atualizado com sucesso!');
             window.location.href = 'posvendas.html';
         } else {
-            alert('Erro ao atualizar pós-venda!');
+            toast('Erro ao atualizar pós-venda!', 'erro');
         }
     });
 
@@ -243,7 +243,6 @@
         localStorage.removeItem('token');
         window.location.href = 'index.html';
     }
-
     carregarPosVenda();
 </script>
 </body>
