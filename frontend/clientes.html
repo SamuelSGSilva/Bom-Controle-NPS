@@ -154,6 +154,23 @@
             border-color: #cc0000;
             color: #cc0000;
         }
+
+        .btn-editar {
+            background: transparent;
+            border: 1px solid #38bdf8;
+            color: #38bdf8;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-editar:hover {
+            background: #38bdf8;
+            color: #0a0a0a;
+        }
     </style>
 </head>
 
@@ -229,6 +246,7 @@
             <td>${cliente.cidade || '--'}/${cliente.estado || '--'}</td>
             <td>
                 <button class="btn-ver" onclick="verHistorico(${cliente.id})">Ver</button>
+                <button class="btn-editar" onclick="editarCliente(${cliente.id})">Editar</button>
                 <button class="btn-deletar" onclick="deletarCliente(${cliente.id})">Excluir</button>
             </td>
         `;
@@ -240,6 +258,10 @@
             const busca = document.getElementById('busca').value.toLowerCase();
             const filtrados = todosClientes.filter(c => c.nome.toLowerCase().includes(busca));
             renderizarClientes(filtrados);
+        }
+
+        function editarCliente(id) {
+            window.location.href = `editar-cliente.html?id=${id}`;
         }
 
         async function deletarCliente(id) {

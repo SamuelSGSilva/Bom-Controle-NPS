@@ -4,6 +4,7 @@ from database import get_db
 from models.models import Cliente
 from pydantic import BaseModel
 from auth import verificar_token
+from datetime import datetime
 
 router = APIRouter()
 
@@ -11,6 +12,15 @@ class ClienteSchema(BaseModel):
     nome: str
     email: str
     telefone: str | None = None
+    cpf: str | None = None
+    cnpj: str | None = None
+    cep: str | None = None
+    logradouro: str | None = None
+    numero: str | None = None
+    bairro: str | None = None
+    cidade: str | None = None
+    estado: str | None = None
+    data_nascimento: datetime | None = None
 
 @router.post("/clientes")
 def criar_cliente(cliente: ClienteSchema, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
@@ -39,3 +49,14 @@ def deletar_cliente(id: int, db: Session = Depends(get_db), token: dict = Depend
     db.delete(cliente)
     db.commit()
     return {"message": "Cliente deletado com sucesso"}
+
+@router.put("/clientes/{id}")
+def editar_cliente(id: int, cliente: ClienteSchema, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
+    db_cliente = db.query(Cliente).filter(Cliente.id == id).first()
+    if not db_cliente:
+        raise HTTPException(status_code=404, detail="Cliente não encontrado")
+    for key, value in cliente.model_dump().items():
+        setattr(db_cliente, key, value)
+    db.commit()
+    db.refresh(db_cliente)
+    return db_cliente

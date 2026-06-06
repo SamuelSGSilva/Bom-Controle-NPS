@@ -170,6 +170,23 @@
             border-color: #cc0000;
             color: #cc0000;
         }
+
+        .btn-editar {
+            background: transparent;
+            border: 1px solid #38bdf8;
+            color: #38bdf8;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-editar:hover {
+            background: #38bdf8;
+            color: #0a0a0a;
+        }
     </style>
 </head>
 
@@ -263,6 +280,10 @@
             renderizarPosVendas(filtrados);
         }
 
+        function editarPosVenda(id) {
+            window.location.href = `editar-posvenda.html?id=${id}`;
+        }
+
         function renderizarPosVendas(posvendas) {
             const tabela = document.getElementById('tabela-posvendas');
             tabela.innerHTML = '';
@@ -291,6 +312,7 @@
             <td>${pv.feedback || '--'}</td>
             <td>
                 <button class="btn-ver">Ver</button>
+                <button class="btn-editar" onclick="editarPosVenda(${pv.id})">Editar</button>
                 <button class="btn-deletar" onclick="deletarPosVenda(${pv.id})">Excluir</button>
             </td>
         `;
