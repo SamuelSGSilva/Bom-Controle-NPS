@@ -152,8 +152,15 @@
 
   <main>
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2>Pós Vendas</h2>
+         <div style="display: flex; gap: 12px;">
+        <select id="filtro-status" onchange="filtrarPorStatus()" style="padding: 10px 16px; background: #141414; border: 1px solid #2a2a2a; border-radius: 8px; color: #f1f1f1; font-size: 14px; outline: none; cursor: pointer;">
+            <option value="">Todos</option>
+            <option value="pendente">Pendente</option>
+            <option value="em andamento">Em Andamento</option>
+            <option value="concluido">Concluído</option>
+        </select>
         <button class="btn-novo" onclick="novoPosVendas()">+ Novo Pós-Vendas</button>
+    </div>
     </div>
     <div class="table-container">
         <table>
@@ -175,31 +182,48 @@
     const token = localStorage.getItem('token');
     if (!token) window.location.href = 'index.html';
 
-    async function carregarPosVendas() {
-        const response = await fetch('http://localhost:8000/pos-venda', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const posvendas = await response.json();
-        const tabela = document.getElementById('tabela-posvendas');
+    let todosPosVendas = [];
+let todosClientesPV = [];
 
-        if (posvendas.length === 0) {
-            tabela.innerHTML = '<tr><td colspan="5" style="text-align:center">Nenhum pós-venda cadastrado</td></tr>';
-            return;
-        }
+async function carregarPosVendas() {
+    const [resPV, resCli] = await Promise.all([
+        fetch('http://localhost:8000/pos-venda', { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch('http://localhost:8000/clientes', { headers: { 'Authorization': `Bearer ${token}` } })
+    ]);
+    todosPosVendas = await resPV.json();
+    todosClientesPV = await resCli.json();
+    renderizarPosVendas(todosPosVendas);
+}
 
-        posvendas.forEach(pv => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${pv.cliente_id}</td>
-                <td>${pv.status}</td>
-                <td>${pv.data_retorno ? new Date(pv.data_retorno).toLocaleDateString('pt-BR') : '--'}</td>
-                <td>${pv.feedback || '--'}</td>
-                <td><button class="btn-ver">Ver</button></td>
-            `;
-            tabela.appendChild(row);
-        });
+function filtrarPorStatus() {
+    const status = document.getElementById('filtro-status').value;
+    const filtrados = status ? todosPosVendas.filter(pv => pv.status === status) : todosPosVendas;
+    renderizarPosVendas(filtrados);
+}
+
+function renderizarPosVendas(posvendas) {
+    const tabela = document.getElementById('tabela-posvendas');
+    tabela.innerHTML = '';
+
+    if (posvendas.length === 0) {
+        tabela.innerHTML = '<tr><td colspan="5" style="text-align:center">Nenhum pós-venda encontrado</td></tr>';
+        return;
     }
 
+    posvendas.forEach(pv => {
+        const cliente = todosClientesPV.find(c => c.id === pv.cliente_id);
+        const nomeCliente = cliente ? cliente.nome : `ID ${pv.cliente_id}`;
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${nomeCliente}</td>
+            <td>${pv.status}</td>
+            <td>${pv.data_retorno ? new Date(pv.data_retorno).toLocaleDateString('pt-BR') : '--'}</td>
+            <td>${pv.feedback || '--'}</td>
+            <td><button class="btn-ver">Ver</button></td>
+        `;
+        tabela.appendChild(row);
+    });
+}
     function novoPosVendas() {
         window.location.href = 'novo-posvendas.html';
     }

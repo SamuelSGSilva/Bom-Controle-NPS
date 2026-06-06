@@ -153,11 +153,15 @@
     </header>
 
     <main>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2>Clientes</h2>
-            <button class="btn-novo" onclick="novoCliente()">+ Novo Cliente</button>
-        </div>
         <div class="table-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>Clientes</h2>
+                <div style="display: flex; gap: 12px;">
+                    <input type="text" id="busca" placeholder="Buscar por nome..." onkeyup="filtrarClientes()"
+                        style="padding: 10px 16px; background: #141414; border: 1px solid #2a2a2a; border-radius: 8px; color: #f1f1f1; font-size: 14px; outline: none; width: 250px;">
+                    <button class="btn-novo" onclick="novoCliente()">+ Novo Cliente</button>
+                </div>
+            </div>
             <table>
                 <thead>
                     <tr>
@@ -201,6 +205,45 @@
                 <td>${cliente.cidade || '--'}/${cliente.estado || '--'}</td>
                 <td><button class="btn-ver" onclick="verHistorico(${cliente.id})">Ver</button></td>
             `;
+                tabela.appendChild(row);
+            });
+        }
+
+        let todosClientes = [];
+
+        async function carregarClientes() {
+            const response = await fetch('http://localhost:8000/clientes', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            todosClientes = await response.json();
+            renderizarClientes(todosClientes);
+        }
+
+        function filtrarClientes() {
+            const busca = document.getElementById('busca').value.toLowerCase();
+            const filtrados = todosClientes.filter(c => c.nome.toLowerCase().includes(busca));
+            renderizarClientes(filtrados);
+        }
+
+        function renderizarClientes(clientes) {
+            const tabela = document.getElementById('tabela-clientes');
+            tabela.innerHTML = '';
+
+            if (clientes.length === 0) {
+                tabela.innerHTML = '<tr><td colspan="6" style="text-align:center">Nenhum cliente encontrado</td></tr>';
+                return;
+            }
+
+            clientes.forEach(cliente => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+            <td>${cliente.nome}</td>
+            <td>${cliente.email}</td>
+            <td>${cliente.telefone || '--'}</td>
+            <td>${cliente.cpf || cliente.cnpj || '--'}</td>
+            <td>${cliente.cidade || '--'}/${cliente.estado || '--'}</td>
+            <td><button class="btn-ver" onclick="verHistorico(${cliente.id})">Ver</button></td>
+        `;
                 tabela.appendChild(row);
             });
         }
