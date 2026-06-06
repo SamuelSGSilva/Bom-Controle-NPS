@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avaliações</title>
+
+    <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+        background: #0a0a0a;
+        color: #f1f1f1;
+        min-height: 100vh;
+    }
+
+    header {
+        background: #141414;
+        padding: 16px 32px;
+        border-bottom: 3px solid #cc0000;
+    }
+
+    main {
+        max-width: 600px;
+        margin: 60px auto;
+        padding: 32px;
+        background: #141414;
+        border-radius: 12px;
+        border-top: 3px solid #cc0000;
+        text-align: center;
+    }
+
+    h2 {
+        font-size: 20px;
+        margin-bottom: 8px;
+    }
+
+    p.subtitulo {
+        color: #888888;
+        font-size: 14px;
+        margin-bottom: 32px;
+    }
+
+    .notas {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 32px;
+    }
+
+    .nota {
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        border: 2px solid #2a2a2a;
+        background: transparent;
+        color: #f1f1f1;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .nota:hover {
+        border-color: #cc0000;
+        color: #cc0000;
+    }
+
+    .nota.selecionada {
+        background: #cc0000;
+        border-color: #cc0000;
+        color: #fff;
+    }
+
+    textarea {
+        width: 100%;
+        padding: 12px 16px;
+        background: #0a0a0a;
+        border: 1px solid #2a2a2a;
+        border-radius: 8px;
+        color: #f1f1f1;
+        font-size: 14px;
+        outline: none;
+        resize: vertical;
+        min-height: 100px;
+        margin-bottom: 20px;
+        transition: border 0.2s;
+    }
+
+    textarea:focus {
+        border-color: #cc0000;
+    }
+
+    button[type="submit"] {
+        width: 100%;
+        padding: 12px;
+        background: #cc0000;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    button[type="submit"]:hover {
+        background: #aa0000;
+    }
+
+    .legenda {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: #888888;
+        margin-bottom: 24px;
+    }
+
+    #agradecimento {
+        display: none;
+        text-align: center;
+        padding: 40px;
+    }
+
+    #agradecimento h2 {
+        color: #00cc66;
+        margin-bottom: 12px;
+    }
+
+    #agradecimento p {
+        color: #888888;
+    }
+</style>
+</head>
+<body>
+    <header>
+        <img src="assets/logo.png" style="height: 40px;">
+    </header>
+
+    <main>
+    <div id="formulario">
+        <h2>Como você nos avalia?</h2>
+        <p class="subtitulo">De 0 a 10, qual a probabilidade de você nos recomendar a um amigo?</p>
+
+        <div class="notas" id="notas"></div>
+
+        <div class="legenda">
+            <span>Muito improvável</span>
+            <span>Muito provável</span>
+        </div>
+
+        <textarea id="feedback" placeholder="Deixe um comentário (opcional)"></textarea>
+
+        <button type="submit" onclick="enviar()">Enviar avaliação</button>
+    </div>
+
+    <div id="agradecimento">
+        <h2>Obrigado! 🎉</h2>
+        <p>Sua avaliação foi registrada com sucesso.</p>
+    </div>
+</main>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const clienteId = parseInt(params.get('cliente_id'));
+    let notaSelecionada = null;
+
+    // Gera os botões de 0 a 10
+    const container = document.getElementById('notas');
+    for (let i = 0; i <= 10; i++) {
+        const btn = document.createElement('button');
+        btn.textContent = i;
+        btn.className = 'nota';
+        btn.onclick = () => {
+            document.querySelectorAll('.nota').forEach(b => b.classList.remove('selecionada'));
+            btn.classList.add('selecionada');
+            notaSelecionada = i;
+        };
+        container.appendChild(btn);
+    }
+
+    async function enviar() {
+        if (notaSelecionada === null) {
+            alert('Selecione uma nota antes de enviar!');
+            return;
+        }
+
+        const response = await fetch('http://localhost:8000/nps/publico', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                cliente_id: clienteId,
+                score: notaSelecionada,
+                feedback: document.getElementById('feedback').value || null
+            })
+        });
+
+        if (response.ok) {
+            document.getElementById('formulario').style.display = 'none';
+            document.getElementById('agradecimento').style.display = 'block';
+        } else {
+            alert('Erro ao enviar avaliação!');
+        }
+    }
+</script>
+</body>
+</html>

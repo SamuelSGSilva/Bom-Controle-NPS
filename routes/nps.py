@@ -20,6 +20,14 @@ def criar_avaliacao_nps(nps: NPSSChema, db: Session = Depends(get_db), token: di
    db.refresh(novo)
    return novo
 
+@router.post("/nps/publico")
+def avaliar_publico(nps: NPSSChema, db: Session = Depends(get_db)):
+    novo = AvaliacaoNPS(**nps.model_dump())
+    db.add(novo)
+    db.commit()
+    db.refresh(novo)
+    return {"message": "Avaliação registrada com sucesso!"}
+
 @router.get("/nps/{cliente_id}")
 def buscar_avaliacao(cliente_id: int, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
    return db.query(AvaliacaoNPS).filter(AvaliacaoNPS.cliente_id == cliente_id).first()
