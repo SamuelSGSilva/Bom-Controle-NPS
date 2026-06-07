@@ -1,130 +1,233 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AutoLuiz - NPS</title>
     <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="toast.js"></script>
-   <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: 'Segoe UI', sans-serif;
-    }
-
-    body {
-        background: #0a0a0a;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-    }
-
-    .login-container {
-        background: #141414;
-        padding: 40px;
-        border-radius: 12px;
-        width: 360px;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-        border-top: 3px solid #cc0000;
-    }
-
-    h1 {
-        color: #ffffff;
-        font-size: 20px;
-        margin-bottom: 6px;
-    }
-
-    p.subtitulo {
-        color: #888888;
-        font-size: 13px;
-        margin-bottom: 28px;
-    }
-
-    input {
-        width: 100%;
-        padding: 12px 16px;
-        margin-bottom: 16px;
-        background: #0a0a0a;
-        border: 1px solid #2a2a2a;
-        border-radius: 8px;
-        color: #f1f1f1;
-        font-size: 14px;
-        outline: none;
-        transition: border 0.2s;
-    }
-
-    input:focus {
-        border-color: #cc0000;
-    }
-
-    button {
-        width: 100%;
-        padding: 12px;
-        background: #cc0000;
-        color: #ffffff;
-        border: none;
-        border-radius: 8px;
-        font-size: 15px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background 0.2s;
-    }
-
-    button:hover {
-        background: #aa0000;
-    }
-
-    #erro-login {
-        color: #f87171;
-        font-size: 13px;
-        margin-top: 12px;
-        text-align: center;
-    }
-</style>
-</head>
-<body>
-
-    <div class="login-container">
-        <h1>AutoLuiz - NPS</h1>
-        <p class="subtitulo">Faça login para acessar o painel</p>
-        <form id="login-form">
-           <input type="text" id="username" placeholder="Usuário" required>
-           <input type="password" id="password" placeholder="Senha" required>
-           <button type="submit">Entrar</button>
-        </form>
-        <p id="erro-login"></p>
-
-        <script>
-    document.getElementById('login-form').addEventListener('submit', async function(e) {
-        e.preventDefault();
-
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-
-        try {
-            const response = await fetch('http://localhost:8000/token', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                localStorage.setItem('token', data.access_token);
-                localStorage.setItem('username', username);
-                window.location.href = 'dashboard.html';
-            } else {
-                document.getElementById('erro-login').textContent = 'Usuário ou senha inválidos';
-            }
-        } catch (error) {
-            document.getElementById('erro-login').textContent = 'Erro ao conectar com o servidor';
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
         }
-    });
-</script>   
+
+        body {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .lado-esquerdo {
+            width: 40%;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .lado-esquerdo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        .lado-esquerdo .overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent 40%, rgba(0, 0, 0, 0.85) 100%);
+        }
+
+        .lado-esquerdo .marca {
+            position: absolute;
+            bottom: 32px;
+            left: 32px;
+        }
+
+        .lado-esquerdo .marca .linha {
+            width: 36px;
+            height: 4px;
+            background: #cc0000;
+            border-radius: 2px;
+            margin-bottom: 12px;
+        }
+
+        .lado-esquerdo .marca h2 {
+            color: #fff;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .lado-esquerdo .marca p {
+            color: #888;
+            font-size: 13px;
+        }
+
+        .lado-direito {
+            width: 60%;
+            background: #0a0a0a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 380px;
+        }
+
+        h1 {
+            color: #ffffff;
+            font-size: 26px;
+            margin-bottom: 8px;
+        }
+
+        p.subtitulo {
+            color: #888888;
+            font-size: 14px;
+            margin-bottom: 32px;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            background: #141414;
+            border: 1px solid #2a2a2a;
+            border-radius: 10px;
+            padding: 0 16px;
+            height: 50px;
+            gap: 10px;
+            margin-bottom: 14px;
+            transition: border 0.2s;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: #cc0000;
+        }
+
+        .input-wrapper i {
+            color: #555;
+            font-size: 18px;
+        }
+
+        .input-wrapper input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #f1f1f1;
+            font-size: 14px;
+            width: 100%;
+            padding: 0;
+            margin: 0;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #cc0000;
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 8px;
+        }
+
+        button:hover {
+            background: #aa0000;
+        }
+
+        #erro-login {
+            color: #f87171;
+            font-size: 13px;
+            margin-top: 12px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="lado-esquerdo">
+        <img src="assets/login.png" alt="AutoLuiz">
+        <div class="overlay"></div>
+        <div class="marca">
+            <div class="linha"></div>
+            <h2>AutoLuiz NPS</h2>
+            <p>Sistema de Gestão de Pós-venda</p>
+        </div>
     </div>
+
+    <div class="lado-direito">
+        <div class="login-container">
+            <h1>Bem-vindo!</h1>
+            <p class="subtitulo">Faça login para acessar o painel</p>
+            <form id="login-form">
+                <div class="input-wrapper">
+                    <span style="color: #555; font-size: 16px;">
+                        <i class="fa-regular fa-user"></i>
+                    </span>
+                    <input type="text" id="username" placeholder="Usuário" required>
+                </div>
+                <div class="input-wrapper">
+                    <span style="color: #555; font-size: 16px;">
+                        <i class="fa-solid fa-lock"></i>
+                    </span>
+                    <input type="password" id="password" placeholder="Senha" required>
+                    <span onclick="toggleSenha()" id="icone-olho"
+                        style="cursor: pointer; color: #555; font-size: 16px; user-select: none;">
+                        <i class="fa-regular fa-eye"></i>
+                    </span>
+                </div>
+                <button type="submit">Entrar</button>
+            </form>
+            <p id="erro-login"></p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            try {
+                const response = await fetch('http://localhost:8000/token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    localStorage.setItem('token', data.access_token);
+                    localStorage.setItem('username', username);
+                    window.location.href = 'dashboard.html';
+                } else {
+                    document.getElementById('erro-login').textContent = 'Usuário ou senha inválidos';
+                }
+            } catch (error) {
+                document.getElementById('erro-login').textContent = 'Erro ao conectar com o servidor';
+            }
+        });
+
+        function toggleSenha() {
+            const input = document.getElementById('password');
+            const olho = document.getElementById('icone-olho');
+            if (input.type === 'password') {
+                input.type = 'text';
+                olho.innerHTML = '<i class="fa-regular fa-eye-slash"></i>';
+            } else {
+                input.type = 'password';
+                olho.innerHTML = '<i class="fa-regular fa-eye"></i>';
+            }
+        }
+    </script>
 </body>
+
 </html>
