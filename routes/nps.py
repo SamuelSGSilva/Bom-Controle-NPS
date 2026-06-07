@@ -12,6 +12,7 @@ class NPSSChema(BaseModel):
     score: int
     feedback: str | None = None
 
+
 @router.post("/nps")
 def criar_avaliacao_nps(nps: NPSSChema, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
    novo = AvaliacaoNPS(**nps.model_dump())
@@ -19,6 +20,10 @@ def criar_avaliacao_nps(nps: NPSSChema, db: Session = Depends(get_db), token: di
    db.commit()
    db.refresh(novo)
    return novo
+
+@router.get("/nps/lista")
+def listar_avaliacoes(db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
+    return db.query(AvaliacaoNPS).all()
 
 @router.post("/nps/publico")
 def avaliar_publico(nps: NPSSChema, db: Session = Depends(get_db)):
@@ -31,3 +36,4 @@ def avaliar_publico(nps: NPSSChema, db: Session = Depends(get_db)):
 @router.get("/nps/{cliente_id}")
 def buscar_avaliacao(cliente_id: int, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
    return db.query(AvaliacaoNPS).filter(AvaliacaoNPS.cliente_id == cliente_id).first()
+

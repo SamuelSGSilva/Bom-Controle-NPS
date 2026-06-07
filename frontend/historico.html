@@ -250,8 +250,8 @@
         document.getElementById('cpf-cliente').textContent = c.cpf || '--';
         document.getElementById('cnpj-cliente').textContent = c.cnpj || '--';
         document.getElementById('cidade-cliente').textContent = `${c.cidade || '--'}/${c.estado || '--'}`;
-        document.getElementById('data-cliente').textContent = c.created_at ? new Date(c.created_at).toLocaleDateString('pt-BR') : '--';
-
+        document.getElementById('data-cliente').textContent = c.created_at ? new Date(c.created_at).toLocaleString('pt-BR') : '--';
+        
         console.log(c.created_at);
         // Pós-vendas
         const tabelaPV = document.getElementById('tabela-posvendas');
@@ -280,7 +280,7 @@
                     <tr>
                         <td><strong>${a.score}</strong>/10</td>
                         <td>${a.feedback || '--'}</td>
-                        <td>${new Date(a.created_at).toLocaleDateString('pt-BR')}</td>
+                        <td>${new Date(a.created_at).toLocaleString('pt-BR')}</td>
                     </tr>`;
             });
         }
