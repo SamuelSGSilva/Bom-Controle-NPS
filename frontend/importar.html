@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoLuiz NPS - Importar</title>
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <script src="toast.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #0a0a0a;
+            color: #f1f1f1;
+            min-height: 100vh;
+        }
+
+        header {
+            background: #141414;
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #cc0000;
+        }
+
+        header button {
+            background: transparent;
+            border: 1px solid #cc0000;
+            color: #cc0000;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        header button:hover {
+            background: #cc0000;
+            color: #fff;
+        }
+
+        nav {
+            display: flex;
+            gap: 24px;
+        }
+
+        nav a {
+            color: #888888;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: #cc0000;
+        }
+
+        nav a.ativo {
+            color: #cc0000;
+            font-weight: 600;
+        }
+
+        main {
+            padding: 32px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: #141414;
+            border-radius: 12px;
+            padding: 32px;
+            border-top: 3px solid #cc0000;
+            text-align: center;
+        }
+
+        .card h2 {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .card p {
+            color: #888888;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        .upload-area {
+            border: 2px dashed #2a2a2a;
+            border-radius: 12px;
+            padding: 40px 20px;
+            cursor: pointer;
+            transition: border 0.2s;
+        }
+
+        .upload-area:hover,
+        .upload-area.dragover {
+            border-color: #cc0000;
+        }
+
+        .upload-area p {
+            margin: 0;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        button.enviar {
+            width: 100%;
+            padding: 14px;
+            background: #cc0000;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.2s;
+        }
+
+        button.enviar:hover {
+            background: #aa0000;
+        }
+
+        button.enviar:disabled {
+            background: #2a2a2a;
+            color: #555;
+            cursor: not-allowed;
+        }
+
+        #nome-arquivo {
+            color: #00cc66;
+            font-size: 14px;
+            margin-top: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <img src="assets/logo.png" style="height: 40px;">
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="clientes.html">Clientes</a>
+            <a href="posvendas.html">Pós-venda</a>
+            <a href="relatorios.html">Relatórios</a>
+            <a href="importar.html" class="ativo">Importar</a>
+        </nav>
+        <button onclick="logout()">Sair</button>
+    </header>
+
+    <main>
+        <div class="card">
+            <h2>Importar Pesquisa de Satisfação</h2>
+            <p>Envie a planilha preenchida pela equipe de CS para importar as avaliações automaticamente</p>
+
+            <div class="upload-area" id="upload-area" onclick="document.getElementById('arquivo').click()">
+                <p>Clique aqui ou arraste a planilha (.xlsx)</p>
+                <p id="nome-arquivo"></p>
+            </div>
+
+            <input type="file" id="arquivo" accept=".xlsx">
+
+            <button class="enviar" id="btn-enviar" onclick="importarPlanilha()" disabled>Importar Planilha</button>
+        </div>
+    </main>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'index.html';
+
+        const inputArquivo = document.getElementById('arquivo');
+        const uploadArea = document.getElementById('upload-area');
+        const nomeArquivo = document.getElementById('nome-arquivo');
+        const btnEnviar = document.getElementById('btn-enviar');
+
+        inputArquivo.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                nomeArquivo.textContent = this.files[0].name;
+                btnEnviar.disabled = false;
+            }
+        });
+
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', function() {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) {
+                inputArquivo.files = e.dataTransfer.files;
+                nomeArquivo.textContent = e.dataTransfer.files[0].name;
+                btnEnviar.disabled = false;
+            }
+        });
+
+        async function importarPlanilha() {
+            const arquivo = inputArquivo.files[0];
+            if (!arquivo) return;
+
+            const formData = new FormData();
+            formData.append('file', arquivo);
+
+            btnEnviar.disabled = true;
+            btnEnviar.textContent = 'Importando...';
+
+            try {
+                const response = await fetch('http://localhost:8000/avaliacoes/importar', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    toast(data.message, 'sucesso');
+                    nomeArquivo.textContent = '';
+                    inputArquivo.value = '';
+                } else {
+                    toast(data.detail || 'Erro ao importar planilha', 'erro');
+                }
+            } catch (error) {
+                toast('Erro ao conectar com o servidor', 'erro');
+            } finally {
+                btnEnviar.disabled = false;
+                btnEnviar.textContent = 'Importar Planilha';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+
+</html>

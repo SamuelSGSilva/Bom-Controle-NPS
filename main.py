@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from database import engine, Base, SessionLocal
 from models import models
 from models.models import Usuario
-from routes import clientes, pos_venda, nps, auth, relatorios
+from routes import clientes, pos_venda, nps, auth, relatorios, avaliacoes
 from fastapi.middleware.cors import CORSMiddleware
 from auth import gerar_hash_senha
 import os
@@ -46,6 +46,7 @@ app.include_router(clientes.router)
 app.include_router(pos_venda.router)
 app.include_router(nps.router)
 app.include_router(relatorios.router)
+app.include_router(avaliacoes.router)
 
 @app.get("/")
 def root():

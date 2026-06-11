@@ -46,3 +46,33 @@ class Usuario(Base):
     username = Column(String(100), nullable=False, unique=True)
     hashed_password = Column(String(255), nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class Avaliacao(Base):
+    __tablename__ = "avaliacoes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    cliente_id = Column(Integer, ForeignKey("clientes.id"), nullable=False)
+    numero_os = Column(String(50), nullable=True)
+    produto_servico = Column(String(255), nullable=True)
+
+    nota_primeiro_contato = Column(Integer, nullable=True)
+    nota_clareza_informacoes = Column(Integer, nullable=True)
+    nota_processo_fechamento = Column(Integer, nullable=True)
+
+    nota_link_pagamento = Column(Integer, nullable=True)
+    nota_nota_fiscal = Column(Integer, nullable=True)
+
+    nota_entrega_prazo = Column(Integer, nullable=True)
+    nota_embalagem = Column(Integer, nullable=True)
+
+    nota_entrega_tecnica = Column(Integer, nullable=True)
+    nota_suporte_produto = Column(Integer, nullable=True)
+
+    avaliacao_geral = Column(Integer, nullable=True)
+    nps_score = Column(Integer, nullable=True)
+
+    o_que_gostou = Column(String(1000), nullable=True)
+    o_que_melhorar = Column(String(1000), nullable=True)
+
+    cs_responsavel = Column(String(100), nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
