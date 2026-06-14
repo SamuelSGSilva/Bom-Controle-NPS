@@ -287,7 +287,7 @@
         if (!token) window.location.href = 'index.html';
 
         async function carregarNPS() {
-            const response = await fetch('http://localhost:8000/relatorios/nps', {
+            const response = await fetch('http://localhost:8000/avaliacoes/relatorio/nps', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
@@ -298,6 +298,7 @@
                 document.getElementById('neutros').textContent = '--';
                 document.getElementById('detratores').textContent = '--';
                 document.getElementById('total').textContent = '0';
+                document.getElementById('classificacao').textContent = '--';
                 return;
             }
 
@@ -306,29 +307,28 @@
             document.getElementById('neutros').textContent = data.neutros;
             document.getElementById('detratores').textContent = data.detratores;
             document.getElementById('total').textContent = data.total_avaliacoes;
+
+            const npsValor = data.nps;
+            let classificacao = '';
+            let cor = '';
+
+            if (npsValor >= 75) {
+                classificacao = '🏆 Excelência';
+                cor = '#00cc66';
+            } else if (npsValor >= 50) {
+                classificacao = '✅ Qualidade';
+                cor = '#38bdf8';
+            } else if (npsValor >= 0) {
+                classificacao = '⚠️ Aperfeiçoamento';
+                cor = '#f59e0b';
+            } else {
+                classificacao = '🚨 Crítico';
+                cor = '#cc0000';
+            }
+
+            document.getElementById('classificacao').textContent = classificacao;
+            document.getElementById('classificacao').style.color = cor;
         }
-
-        // Classificação NPS
-        const npsValor = data.nps;
-        let classificacao = '';
-        let cor = '';
-
-        if (npsValor >= 75) {
-            classificacao = '🏆 Excelência';
-            cor = '#00cc66';
-        } else if (npsValor >= 50) {
-            classificacao = '✅ Qualidade';
-            cor = '#38bdf8';
-        } else if (npsValor >= 0) {
-            classificacao = '⚠️ Aperfeiçoamento';
-            cor = '#f59e0b';
-        } else {
-            classificacao = '🚨 Crítico';
-            cor = '#cc0000';
-        }
-
-        document.getElementById('classificacao').textContent = classificacao;
-        document.getElementById('classificacao').style.color = cor;
 
         async function buscarHistorico() {
             const id = document.getElementById('cliente-id').value;
