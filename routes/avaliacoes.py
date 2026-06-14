@@ -48,9 +48,95 @@ def criar_avaliacao(avaliacao: AvaliacaoSchema, db: Session = Depends(get_db), t
     db.refresh(nova)
     return nova
 
+@router.get("/avaliacoes/relatorio/nps")
+def relatorio_nps(db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
+    avaliacoes = db.query(Avaliacao).filter(Avaliacao.nps_score.isnot(None)).all()
+    total = len(avaliacoes)
+
+    if total == 0:
+        return {"message": "Nenhuma avaliação encontrada"}
+
+    promotores = len([a for a in avaliacoes if a.nps_score >= 9])
+    neutros = len([a for a in avaliacoes if 7 <= a.nps_score <= 8])
+    detratores = len([a for a in avaliacoes if a.nps_score <= 6])
+
+    nps = ((promotores - detratores) / total) * 100
+
+    return {
+        "total_avaliacoes": total,
+        "promotores": promotores,
+        "neutros": neutros,
+        "detratores": detratores,
+        "nps": round(nps, 2)
+    }
+
 @router.get("/avaliacoes/{cliente_id}")
 def buscar_avaliacoes_cliente(cliente_id: int, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
     return db.query(Avaliacao).filter(Avaliacao.cliente_id == cliente_id).all()
+
+@router.get("/avaliacoes/relatorio/painel")
+def painel_resultados(db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
+    avaliacoes = db.query(Avaliacao).all()
+    total = len(avaliacoes)
+
+    if total == 0:
+        return {"message": "Nenhuma avaliação encontrada"}
+
+    def media(campo):
+        valores = [getattr(a, campo) for a in avaliacoes if getattr(a, campo) is not None]
+        return round(sum(valores) / len(valores), 2) if valores else None
+
+    def status_nps(score):
+        if score >= 75: return "Excelência"
+        if score >= 50: return "Qualidade"
+        if score >= 0: return "Aperfeiçoamento"
+        return "Ponto de atenção"
+
+    notas_todas = []
+    campos_notas = [
+        'nota_primeiro_contato', 'nota_clareza_informacoes', 'nota_processo_fechamento',
+        'nota_link_pagamento', 'nota_nota_fiscal', 'nota_entrega_prazo',
+        'nota_embalagem', 'nota_entrega_tecnica', 'nota_suporte_produto', 'avaliacao_geral'
+    ]
+    for a in avaliacoes:
+        for campo in campos_notas:
+            v = getattr(a, campo)
+            if v is not None:
+                notas_todas.append(v)
+
+    media_geral = round(sum(notas_todas) / len(notas_todas), 2) if notas_todas else None
+    nota_min = min(notas_todas) if notas_todas else None
+    nota_max = max(notas_todas) if notas_todas else None
+
+    nps_scores = [a.nps_score for a in avaliacoes if a.nps_score is not None]
+    promotores = len([n for n in nps_scores if n >= 9])
+    detratores = len([n for n in nps_scores if n <= 6])
+    nps = round(((promotores - detratores) / len(nps_scores)) * 100, 2) if nps_scores else 0
+
+    return {
+        "resumo": {
+            "total_avaliacoes": total,
+            "media_geral": media_geral,
+            "nota_min": nota_min,
+            "nota_max": nota_max
+        },
+        "nps": {
+            "score": nps,
+            "status": status_nps(nps)
+        },
+        "medias_por_bloco": {
+            "vendas_primeiro_contato": media('nota_primeiro_contato'),
+            "vendas_clareza": media('nota_clareza_informacoes'),
+            "vendas_fechamento": media('nota_processo_fechamento'),
+            "financeiro_link": media('nota_link_pagamento'),
+            "financeiro_nf": media('nota_nota_fiscal'),
+            "transporte_prazo": media('nota_entrega_prazo'),
+            "transporte_embalagem": media('nota_embalagem'),
+            "suporte_entrega": media('nota_entrega_tecnica'),
+            "suporte_produto": media('nota_suporte_produto'),
+            "avaliacao_geral": media('avaliacao_geral')
+        }
+    }
 
 @router.post("/avaliacoes/importar")
 async def importar_planilha(file: UploadFile = File(...), db: Session = Depends(get_db), token: dict = Depends(verificar_token)):

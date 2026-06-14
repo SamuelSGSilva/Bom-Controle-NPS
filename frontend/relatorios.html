@@ -207,9 +207,9 @@
                 <p id="total">--</p>
             </div>
             <div class="card">
-            <h3>Zona NPS</h3>
-            <p id="classificacao" style="font-size: 20px;">--</p>
-        </div>
+                <h3>Zona NPS</h3>
+                <p id="classificacao" style="font-size: 20px;">--</p>
+            </div>
         </div>
 
         <h2>Histórico do Cliente</h2>
@@ -219,6 +219,67 @@
         </div>
 
         <div class="historico" id="historico" style="display:none"></div>
+
+        <div id="painel" style="margin-top: 40px;">
+            <h2 style="margin-bottom: 20px; font-size: 18px;">Painel de Resultados</h2>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
+
+                <div style="background: #141414; border-radius: 12px; padding: 24px; border-left: 4px solid #cc0000;">
+                    <h3
+                        style="color: #888; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">
+                        Resumo Geral</h3>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr style="border-bottom: 1px solid #2a2a2a;">
+                            <td style="padding: 10px 0; color: #ccc; font-size: 14px;">Total de avaliações</td>
+                            <td style="padding: 10px 0; color: #fff; font-weight: 700; text-align: right;" id="p-total">
+                                --</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #2a2a2a;">
+                            <td style="padding: 10px 0; color: #ccc; font-size: 14px;">Média geral</td>
+                            <td style="padding: 10px 0; color: #fff; font-weight: 700; text-align: right;" id="p-media">
+                                --</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #2a2a2a;">
+                            <td style="padding: 10px 0; color: #ccc; font-size: 14px;">Nota mais baixa</td>
+                            <td style="padding: 10px 0; color: #fff; font-weight: 700; text-align: right;" id="p-min">--
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px 0; color: #ccc; font-size: 14px;">Nota mais alta</td>
+                            <td style="padding: 10px 0; color: #fff; font-weight: 700; text-align: right;" id="p-max">--
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div style="background: #141414; border-radius: 12px; padding: 24px; border-left: 4px solid #cc0000;">
+                    <h3
+                        style="color: #888; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">
+                        NPS</h3>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr style="border-bottom: 1px solid #2a2a2a;">
+                            <td style="padding: 10px 0; color: #ccc; font-size: 14px;">Score NPS</td>
+                            <td style="padding: 10px 0; font-weight: 700; text-align: right; font-size: 24px;"
+                                id="p-nps">--</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px 0; color: #ccc; font-size: 14px;">Status</td>
+                            <td style="padding: 10px 0; font-weight: 700; text-align: right;" id="p-status">--</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div style="background: #141414; border-radius: 12px; padding: 24px; border-left: 4px solid #cc0000;">
+                <h3
+                    style="color: #888; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">
+                    Médias por Bloco</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tbody id="p-blocos"></tbody>
+                </table>
+            </div>
+        </div>
     </main>
 
     <script>
@@ -296,12 +357,60 @@
             `;
         }
 
+        async function carregarPainel() {
+            const response = await fetch('http://localhost:8000/avaliacoes/relatorio/painel', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+
+            if (data.message) return;
+
+            document.getElementById('p-total').textContent = data.resumo.total_avaliacoes;
+            document.getElementById('p-media').textContent = data.resumo.media_geral ?? '--';
+            document.getElementById('p-min').textContent = data.resumo.nota_min ?? '--';
+            document.getElementById('p-max').textContent = data.resumo.nota_max ?? '--';
+
+            const npsEl = document.getElementById('p-nps');
+            npsEl.textContent = data.nps.score;
+            npsEl.style.color = data.nps.score >= 50 ? '#00cc66' : data.nps.score >= 0 ? '#f59e0b' : '#cc0000';
+
+            const statusEl = document.getElementById('p-status');
+            statusEl.textContent = data.nps.status;
+            statusEl.style.color = data.nps.score >= 50 ? '#00cc66' : data.nps.score >= 0 ? '#f59e0b' : '#cc0000';
+
+            const blocos = [
+                ['Vendas — Primeiro contato', data.medias_por_bloco.vendas_primeiro_contato],
+                ['Vendas — Clareza das informações', data.medias_por_bloco.vendas_clareza],
+                ['Vendas — Processo de fechamento', data.medias_por_bloco.vendas_fechamento],
+                ['Financeiro — Link de pagamento', data.medias_por_bloco.financeiro_link],
+                ['Financeiro — Nota fiscal', data.medias_por_bloco.financeiro_nf],
+                ['Transporte — Entrega no prazo', data.medias_por_bloco.transporte_prazo],
+                ['Transporte — Embalagem/sem avarias', data.medias_por_bloco.transporte_embalagem],
+                ['Suporte — Entrega técnica', data.medias_por_bloco.suporte_entrega],
+                ['Suporte — Suporte ao produto', data.medias_por_bloco.suporte_produto],
+                ['Avaliação geral da empresa', data.medias_por_bloco.avaliacao_geral],
+            ];
+
+            const tbody = document.getElementById('p-blocos');
+            blocos.forEach(([label, valor]) => {
+                const estrela = valor >= 4.5 ? '★ Ótimo' : valor >= 3 ? '★ Bom' : valor ? '★ Regular' : '--';
+                const cor = valor >= 4.5 ? '#00cc66' : valor >= 3 ? '#f59e0b' : '#cc0000';
+                tbody.innerHTML += `
+            <tr style="border-bottom: 1px solid #2a2a2a;">
+                <td style="padding: 10px 0; color: #ccc; font-size: 14px;">${label}</td>
+                <td style="padding: 10px 0; font-weight: 700; text-align: center; width: 60px; color: #fff;">${valor ?? '--'}</td>
+                <td style="padding: 10px 0; font-size: 13px; color: ${cor}; text-align: right;">${valor ? estrela : ''}</td>
+            </tr>`;
+            });
+        }
+
         function logout() {
             localStorage.removeItem('token');
             window.location.href = 'index.html';
         }
 
         carregarNPS();
+        carregarPainel();
     </script>
 </body>
 

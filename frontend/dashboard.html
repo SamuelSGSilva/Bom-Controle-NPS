@@ -115,6 +115,7 @@
             <a href="clientes.html">Clientes</a>
             <a href="posvendas.html">Pós-venda</a>
             <a href="relatorios.html">Relatórios</a>
+            <a href="avaliacao-completa.html">Avaliações</a>
             <a href="importar.html">Importar</a>
         </nav>
         <button onclick="logout()"> Sair</button>
@@ -198,7 +199,7 @@
         if (!token) window.location.href = 'index.html';
 
         async function carregarNPS() {
-            const response = await fetch('http://localhost:8000/relatorios/nps', {
+            const response = await fetch('http://localhost:8000/avaliacoes/relatorio/nps', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
@@ -219,7 +220,7 @@
             document.getElementById('total').textContent = data.total_avaliacoes;
 
             renderizarGrafico(data.promotores, data.neutros, data.detratores);
-            
+
         }
 
         async function carregarResumo() {
@@ -243,7 +244,7 @@
 
         async function carregarUltimasAvaliacoes() {
             const [resNPS, resCli] = await Promise.all([
-                fetch('http://localhost:8000/nps/lista', { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch('http://localhost:8000/avaliacoes', { headers: { 'Authorization': `Bearer ${token}` } }),
                 fetch('http://localhost:8000/clientes', { headers: { 'Authorization': `Bearer ${token}` } })
             ]);
 
@@ -251,21 +252,23 @@
             const clientes = await resCli.json();
             const tabela = document.getElementById('tabela-ultimas-avaliacoes');
 
-            if (!avaliacoes.length) {
+            const comNPS = avaliacoes.filter(a => a.nps_score !== null);
+
+            if (!comNPS.length) {
                 tabela.innerHTML = '<tr><td colspan="3" style="color:#888; text-align:center; padding:20px;">Nenhuma avaliação</td></tr>';
                 return;
             }
 
-            const ultimas = avaliacoes.slice(-5).reverse();
+            const ultimas = comNPS.slice(-5).reverse();
             ultimas.forEach(a => {
                 const cliente = clientes.find(c => c.id === a.cliente_id);
                 const nome = cliente ? cliente.nome : `ID ${a.cliente_id}`;
                 const cores = { promotor: '#00cc66', neutro: '#f59e0b', detrator: '#cc0000' };
-                const tipo = a.score >= 9 ? 'promotor' : a.score >= 7 ? 'neutro' : 'detrator';
+                const tipo = a.nps_score >= 9 ? 'promotor' : a.nps_score >= 7 ? 'neutro' : 'detrator';
                 tabela.innerHTML += `
             <tr style="border-bottom: 1px solid #2a2a2a;">
                 <td style="padding: 10px 8px; font-size: 13px; color: #cccccc;">${nome}</td>
-                <td style="padding: 10px 8px;"><span style="color: ${cores[tipo]}; font-weight: 700;">${a.score}</span>/10</td>
+                <td style="padding: 10px 8px;"><span style="color: ${cores[tipo]}; font-weight: 700;">${a.nps_score}</span>/10</td>
                 <td style="padding: 10px 8px; font-size: 12px; color: #888888;">${new Date(a.created_at).toLocaleDateString('pt-BR')}</td>
             </tr>`;
             });
