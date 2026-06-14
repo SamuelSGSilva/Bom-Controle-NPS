@@ -172,127 +172,132 @@
     </header>
 
     <main>
-    <div class="card-cliente" id="dados-cliente">
-        <h2 id="nome-cliente">Carregando...</h2>
-        <div class="info-grid">
-            <div class="info-item">
-                <label>E-mail</label>
-                <span id="email-cliente">--</span>
-            </div>
-            <div class="info-item">
-                <label>Telefone</label>
-                <span id="telefone-cliente">--</span>
-            </div>
-            <div class="info-item">
-                <label>CPF</label>
-                <span id="cpf-cliente">--</span>
-            </div>
-            <div class="info-item">
-                <label>CNPJ</label>
-                <span id="cnpj-cliente">--</span>
-            </div>
-            <div class="info-item">
-                <label>Cidade/Estado</label>
-                <span id="cidade-cliente">--</span>
-            </div>
-            <div class="info-item">
-                <label>Cadastrado em</label>
-                <span id="data-cliente">--</span>
+        <div class="card-cliente" id="dados-cliente">
+            <h2 id="nome-cliente">Carregando...</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>E-mail</label>
+                    <span id="email-cliente">--</span>
+                </div>
+                <div class="info-item">
+                    <label>Telefone</label>
+                    <span id="telefone-cliente">--</span>
+                </div>
+                <div class="info-item">
+                    <label>CPF</label>
+                    <span id="cpf-cliente">--</span>
+                </div>
+                <div class="info-item">
+                    <label>CNPJ</label>
+                    <span id="cnpj-cliente">--</span>
+                </div>
+                <div class="info-item">
+                    <label>Cidade/Estado</label>
+                    <span id="cidade-cliente">--</span>
+                </div>
+                <div class="info-item">
+                    <label>Cadastrado em</label>
+                    <span id="data-cliente">--</span>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="secao">
-        <h3>Pós-vendas</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Status</th>
-                    <th>Feedback</th>
-                    <th>Data de Retorno</th>
-                </tr>
-            </thead>
-            <tbody id="tabela-posvendas"></tbody>
-        </table>
-    </div>
-
-    <div class="secao">
-        <h3>Avaliações NPS</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Nota</th>
-                    <th>Feedback</th>
-                    <th>Data</th>
-                </tr>
-            </thead>
-            <tbody id="tabela-nps"></tbody>
-        </table>
-    </div>
-</main>
-
-<script>
-    const token = localStorage.getItem('token');
-    if (!token) window.location.href = 'index.html';
-
-    const params = new URLSearchParams(window.location.search);
-    const clienteId = params.get('id');
-
-    async function carregarHistorico() {
-        const response = await fetch(`http://localhost:8000/relatorios/clientes/${clienteId}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await response.json();
-
-        const c = data.cliente;
-        document.getElementById('nome-cliente').textContent = c.nome;
-        document.getElementById('email-cliente').textContent = c.email || '--';
-        document.getElementById('telefone-cliente').textContent = c.telefone || '--';
-        document.getElementById('cpf-cliente').textContent = c.cpf || '--';
-        document.getElementById('cnpj-cliente').textContent = c.cnpj || '--';
-        document.getElementById('cidade-cliente').textContent = `${c.cidade || '--'}/${c.estado || '--'}`;
-        document.getElementById('data-cliente').textContent = c.created_at ? new Date(c.created_at).toLocaleString('pt-BR') : '--';
-        
-        console.log(c.created_at);
-        // Pós-vendas
-        const tabelaPV = document.getElementById('tabela-posvendas');
-        if (data.pos_vendas.length === 0) {
-            tabelaPV.innerHTML = '<tr><td colspan="3" class="vazio">Nenhum pós-venda registrado</td></tr>';
-        } else {
-            const cores = { 'pendente': '#f59e0b', 'em andamento': '#38bdf8', 'concluido': '#00cc66' };
-            data.pos_vendas.forEach(pv => {
-                const cor = cores[pv.status] || '#888888';
-                tabelaPV.innerHTML += `
+        <div class="secao">
+            <h3>Pós-vendas</h3>
+            <table>
+                <thead>
                     <tr>
-                        <td><span style="color:${cor}; font-weight:600;">● ${pv.status}</span></td>
-                        <td>${pv.feedback || '--'}</td>
-                        <td>${pv.data_retorno ? new Date(pv.data_retorno).toLocaleDateString('pt-BR') : '--'}</td>
-                    </tr>`;
+                        <th>Status</th>
+                        <th>Feedback</th>
+                        <th>Data de Retorno</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-posvendas"></tbody>
+            </table>
+        </div>
+
+        <div class="secao">
+            <h3>Avaliações NPS</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nota</th>
+                        <th>Feedback</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-nps"></tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'index.html';
+
+        const params = new URLSearchParams(window.location.search);
+        const clienteId = params.get('id');
+
+        async function carregarHistorico() {
+            const response = await fetch(`http://localhost:8000/relatorios/clientes/${clienteId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
             });
+            const data = await response.json();
+
+            const c = data.cliente;
+            document.getElementById('nome-cliente').textContent = c.nome;
+            document.getElementById('email-cliente').textContent = c.email || '--';
+            document.getElementById('telefone-cliente').textContent = c.telefone || '--';
+            document.getElementById('cpf-cliente').textContent = c.cpf || '--';
+            document.getElementById('cnpj-cliente').textContent = c.cnpj || '--';
+            document.getElementById('cidade-cliente').textContent = `${c.cidade || '--'}/${c.estado || '--'}`;
+            document.getElementById('data-cliente').textContent = c.created_at ? new Date(c.created_at).toLocaleString('pt-BR') : '--';
+
+            // Pós-vendas
+            const tabelaPV = document.getElementById('tabela-posvendas');
+            if (data.pos_vendas.length === 0) {
+                tabelaPV.innerHTML = '<tr><td colspan="3" class="vazio">Nenhum pós-venda registrado</td></tr>';
+            } else {
+                const cores = { 'pendente': '#f59e0b', 'em andamento': '#38bdf8', 'concluido': '#00cc66' };
+                data.pos_vendas.forEach(pv => {
+                    const cor = cores[pv.status] || '#888888';
+                    tabelaPV.innerHTML += `
+                <tr>
+                    <td><span style="color:${cor}; font-weight:600;">● ${pv.status}</span></td>
+                    <td>${pv.feedback || '--'}</td>
+                    <td>${pv.data_retorno ? new Date(pv.data_retorno).toLocaleDateString('pt-BR') : '--'}</td>
+                </tr>`;
+                });
+            }
+
+            // Avaliações - nova tabela
+            const resAvaliacoes = await fetch(`http://localhost:8000/avaliacoes/${clienteId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const avaliacoes = await resAvaliacoes.json();
+
+            const tabelaNPS = document.getElementById('tabela-nps');
+            if (avaliacoes.length === 0) {
+                tabelaNPS.innerHTML = '<tr><td colspan="3" class="vazio">Nenhuma avaliação registrada</td></tr>';
+            } else {
+                avaliacoes.forEach(a => {
+                    tabelaNPS.innerHTML += `
+                <tr>
+                    <td><strong>${a.nps_score ?? '--'}</strong>/10</td>
+                    <td>${a.consideracoes || a.o_que_gostou || '--'}</td>
+                    <td>${new Date(a.created_at).toLocaleDateString('pt-BR')}</td>
+                </tr>`;
+                });
+            }
         }
 
-        // NPS
-        const tabelaNPS = document.getElementById('tabela-nps');
-        if (data.avaliacoes_nps.length === 0) {
-            tabelaNPS.innerHTML = '<tr><td colspan="3" class="vazio">Nenhuma avaliação registrada</td></tr>';
-        } else {
-            data.avaliacoes_nps.forEach(a => {
-                tabelaNPS.innerHTML += `
-                    <tr>
-                        <td><strong>${a.score}</strong>/10</td>
-                        <td>${a.feedback || '--'}</td>
-                        <td>${new Date(a.created_at).toLocaleString('pt-BR')}</td>
-                    </tr>`;
-            });
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'index.html';
         }
-    }
 
-    function logout() {
-        localStorage.removeItem('token');
-        window.location.href = 'index.html';
-    }
-
-    carregarHistorico();
-</script>
+        carregarHistorico();
+    </script>
 </body>
+
 </html>

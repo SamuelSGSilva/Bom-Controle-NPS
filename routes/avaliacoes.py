@@ -168,22 +168,26 @@ async def importar_planilha(file: UploadFile = File(...), db: Session = Depends(
             db.refresh(cliente)
 
         nova = Avaliacao(
-            cliente_id=cliente.id,
-            numero_os=str(row[1]) if row[1] else None,
-            produto_servico=row[4],
-            nota_primeiro_contato=row[5],
-            nota_clareza_informacoes=row[6],
-            nota_processo_fechamento=row[7],
-            nota_link_pagamento=row[8],
-            nota_nota_fiscal=row[9],
-            nota_entrega_prazo=row[10],
-            nota_embalagem=row[11],
-            nota_entrega_tecnica=row[12],
-            nota_suporte_produto=row[13],
-            nps_score=row[14],
-            o_que_gostou=row[15] if row[15] else None,
-            cs_responsavel=row[18] if len(row) > 18 else None
-        )
+        cliente_id=cliente.id,
+        numero_os=str(row[1]) if row[1] else None,
+        produto_servico=row[4],
+        data_atendimento=row[0] if row[0] else None,
+        cidade_estado=row[3] if row[3] else None,
+        nota_primeiro_contato=row[5],
+        nota_clareza_informacoes=row[6],
+        nota_processo_fechamento=row[7],
+        nota_link_pagamento=row[8],
+        nota_nota_fiscal=row[9],
+        nota_entrega_prazo=row[10],
+        nota_embalagem=row[11],
+        nota_entrega_tecnica=row[12],
+        nota_suporte_produto=row[13],
+        nps_score=row[14],
+        consideracoes=row[15] if row[15] else None,
+        media_geral=row[16] if row[16] else None,
+        resp_entrega_tecnica=row[17] if row[17] else None,
+        cs_responsavel=row[18] if len(row) > 18 else None
+    )
         db.add(nova)
         importados += 1
 
