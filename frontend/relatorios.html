@@ -214,7 +214,7 @@
 
         <h2>Histórico do Cliente</h2>
         <div class="busca">
-            <input type="number" id="cliente-id" placeholder="Digite o ID do cliente">
+            <input type="text" id="cliente-id" placeholder="Digite o nome do cliente">
             <button onclick="buscarHistorico()">Buscar</button>
         </div>
 
@@ -331,32 +331,31 @@
         }
 
         async function buscarHistorico() {
-            const id = document.getElementById('cliente-id').value;
-            if (!id) return alert('Digite o ID do cliente!');
+            const nome = document.getElementById('cliente-id').value;
+            if (!nome) return alert('Digite o nome do cliente!');
 
-            const response = await fetch(`http://localhost:8000/relatorios/clientes/${id}`, {
+            const response = await fetch(`http://localhost:8000/relatorios/clientes/buscar/${encodeURIComponent(nome)}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
 
-            if (data.message) return alert(data.message);
+            if (data.detail) return alert('Cliente não encontrado!');
 
             const div = document.getElementById('historico');
             div.style.display = 'block';
             div.innerHTML = `
-                <h3>Cliente: ${data.cliente.nome}</h3>
-                <p>E-mail: <span>${data.cliente.email}</span></p>
-                <p>Telefone: <span>${data.cliente.telefone || '--'}</span></p>
-                <p>CPF: <span>${data.cliente.cpf || '--'}</span></p>
-                <br>
-                <h3>Pós-vendas (${data.pos_vendas.length})</h3>
-                ${data.pos_vendas.map(pv => `<p>Status: <span>${pv.status}</span> | Feedback: <span>${pv.feedback || '--'}</span></p>`).join('')}
-                <br>
-                <h3>Avaliações NPS (${data.avaliacoes_nps.length})</h3>
-                ${data.avaliacoes_nps.map(a => `<p>Nota: <span>${a.score}</span> | Feedback: <span>${a.feedback || '--'}</span></p>`).join('')}
-            `;
+        <h3>Cliente: ${data.cliente.nome}</h3>
+        <p>E-mail: <span>${data.cliente.email}</span></p>
+        <p>Telefone: <span>${data.cliente.telefone || '--'}</span></p>
+        <p>CPF: <span>${data.cliente.cpf || '--'}</span></p>
+        <br>
+        <h3>Pós-vendas (${data.pos_vendas.length})</h3>
+        ${data.pos_vendas.map(pv => `<p>Status: <span>${pv.status}</span> | Feedback: <span>${pv.feedback || '--'}</span></p>`).join('')}
+        <br>
+        <h3>Avaliações NPS (${data.avaliacoes_nps.length})</h3>
+        ${data.avaliacoes_nps.map(a => `<p>Nota: <span>${a.score}</span> | Feedback: <span>${a.feedback || '--'}</span></p>`).join('')}
+    `;
         }
-
         async function carregarPainel() {
             const response = await fetch('http://localhost:8000/avaliacoes/relatorio/painel', {
                 headers: { 'Authorization': `Bearer ${token}` }

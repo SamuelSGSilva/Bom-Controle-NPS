@@ -28,6 +28,32 @@ def relatorio_nps(db: Session = Depends(get_db), token: dict = Depends(verificar
         "nps": round(nps, 2)
     }
 
+@router.get("/relatorios/clientes/buscar/{nome}")
+def buscar_cliente_por_nome(nome: str, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
+    from models.models import Cliente
+    cliente = db.query(Cliente).filter(Cliente.nome.ilike(f"%{nome}%")).first()
+    if not cliente:
+        raise HTTPException(status_code=404, detail="Cliente não encontrado")
+
+    pos_vendas = db.query(PosVenda).filter(PosVenda.cliente_id == cliente.id).all()
+    avaliacoes_nps = db.query(AvaliacaoNPS).filter(AvaliacaoNPS.cliente_id == cliente.id).all()
+
+    return {
+        "cliente": {
+            "id": cliente.id,
+            "nome": cliente.nome,
+            "email": cliente.email,
+            "telefone": cliente.telefone,
+            "cpf": cliente.cpf,
+            "cnpj": cliente.cnpj,
+            "cidade": cliente.cidade,
+            "estado": cliente.estado,
+            "created_at": cliente.created_at.isoformat() if cliente.created_at else None
+        },
+        "pos_vendas": pos_vendas,
+        "avaliacoes_nps": avaliacoes_nps
+    }
+
 @router.get("/relatorios/clientes/{cliente_id}")
 def relatorio_cliente(cliente_id: int, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
     cliente = db.query(Cliente).filter(Cliente.id == cliente_id).first()
