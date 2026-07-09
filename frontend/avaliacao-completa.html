@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pesquisa de Satisfação - AutoLuiz</title>
     <link rel="icon" type="image/png" href="assets/favicon.png">
+    <script src="toast.js"></script>
 
     <style>
         * {
@@ -25,6 +26,63 @@
             background: #141414;
             padding: 16px 32px;
             border-bottom: 3px solid #cc0000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header nav {
+            display: flex;
+            gap: 24px;
+        }
+
+        header nav a {
+            color: #888888;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        header nav a:hover {
+            color: #cc0000;
+        }
+
+        header nav a.ativo {
+            color: #cc0000;
+            font-weight: 600;
+        }
+
+        header button {
+            background: transparent;
+            border: 1px solid #cc0000;
+            color: #cc0000;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        header button:hover {
+            background: #cc0000;
+            color: #fff;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px 16px;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            color: #f1f1f1;
+            font-size: 14px;
+            outline: none;
+            transition: border 0.2s;
+            font-family: inherit;
+        }
+
+        select:focus {
+            border-color: #cc0000;
         }
 
         main {
@@ -220,6 +278,15 @@
 <body>
     <header>
         <img src="assets/logo.png" style="height: 40px;">
+        <nav id="nav-interno" style="display:none;">
+            <a href="dashboard.html">Dashboard</a>
+            <a href="clientes.html">Clientes</a>
+            <a href="posvendas.html">Pós-venda</a>
+            <a href="relatorios.html">Relatórios</a>
+            <a href="avaliacao-completa.html" class="ativo">Avaliações</a>
+            <a href="importar.html">Importar</a>
+        </nav>
+        <button id="btn-sair" onclick="logout()" style="display:none;">Sair</button>
     </header>
 
     <main>
@@ -232,6 +299,18 @@
                 <h2>Vamos começar!</h2>
                 <p class="subtitulo">Confirme alguns dados do seu atendimento</p>
 
+                <div class="pergunta" id="campo-cliente" style="display:none;">
+                    <label>Cliente</label>
+                    <select id="cliente_id">
+                        <option value="">Selecione o cliente</option>
+                    </select>
+                </div>
+
+                <div class="pergunta" id="campo-cs-responsavel" style="display:none;">
+                    <label>CS Responsável pela ligação</label>
+                    <input type="text" id="cs_responsavel" placeholder="Ex: Maria">
+                </div>
+
                 <div class="pergunta">
                     <label>Número da OS (Ordem de Serviço)</label>
                     <input type="text" id="numero_os" placeholder="Ex: 12345">
@@ -240,6 +319,11 @@
                 <div class="pergunta">
                     <label>Produto / Serviço</label>
                     <input type="text" id="produto_servico" placeholder="Ex: Bomba injetora Bosch">
+                </div>
+
+                <div class="pergunta">
+                    <label>Cidade / Estado</label>
+                    <input type="text" id="cidade_estado" placeholder="Ex: São Paulo / SP">
                 </div>
             </div>
 
@@ -259,6 +343,13 @@
                     <span class="categoria">Vendas</span>
                     <label>As informações sobre o produto foram claras e completas?</label>
                     <div class="notas" data-campo="nota_clareza_informacoes"></div>
+                    <div class="legenda"><span>Muito ruim</span><span>Excelente</span></div>
+                </div>
+
+                <div class="pergunta">
+                    <span class="categoria">Vendas</span>
+                    <label>Como você avalia o processo de fechamento da compra?</label>
+                    <div class="notas" data-campo="nota_processo_fechamento"></div>
                     <div class="legenda"><span>Muito ruim</span><span>Excelente</span></div>
                 </div>
             </div>
@@ -372,15 +463,23 @@
 
     <script>
         const params = new URLSearchParams(window.location.search);
-        const clienteId = parseInt(params.get('cliente_id'));
+        const clienteIdParam = params.get('cliente_id');
+        const modoInterno = !clienteIdParam;
+        const token = localStorage.getItem('token');
+
+        if (modoInterno && !token) {
+            window.location.href = 'index.html';
+        }
 
         const totalEtapas = 7;
         let etapaAtual = 1;
 
         const respostas = {
-            cliente_id: clienteId,
+            cliente_id: modoInterno ? null : parseInt(clienteIdParam),
             numero_os: null,
             produto_servico: null,
+            data_atendimento: null,
+            cidade_estado: null,
             nota_primeiro_contato: null,
             nota_clareza_informacoes: null,
             nota_processo_fechamento: null,
@@ -396,6 +495,33 @@
             o_que_melhorar: null,
             cs_responsavel: null
         };
+
+        if (modoInterno) {
+            document.getElementById('nav-interno').style.display = 'flex';
+            document.getElementById('btn-sair').style.display = 'block';
+            document.getElementById('campo-cliente').style.display = 'block';
+            document.getElementById('campo-cs-responsavel').style.display = 'block';
+
+            fetch('http://localhost:8000/clientes', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+                .then(response => response.json())
+                .then(clientes => {
+                    const select = document.getElementById('cliente_id');
+                    clientes.forEach(cliente => {
+                        const option = document.createElement('option');
+                        option.value = cliente.id;
+                        option.textContent = cliente.nome;
+                        select.appendChild(option);
+                    });
+                })
+                .catch(() => toast('Erro ao carregar clientes', 'erro'));
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'index.html';
+        }
 
         // Gera os botões de notas (1-5 ou 0-10)
         document.querySelectorAll('.notas').forEach(container => {
@@ -449,15 +575,33 @@
         }
 
         async function enviarAvaliacao() {
+            if (modoInterno) {
+                respostas.cliente_id = parseInt(document.getElementById('cliente_id').value) || null;
+                respostas.cs_responsavel = document.getElementById('cs_responsavel').value || null;
+
+                if (!respostas.cliente_id) {
+                    toast('Selecione o cliente antes de enviar', 'aviso');
+                    return;
+                }
+            }
+
             respostas.numero_os = document.getElementById('numero_os').value || null;
             respostas.produto_servico = document.getElementById('produto_servico').value || null;
+            respostas.cidade_estado = document.getElementById('cidade_estado').value || null;
+            respostas.data_atendimento = new Date().toISOString();
             respostas.o_que_gostou = document.getElementById('o_que_gostou').value || null;
             respostas.o_que_melhorar = document.getElementById('o_que_melhorar').value || null;
 
+            const url = modoInterno
+                ? 'http://localhost:8000/avaliacoes'
+                : 'http://localhost:8000/avaliacoes/publico';
+            const headers = { 'Content-Type': 'application/json' };
+            if (modoInterno) headers['Authorization'] = `Bearer ${token}`;
+
             try {
-                const response = await fetch('http://localhost:8000/avaliacoes/publico', {
+                const response = await fetch(url, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers,
                     body: JSON.stringify(respostas)
                 });
 
@@ -465,10 +609,11 @@
                     document.getElementById('formulario').style.display = 'none';
                     document.getElementById('agradecimento').style.display = 'block';
                 } else {
-                    alert('Erro ao enviar avaliação. Tente novamente.');
+                    const data = await response.json().catch(() => ({}));
+                    toast(data.detail || 'Erro ao enviar avaliação. Tente novamente.', 'erro');
                 }
             } catch (error) {
-                alert('Erro ao conectar com o servidor.');
+                toast('Erro ao conectar com o servidor.', 'erro');
             }
         }
     </script>

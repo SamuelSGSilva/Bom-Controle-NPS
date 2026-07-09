@@ -1,3 +1,4 @@
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 from database import get_db
@@ -6,6 +7,7 @@ from pydantic import BaseModel
 from auth import verificar_token
 import openpyxl
 from io import BytesIO
+from services.google_sheets_sync import buscar_registros_google_sheets, converter_linha_para_payload
 
 router = APIRouter()
 
@@ -13,6 +15,8 @@ class AvaliacaoSchema(BaseModel):
     cliente_id: int
     numero_os: str | None = None
     produto_servico: str | None = None
+    data_atendimento: datetime | None = None
+    cidade_estado: str | None = None
     nota_primeiro_contato: int | None = None
     nota_clareza_informacoes: int | None = None
     nota_processo_fechamento: int | None = None
@@ -167,29 +171,42 @@ async def importar_planilha(file: UploadFile = File(...), db: Session = Depends(
             db.commit()
             db.refresh(cliente)
 
-        nova = Avaliacao(
-        cliente_id=cliente.id,
-        numero_os=str(row[1]) if row[1] else None,
-        produto_servico=row[4],
-        data_atendimento=row[0] if row[0] else None,
-        cidade_estado=row[3] if row[3] else None,
-        nota_primeiro_contato=row[5],
-        nota_clareza_informacoes=row[6],
-        nota_processo_fechamento=row[7],
-        nota_link_pagamento=row[8],
-        nota_nota_fiscal=row[9],
-        nota_entrega_prazo=row[10],
-        nota_embalagem=row[11],
-        nota_entrega_tecnica=row[12],
-        nota_suporte_produto=row[13],
-        nps_score=row[14],
-        consideracoes=row[15] if row[15] else None,
-        media_geral=row[16] if row[16] else None,
-        resp_entrega_tecnica=row[17] if row[17] else None,
-        cs_responsavel=row[18] if len(row) > 18 else None
-    )
+        payload, _ = converter_linha_para_payload(list(row), i)
+        if not payload:
+            continue
+
+        nova = Avaliacao(cliente_id=cliente.id, **payload)
         db.add(nova)
         importados += 1
 
     db.commit()
     return {"message": f"{importados} avaliações importadas com sucesso!"}
+
+
+@router.post("/avaliacoes/importar-google-sheets")
+def importar_google_sheets(db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
+    try:
+        rows = buscar_registros_google_sheets()
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+    importados = 0
+
+    for i, row in enumerate(rows[3:], start=4):
+        payload, nome_cliente = converter_linha_para_payload(row, i)
+        if not payload or not nome_cliente:
+            continue
+
+        cliente = db.query(Cliente).filter(Cliente.nome == nome_cliente).first()
+        if not cliente:
+            cliente = Cliente(nome=nome_cliente, email=f"sem-email-{i}@autoluiz.com")
+            db.add(cliente)
+            db.commit()
+            db.refresh(cliente)
+
+        nova = Avaliacao(cliente_id=cliente.id, **payload)
+        db.add(nova)
+        importados += 1
+
+    db.commit()
+    return {"message": f"{importados} avaliações importadas do Google Sheets com sucesso!"}
