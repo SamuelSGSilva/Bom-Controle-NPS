@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Histórico</title>
     <link rel="icon" type="image/png" href="assets/favicon.png">
+    <script src="toast.js"></script>
 
     <style>
         * {
@@ -161,6 +162,63 @@
             text-align: center;
             padding: 20px;
         }
+
+        .card-bloqueio {
+            display: none;
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .card-bloqueio.sugestao {
+            background: #2a1a00;
+            border-left: 4px solid #f59e0b;
+        }
+
+        .card-bloqueio.bloqueado {
+            background: #2a0000;
+            border-left: 4px solid #cc0000;
+        }
+
+        .card-bloqueio p {
+            font-size: 14px;
+            color: #f1f1f1;
+        }
+
+        .card-bloqueio button {
+            border: none;
+            border-radius: 8px;
+            padding: 10px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-bloquear {
+            background: #cc0000;
+            color: #fff;
+        }
+
+        .btn-bloquear:hover {
+            background: #aa0000;
+        }
+
+        .btn-desbloquear {
+            background: transparent;
+            border: 1px solid #cc0000;
+            color: #cc0000;
+        }
+
+        .btn-desbloquear:hover {
+            background: #cc0000;
+            color: #fff;
+        }
     </style>
     <link rel="stylesheet" href="responsive.css">
 </head>
@@ -211,6 +269,16 @@
             </div>
         </div>
 
+        <div class="card-bloqueio sugestao" id="card-sugestao-bloqueio">
+            <p>⚠️ Este cliente deu uma avaliação NPS baixa (nota <strong id="nota-baixa">--</strong>). Considere bloquear o cadastro no BomControle.</p>
+            <button class="btn-bloquear" id="btn-bloquear" onclick="alterarBloqueio(true)">Bloquear Cliente</button>
+        </div>
+
+        <div class="card-bloqueio bloqueado" id="card-cliente-bloqueado">
+            <p>🚫 Este cliente está bloqueado no BomControle.</p>
+            <button class="btn-desbloquear" id="btn-desbloquear" onclick="alterarBloqueio(false)">Desbloquear</button>
+        </div>
+
         <div class="secao">
             <h3>Pós-vendas</h3>
             <table>
@@ -246,6 +314,8 @@
 
         const params = new URLSearchParams(window.location.search);
         const clienteId = params.get('id');
+        const NOTA_LIMITE_SUGESTAO_BLOQUEIO = 3;
+        let clienteAtual = null;
 
         async function carregarHistorico() {
             const response = await fetch(`http://localhost:8000/relatorios/clientes/${clienteId}`, {
@@ -254,6 +324,7 @@
             const data = await response.json();
 
             const c = data.cliente;
+            clienteAtual = c;
             document.getElementById('nome-cliente').textContent = c.nome;
             document.getElementById('email-cliente').textContent = c.email || '--';
             document.getElementById('telefone-cliente').textContent = c.telefone || '--';
@@ -297,6 +368,61 @@
                     <td data-label="Data">${new Date(a.created_at).toLocaleDateString('pt-BR')}</td>
                 </tr>`;
                 });
+            }
+
+            atualizarCardBloqueio(c, avaliacoes);
+        }
+
+        function atualizarCardBloqueio(cliente, avaliacoes) {
+            const cardSugestao = document.getElementById('card-sugestao-bloqueio');
+            const cardBloqueado = document.getElementById('card-cliente-bloqueado');
+            cardSugestao.style.display = 'none';
+            cardBloqueado.style.display = 'none';
+
+            if (!cliente.bomcontrole_id) return;
+
+            if (cliente.bloqueado) {
+                cardBloqueado.style.display = 'flex';
+                return;
+            }
+
+            const notas = avaliacoes.map(a => a.nps_score).filter(n => n !== null && n !== undefined);
+            if (notas.length === 0) return;
+
+            const menorNota = Math.min(...notas);
+            if (menorNota <= NOTA_LIMITE_SUGESTAO_BLOQUEIO) {
+                document.getElementById('nota-baixa').textContent = menorNota;
+                cardSugestao.style.display = 'flex';
+            }
+        }
+
+        async function alterarBloqueio(bloquear) {
+            if (!clienteAtual || !clienteAtual.bomcontrole_id) return;
+
+            const mensagem = bloquear
+                ? 'Tem certeza que deseja bloquear este cliente no BomControle?'
+                : 'Tem certeza que deseja desbloquear este cliente no BomControle?';
+            if (!confirm(mensagem)) return;
+
+            try {
+                const response = await fetch(`http://localhost:8000/clientes/${clienteAtual.id}/bloqueio`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ bloquear })
+                });
+
+                if (response.ok) {
+                    toast(bloquear ? 'Cliente bloqueado no BomControle!' : 'Cliente desbloqueado no BomControle!');
+                    carregarHistorico();
+                } else {
+                    const erro = await response.json();
+                    toast(erro.detail || 'Erro ao alterar bloqueio', 'erro');
+                }
+            } catch (error) {
+                toast('Erro ao conectar com o servidor', 'erro');
             }
         }
 

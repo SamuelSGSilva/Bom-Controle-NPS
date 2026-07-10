@@ -94,4 +94,25 @@ def mapear_cliente(dados: Dict[str, Any]) -> Dict[str, Any]:
         "cidade": endereco.get("Cidade"),
         "estado": endereco.get("Uf"),
         "data_nascimento": data_nascimento,
+        "bloqueado": dados.get("Bloqueado"),
     }
+
+
+def alterar_bloqueio_cliente(bomcontrole_id: int, bloquear: bool) -> None:
+    url = f"{BASE_URL}/Cliente/AlterarBloqueio/{bomcontrole_id}"
+    headers = _headers()
+    headers["Content-Type"] = "application/json"
+    corpo = json.dumps({"Bloquear": bloquear}).encode("utf-8")
+    request = urllib.request.Request(url, data=corpo, headers=headers, method="PUT")
+
+    try:
+        urllib.request.urlopen(request, timeout=15, context=_ssl_context)
+    except urllib.error.HTTPError as exc:
+        erro = exc.read().decode("utf-8", errors="ignore")
+        raise RuntimeError(
+            f"BomControle retornou erro {exc.code} ao alterar bloqueio do cliente {bomcontrole_id}: {erro}"
+        ) from exc
+    except urllib.error.URLError as exc:
+        raise RuntimeError(
+            f"Não foi possível acessar a API do BomControle: {exc.reason}"
+        ) from exc

@@ -73,7 +73,9 @@ def relatorio_cliente(cliente_id: int, db: Session = Depends(get_db), token: dic
     "cnpj": cliente.cnpj,
     "cidade": cliente.cidade,
     "estado": cliente.estado,
-    "created_at": cliente.created_at.isoformat() if cliente.created_at else None
+    "created_at": cliente.created_at.isoformat() if cliente.created_at else None,
+    "bomcontrole_id": cliente.bomcontrole_id,
+    "bloqueado": cliente.bloqueado
 },
         "pos_vendas": pos_vendas,
         "avaliacoes_nps": avaliacoes_nps
