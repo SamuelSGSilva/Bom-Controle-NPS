@@ -121,6 +121,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
+            table-layout: fixed;
         }
 
         thead th {
@@ -131,6 +132,11 @@
             font-size: 12px;
             text-transform: uppercase;
             letter-spacing: 1px;
+        }
+
+        thead th:first-child,
+        thead th:last-child {
+            width: 130px;
         }
 
         tbody tr {
@@ -145,6 +151,7 @@
             padding: 10px 14px;
             font-size: 14px;
             color: #cccccc;
+            word-break: break-word;
         }
 
         .vazio {

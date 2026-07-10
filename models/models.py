@@ -18,6 +18,7 @@ class Cliente(Base):
     cidade = Column(String(100), nullable=True)
     estado = Column(String(2), nullable=True)
     data_nascimento = Column(DateTime, nullable=True)
+    bomcontrole_id = Column(Integer, nullable=True, unique=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
 class PosVenda(Base):

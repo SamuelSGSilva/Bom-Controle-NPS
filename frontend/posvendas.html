@@ -59,6 +59,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
+            table-layout: fixed;
         }
 
         thead th {
@@ -70,6 +71,12 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
+
+        thead th:nth-child(1) { width: 16%; }
+        thead th:nth-child(2) { width: 12%; }
+        thead th:nth-child(3) { width: 14%; }
+        thead th:nth-child(4) { width: 42%; }
+        thead th:nth-child(5) { width: 16%; }
 
         tbody tr {
             border-bottom: 1px solid #2a2a2a;
@@ -84,6 +91,11 @@
             padding: 12px 16px;
             font-size: 14px;
             color: #cccccc;
+            word-break: break-word;
+        }
+
+        tbody td:last-child {
+            white-space: nowrap;
         }
 
         .btn-ver {
@@ -199,6 +211,7 @@
             <a href="clientes.html">Clientes</a>
             <a href="posvendas.html" class="ativo">Pós-venda</a>
             <a href="relatorios.html">Relatórios</a>
+            <a href="avaliacao-completa.html">Avaliações</a>
              <a href="importar.html">Importar</a>
         </nav>
         <button onclick="logout()"> Sair</button>
