@@ -58,6 +58,7 @@
 
         table {
             width: 100%;
+            min-width: 700px;
             border-collapse: collapse;
             table-layout: fixed;
         }
@@ -201,6 +202,7 @@
             color: #0a0a0a;
         }
     </style>
+    <link rel="stylesheet" href="responsive.css">
 </head>
 
 <body>
@@ -218,9 +220,11 @@
     </header>
 
     <main>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <div style="display: flex; gap: 12px;">
-                <select id="filtro-status" onchange="filtrarPorStatus()"
+        <div style="display: flex; flex-wrap: wrap; row-gap: 12px; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div style="display: flex; flex-wrap: wrap; row-gap: 12px; gap: 12px;">
+                <input type="text" id="busca-cliente" placeholder="Buscar por cliente..." oninput="aplicarFiltros()"
+                    style="padding: 10px 16px; background: #141414; border: 1px solid #2a2a2a; border-radius: 8px; color: #f1f1f1; font-size: 14px; outline: none; min-width: 220px; flex: 1 1 220px;">
+                <select id="filtro-status" onchange="aplicarFiltros()"
                     style="padding: 10px 16px; background: #141414; border: 1px solid #2a2a2a; border-radius: 8px; color: #f1f1f1; font-size: 14px; outline: none; cursor: pointer;">
                     <option value="">Todos</option>
                     <option value="pendente">Pendente</option>
@@ -289,9 +293,23 @@
             }
         }
 
-        function filtrarPorStatus() {
+        function aplicarFiltros() {
             const status = document.getElementById('filtro-status').value;
-            const filtrados = status ? todosPosVendas.filter(pv => pv.status === status) : todosPosVendas;
+            const busca = document.getElementById('busca-cliente').value.trim().toLowerCase();
+
+            let filtrados = todosPosVendas;
+
+            if (status) {
+                filtrados = filtrados.filter(pv => pv.status === status);
+            }
+
+            if (busca) {
+                filtrados = filtrados.filter(pv => {
+                    const cliente = todosClientesPV.find(c => c.id === pv.cliente_id);
+                    return cliente && cliente.nome.toLowerCase().includes(busca);
+                });
+            }
+
             renderizarPosVendas(filtrados);
         }
 
@@ -321,11 +339,11 @@
                 const cor = cores[pv.status] || '#888888';
 
                 row.innerHTML = `
-            <td>${nomeCliente}</td>
-            <td><span style="color: ${cor}; font-weight: 600;">● ${pv.status}</span></td>
-            <td>${pv.data_retorno ? new Date(pv.data_retorno).toLocaleDateString('pt-BR') : '--'}</td>
-            <td>${pv.feedback || '--'}</td>
-            <td>
+            <td data-label="Cliente">${nomeCliente}</td>
+            <td data-label="Status"><span style="color: ${cor}; font-weight: 600;">● ${pv.status}</span></td>
+            <td data-label="Data de Retorno">${pv.data_retorno ? new Date(pv.data_retorno).toLocaleDateString('pt-BR') : '--'}</td>
+            <td data-label="Feedback">${pv.feedback || '--'}</td>
+            <td data-label="Ações">
                <button class="btn-ver" onclick="verCliente(${pv.cliente_id})">Ver</button>
                 <button class="btn-editar" onclick="editarPosVenda(${pv.id})">Editar</button>
                 <button class="btn-deletar" onclick="deletarPosVenda(${pv.id})">Excluir</button>

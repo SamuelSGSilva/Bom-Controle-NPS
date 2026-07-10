@@ -120,6 +120,7 @@
 
         table {
             width: 100%;
+            min-width: 480px;
             border-collapse: collapse;
             table-layout: fixed;
         }
@@ -161,6 +162,7 @@
             padding: 20px;
         }
     </style>
+    <link rel="stylesheet" href="responsive.css">
 </head>
 
 <body>
@@ -270,9 +272,9 @@
                     const cor = cores[pv.status] || '#888888';
                     tabelaPV.innerHTML += `
                 <tr>
-                    <td><span style="color:${cor}; font-weight:600;">● ${pv.status}</span></td>
-                    <td>${pv.feedback || '--'}</td>
-                    <td>${pv.data_retorno ? new Date(pv.data_retorno).toLocaleDateString('pt-BR') : '--'}</td>
+                    <td data-label="Status"><span style="color:${cor}; font-weight:600;">● ${pv.status}</span></td>
+                    <td data-label="Feedback">${pv.feedback || '--'}</td>
+                    <td data-label="Data de Retorno">${pv.data_retorno ? new Date(pv.data_retorno).toLocaleDateString('pt-BR') : '--'}</td>
                 </tr>`;
                 });
             }
@@ -290,9 +292,9 @@
                 avaliacoes.forEach(a => {
                     tabelaNPS.innerHTML += `
                 <tr>
-                    <td><strong>${a.nps_score ?? '--'}</strong>/10</td>
-                    <td>${a.consideracoes || a.o_que_gostou || '--'}</td>
-                    <td>${new Date(a.created_at).toLocaleDateString('pt-BR')}</td>
+                    <td data-label="Nota"><strong>${a.nps_score ?? '--'}</strong>/10</td>
+                    <td data-label="Feedback">${a.consideracoes || a.o_que_gostou || '--'}</td>
+                    <td data-label="Data">${new Date(a.created_at).toLocaleDateString('pt-BR')}</td>
                 </tr>`;
                 });
             }

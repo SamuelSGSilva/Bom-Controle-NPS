@@ -22,6 +22,22 @@
             overflow: hidden;
         }
 
+        @media (max-width: 700px) {
+            body {
+                height: auto;
+                min-height: 100vh;
+                overflow-y: auto;
+            }
+
+            .lado-esquerdo {
+                display: none;
+            }
+
+            .lado-direito {
+                width: 100%;
+            }
+        }
+
         .lado-esquerdo {
             width: 40%;
             position: relative;
@@ -152,6 +168,7 @@
             text-align: center;
         }
     </style>
+    <link rel="stylesheet" href="responsive.css">
 </head>
 
 <body>
