@@ -1,3 +1,4 @@
+import asyncio
 from fastapi import FastAPI
 from database import engine, Base, SessionLocal
 from models import models
@@ -5,7 +6,10 @@ from models.models import Usuario
 from routes import clientes, pos_venda, nps, auth, relatorios, avaliacoes
 from fastapi.middleware.cors import CORSMiddleware
 from auth import gerar_hash_senha
+from services.sincronizacao_clientes import sincronizar_todos_clientes
 import os
+
+SINCRONIZACAO_INTERVALO_SEGUNDOS = 30 * 60
 
 Base.metadata.create_all(bind=engine)
 
@@ -31,7 +35,25 @@ def criar_usuario_padrao():
 
 criar_usuario_padrao()
 
+async def sincronizacao_periodica_bomcontrole():
+    loop = asyncio.get_event_loop()
+    while True:
+        db = SessionLocal()
+        try:
+            resultado = await loop.run_in_executor(None, sincronizar_todos_clientes, db)
+            print(f"[sincronizacao-bomcontrole] {resultado}")
+        except Exception as exc:
+            print(f"[sincronizacao-bomcontrole] erro: {exc}")
+        finally:
+            db.close()
+        await asyncio.sleep(SINCRONIZACAO_INTERVALO_SEGUNDOS)
+
 app = FastAPI(title="Bom Controle NPS")
+
+@app.on_event("startup")
+async def iniciar_sincronizacao_periodica():
+    if os.getenv("BOMCONTROLE_API_KEY"):
+        asyncio.create_task(sincronizacao_periodica_bomcontrole())
 
 app.add_middleware(
     CORSMiddleware,
