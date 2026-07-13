@@ -201,6 +201,53 @@
             background: #38bdf8;
             color: #0a0a0a;
         }
+
+        .autocomplete-wrapper {
+            position: relative;
+            flex: 1 1 220px;
+            min-width: 220px;
+        }
+
+        .autocomplete-wrapper input {
+            width: 100%;
+        }
+
+        .autocomplete-lista {
+            display: none;
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background: #141414;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            max-height: 220px;
+            overflow-y: auto;
+            z-index: 10;
+        }
+
+        .autocomplete-item {
+            padding: 10px 14px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #f1f1f1;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        .autocomplete-item span {
+            display: block;
+            font-size: 12px;
+            color: #888888;
+        }
+
+        .autocomplete-item:hover,
+        .autocomplete-item.ativo {
+            background: #1a1a1a;
+        }
     </style>
     <link rel="stylesheet" href="responsive.css">
 </head>
@@ -222,8 +269,11 @@
     <main>
         <div style="display: flex; flex-wrap: wrap; row-gap: 12px; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <div style="display: flex; flex-wrap: wrap; row-gap: 12px; gap: 12px;">
-                <input type="text" id="busca-cliente" placeholder="Buscar por cliente..." oninput="aplicarFiltros()"
-                    style="padding: 10px 16px; background: #141414; border: 1px solid #2a2a2a; border-radius: 8px; color: #f1f1f1; font-size: 14px; outline: none; min-width: 220px; flex: 1 1 220px;">
+                <div class="autocomplete-wrapper">
+                    <input type="text" id="busca-cliente" placeholder="Buscar por cliente..." autocomplete="off"
+                        style="padding: 10px 16px; background: #141414; border: 1px solid #2a2a2a; border-radius: 8px; color: #f1f1f1; font-size: 14px; outline: none;">
+                    <div class="autocomplete-lista" id="lista-sugestoes-busca"></div>
+                </div>
                 <select id="filtro-status" onchange="aplicarFiltros()"
                     style="padding: 10px 16px; background: #141414; border: 1px solid #2a2a2a; border-radius: 8px; color: #f1f1f1; font-size: 14px; outline: none; cursor: pointer;">
                     <option value="">Todos</option>
@@ -292,6 +342,58 @@
                 toast('Erro ao excluir pós-venda!', 'erro');
             }
         }
+
+        const inputBusca = document.getElementById('busca-cliente');
+        const listaSugestoesBusca = document.getElementById('lista-sugestoes-busca');
+        let sugestoesBusca = [];
+
+        function esconderSugestoesBusca() {
+            listaSugestoesBusca.style.display = 'none';
+            listaSugestoesBusca.innerHTML = '';
+            sugestoesBusca = [];
+        }
+
+        function renderizarSugestoesBusca(texto) {
+            const nomesUnicos = new Set();
+            sugestoesBusca = todosClientesPV.filter(c => {
+                const nome = c.nome.toLowerCase();
+                if (!nome.includes(texto.toLowerCase()) || nomesUnicos.has(nome)) return false;
+                nomesUnicos.add(nome);
+                return true;
+            }).slice(0, 8);
+
+            if (sugestoesBusca.length === 0) {
+                esconderSugestoesBusca();
+                return;
+            }
+
+            listaSugestoesBusca.innerHTML = sugestoesBusca.map((c, i) => `
+                <div class="autocomplete-item" data-indice="${i}">${c.nome}</div>
+            `).join('');
+            listaSugestoesBusca.style.display = 'block';
+
+            listaSugestoesBusca.querySelectorAll('.autocomplete-item').forEach(item => {
+                item.addEventListener('mousedown', function (e) {
+                    e.preventDefault();
+                    const cliente = sugestoesBusca[Number(item.dataset.indice)];
+                    inputBusca.value = cliente.nome;
+                    esconderSugestoesBusca();
+                    aplicarFiltros();
+                });
+            });
+        }
+
+        inputBusca.addEventListener('input', function () {
+            const texto = inputBusca.value.trim();
+            aplicarFiltros();
+            if (texto) {
+                renderizarSugestoesBusca(texto);
+            } else {
+                esconderSugestoesBusca();
+            }
+        });
+
+        inputBusca.addEventListener('blur', esconderSugestoesBusca);
 
         function aplicarFiltros() {
             const status = document.getElementById('filtro-status').value;

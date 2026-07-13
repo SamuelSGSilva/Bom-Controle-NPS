@@ -162,6 +162,47 @@
         .cliente-info strong {
             color: #f1f1f1;
         }
+
+        .autocomplete-wrapper {
+            position: relative;
+        }
+
+        .autocomplete-lista {
+            display: none;
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            max-height: 220px;
+            overflow-y: auto;
+            z-index: 10;
+        }
+
+        .autocomplete-item {
+            padding: 10px 14px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #f1f1f1;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        .autocomplete-item span {
+            display: block;
+            font-size: 12px;
+            color: #888888;
+        }
+
+        .autocomplete-item:hover,
+        .autocomplete-item.ativo {
+            background: #1a1a1a;
+        }
     </style>
     <link rel="stylesheet" href="responsive.css">
 </head>
@@ -188,7 +229,10 @@
         <form id="form-posvendas">
             <div class="form-group">
                 <label>Nome do Cliente</label>
-                <input type="text" id="cliente_nome" placeholder="Digite o nome e pressione Enter" required autocomplete="off">
+                <div class="autocomplete-wrapper">
+                    <input type="text" id="cliente_nome" placeholder="Digite o nome do cliente" required autocomplete="off">
+                    <div class="autocomplete-lista" id="lista-sugestoes"></div>
+                </div>
                 <div class="cliente-info" id="cliente-info"></div>
             </div>
             <div class="form-group">
@@ -218,50 +262,113 @@
         if (!token) window.location.href = 'index.html';
 
         let clienteEncontrado = null;
+        let clientesDisponiveis = [];
+        let sugestoesAtuais = [];
+        let indiceAtivo = -1;
+
         const inputNome = document.getElementById('cliente_nome');
         const clienteInfo = document.getElementById('cliente-info');
+        const listaSugestoes = document.getElementById('lista-sugestoes');
 
-        async function buscarClientePorNome() {
-            const nome = inputNome.value.trim();
-            clienteEncontrado = null;
-            clienteInfo.style.display = 'none';
-
-            if (!nome) return;
-
-            const response = await fetch(`/relatorios/clientes/buscar/${encodeURIComponent(nome)}`, {
+        async function carregarClientes() {
+            const response = await fetch('/clientes', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
+            clientesDisponiveis = await response.json();
+        }
 
-            if (!response.ok) {
-                toast('Cliente não encontrado!', 'erro');
+        function selecionarCliente(cliente) {
+            clienteEncontrado = cliente;
+            inputNome.value = cliente.nome;
+            clienteInfo.innerHTML = `<strong>${cliente.nome}</strong><br>${cliente.email || '--'} · ${cliente.telefone || '--'}`;
+            clienteInfo.style.display = 'block';
+            esconderSugestoes();
+        }
+
+        function esconderSugestoes() {
+            listaSugestoes.style.display = 'none';
+            listaSugestoes.innerHTML = '';
+            sugestoesAtuais = [];
+            indiceAtivo = -1;
+        }
+
+        function renderizarSugestoes(texto) {
+            sugestoesAtuais = clientesDisponiveis
+                .filter(c => c.nome.toLowerCase().includes(texto.toLowerCase()))
+                .slice(0, 8);
+            indiceAtivo = -1;
+
+            if (sugestoesAtuais.length === 0) {
+                listaSugestoes.style.display = 'none';
+                listaSugestoes.innerHTML = '';
                 return;
             }
 
-            const data = await response.json();
-            clienteEncontrado = data.cliente;
+            listaSugestoes.innerHTML = sugestoesAtuais.map((c, i) => `
+                <div class="autocomplete-item" data-indice="${i}">
+                    ${c.nome}
+                    <span>${c.email || ''}</span>
+                </div>
+            `).join('');
+            listaSugestoes.style.display = 'block';
 
-            inputNome.value = clienteEncontrado.nome;
-            clienteInfo.innerHTML = `<strong>${clienteEncontrado.nome}</strong><br>${clienteEncontrado.email || '--'} · ${clienteEncontrado.telefone || '--'}`;
-            clienteInfo.style.display = 'block';
+            listaSugestoes.querySelectorAll('.autocomplete-item').forEach(item => {
+                item.addEventListener('mousedown', function (e) {
+                    e.preventDefault();
+                    selecionarCliente(sugestoesAtuais[Number(item.dataset.indice)]);
+                });
+            });
         }
 
-        inputNome.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                buscarClientePorNome();
-            }
-        });
+        function destacarSugestao() {
+            listaSugestoes.querySelectorAll('.autocomplete-item').forEach((item, i) => {
+                item.classList.toggle('ativo', i === indiceAtivo);
+            });
+        }
 
         inputNome.addEventListener('input', function () {
             clienteEncontrado = null;
             clienteInfo.style.display = 'none';
+
+            const texto = inputNome.value.trim();
+            if (!texto) {
+                esconderSugestoes();
+                return;
+            }
+            renderizarSugestoes(texto);
         });
+
+        inputNome.addEventListener('keydown', function (e) {
+            if (sugestoesAtuais.length === 0) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                indiceAtivo = Math.min(indiceAtivo + 1, sugestoesAtuais.length - 1);
+                destacarSugestao();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                indiceAtivo = Math.max(indiceAtivo - 1, 0);
+                destacarSugestao();
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                const escolhido = indiceAtivo >= 0 ? sugestoesAtuais[indiceAtivo] : sugestoesAtuais[0];
+                selecionarCliente(escolhido);
+            } else if (e.key === 'Escape') {
+                esconderSugestoes();
+            }
+        });
+
+        inputNome.addEventListener('blur', function () {
+            esconderSugestoes();
+        });
+
+        carregarClientes();
 
         document.getElementById('form-posvendas').addEventListener('submit', async function (e) {
             e.preventDefault();
 
             if (!clienteEncontrado) {
-                toast('Digite o nome do cliente e pressione Enter para buscá-lo!', 'erro');
+                toast('Selecione um cliente na lista de sugestões!', 'erro');
                 return;
             }
 
