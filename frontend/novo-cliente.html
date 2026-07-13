@@ -305,7 +305,7 @@
                 data_nascimento: document.getElementById('data_nascimento').value || null
             };
 
-            const response = await fetch('http://localhost:8000/clientes', {
+            const response = await fetch('/clientes', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

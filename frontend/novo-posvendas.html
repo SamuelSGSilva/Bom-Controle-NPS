@@ -211,7 +211,7 @@
                 data_retorno: document.getElementById('data_retorno').value || null
             };
 
-            const response = await fetch('http://localhost:8000/pos-venda', {
+            const response = await fetch('/pos-venda', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

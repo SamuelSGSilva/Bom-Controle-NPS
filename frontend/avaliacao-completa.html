@@ -503,7 +503,7 @@
             document.getElementById('campo-cliente').style.display = 'block';
             document.getElementById('campo-cs-responsavel').style.display = 'block';
 
-            fetch('http://localhost:8000/clientes', {
+            fetch('/clientes', {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
                 .then(response => response.json())
@@ -594,8 +594,8 @@
             respostas.o_que_melhorar = document.getElementById('o_que_melhorar').value || null;
 
             const url = modoInterno
-                ? 'http://localhost:8000/avaliacoes'
-                : 'http://localhost:8000/avaliacoes/publico';
+                ? '/avaliacoes'
+                : '/avaliacoes/publico';
             const headers = { 'Content-Type': 'application/json' };
             if (modoInterno) headers['Authorization'] = `Bearer ${token}`;
 

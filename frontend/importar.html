@@ -242,7 +242,7 @@
             btnEnviar.textContent = 'Importando...';
 
             try {
-                const response = await fetch('http://localhost:8000/avaliacoes/importar', {
+                const response = await fetch('/avaliacoes/importar', {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}` },
                     body: formData
@@ -274,7 +274,7 @@
             resultado.textContent = '';
 
             try {
-                const response = await fetch('http://localhost:8000/clientes/sincronizar-bomcontrole', {
+                const response = await fetch('/clientes/sincronizar-bomcontrole', {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}` }
                 });

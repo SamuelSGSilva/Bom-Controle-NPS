@@ -266,8 +266,8 @@
             document.getElementById('tabela-posvendas').innerHTML = '';
 
             const [resPV, resCli] = await Promise.all([
-                fetch('http://localhost:8000/pos-venda', { headers: { 'Authorization': `Bearer ${token}` } }),
-                fetch('http://localhost:8000/clientes', { headers: { 'Authorization': `Bearer ${token}` } })
+                fetch('/pos-venda', { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch('/clientes', { headers: { 'Authorization': `Bearer ${token}` } })
             ]);
 
             document.getElementById('loading').style.display = 'none';
@@ -280,7 +280,7 @@
         async function deletarPosVenda(id) {
             if (!confirm('Tem certeza que deseja excluir este pós-venda?')) return;
 
-            const response = await fetch(`http://localhost:8000/pos-venda/${id}`, {
+            const response = await fetch(`/pos-venda/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
