@@ -290,7 +290,7 @@
         if (!token) window.location.href = 'index.html';
 
         async function carregarNPS() {
-            const response = await fetch('http://localhost:8000/avaliacoes/relatorio/nps', {
+            const response = await fetch('/avaliacoes/relatorio/nps', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
@@ -337,7 +337,7 @@
             const nome = document.getElementById('cliente-id').value;
             if (!nome) return alert('Digite o nome do cliente!');
 
-            const response = await fetch(`http://localhost:8000/relatorios/clientes/buscar/${encodeURIComponent(nome)}`, {
+            const response = await fetch(`/relatorios/clientes/buscar/${encodeURIComponent(nome)}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
@@ -360,7 +360,7 @@
     `;
         }
         async function carregarPainel() {
-            const response = await fetch('http://localhost:8000/avaliacoes/relatorio/painel', {
+            const response = await fetch('/avaliacoes/relatorio/painel', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();

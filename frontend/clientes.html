@@ -238,7 +238,7 @@
         let todosClientes = [];
 
         async function carregarClientes() {
-            const response = await fetch('http://localhost:8000/clientes', {
+            const response = await fetch('/clientes', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             todosClientes = await response.json();
@@ -331,7 +331,7 @@
         async function deletarCliente(id) {
             if (!confirm('Tem certeza que deseja excluir este cliente?')) return;
 
-            const response = await fetch(`http://localhost:8000/clientes/${id}`, {
+            const response = await fetch(`/clientes/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

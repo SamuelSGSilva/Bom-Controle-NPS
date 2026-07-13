@@ -318,7 +318,7 @@
         let clienteAtual = null;
 
         async function carregarHistorico() {
-            const response = await fetch(`http://localhost:8000/relatorios/clientes/${clienteId}`, {
+            const response = await fetch(`/relatorios/clientes/${clienteId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
@@ -351,7 +351,7 @@
             }
 
             // Avaliações - nova tabela
-            const resAvaliacoes = await fetch(`http://localhost:8000/avaliacoes/${clienteId}`, {
+            const resAvaliacoes = await fetch(`/avaliacoes/${clienteId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const avaliacoes = await resAvaliacoes.json();
@@ -405,7 +405,7 @@
             if (!confirm(mensagem)) return;
 
             try {
-                const response = await fetch(`http://localhost:8000/clientes/${clienteAtual.id}/bloqueio`, {
+                const response = await fetch(`/clientes/${clienteAtual.id}/bloqueio`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

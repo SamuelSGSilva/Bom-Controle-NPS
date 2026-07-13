@@ -205,7 +205,7 @@
     const pvId = params.get('id');
 
     async function carregarPosVenda() {
-        const response = await fetch(`http://localhost:8000/pos-venda/buscar/${pvId}`, {
+        const response = await fetch(`/pos-venda/buscar/${pvId}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const pv = await response.json();
@@ -226,7 +226,7 @@
             data_retorno: document.getElementById('data_retorno').value || null
         };
 
-        const response = await fetch(`http://localhost:8000/pos-venda/${pvId}`, {
+        const response = await fetch(`/pos-venda/${pvId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

@@ -208,7 +208,7 @@
         if (!token) window.location.href = 'index.html';
 
         async function carregarNPS() {
-            const response = await fetch('http://localhost:8000/avaliacoes/relatorio/nps', {
+            const response = await fetch('/avaliacoes/relatorio/nps', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
@@ -233,7 +233,7 @@
         }
 
         async function carregarResumo() {
-            const resClientes = await fetch('http://localhost:8000/clientes', {
+            const resClientes = await fetch('/clientes', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -243,7 +243,7 @@
             const clientes = await resClientes.json();
             document.getElementById('total-clientes').textContent = clientes.length;
 
-            const resPosVendas = await fetch('http://localhost:8000/pos-venda', {
+            const resPosVendas = await fetch('/pos-venda', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const posvendas = await resPosVendas.json();
@@ -253,8 +253,8 @@
 
         async function carregarUltimasAvaliacoes() {
             const [resNPS, resCli] = await Promise.all([
-                fetch('http://localhost:8000/avaliacoes', { headers: { 'Authorization': `Bearer ${token}` } }),
-                fetch('http://localhost:8000/clientes', { headers: { 'Authorization': `Bearer ${token}` } })
+                fetch('/avaliacoes', { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch('/clientes', { headers: { 'Authorization': `Bearer ${token}` } })
             ]);
 
             const avaliacoes = await resNPS.json();
@@ -320,7 +320,7 @@
         }
 
         async function carregarEvolucaoNPS() {
-            const response = await fetch('http://localhost:8000/avaliacoes/relatorio/evolucao', {
+            const response = await fetch('/avaliacoes/relatorio/evolucao', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
