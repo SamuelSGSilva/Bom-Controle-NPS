@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
-from models.models import PosVenda
+from models.models import PosVenda, Cliente
 from pydantic import BaseModel
 from datetime import datetime
 from auth import verificar_token
@@ -14,9 +14,25 @@ class PosVendaCreate(BaseModel):
     status: str = "pendente"
     data_retorno: datetime | None = None
 
+def _serializar_pos_venda(pv: PosVenda, cliente_nome: str | None):
+    return {
+        "id": pv.id,
+        "cliente_id": pv.cliente_id,
+        "cliente_nome": cliente_nome,
+        "feedback": pv.feedback,
+        "status": pv.status,
+        "data_retorno": pv.data_retorno,
+        "created_at": pv.created_at,
+    }
+
 @router.get("/pos-venda")
 def listar_pos_vendas(db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
-    return db.query(PosVenda).all()
+    resultados = (
+        db.query(PosVenda, Cliente.nome)
+        .outerjoin(Cliente, Cliente.id == PosVenda.cliente_id)
+        .all()
+    )
+    return [_serializar_pos_venda(pv, nome) for pv, nome in resultados]
 
 @router.get("/pos-venda/buscar/{id}")
 def buscar_pos_venda_por_id(id: int, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
