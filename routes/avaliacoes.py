@@ -142,6 +142,37 @@ def painel_resultados(db: Session = Depends(get_db), token: dict = Depends(verif
         }
     }
 
+@router.get("/avaliacoes/relatorio/evolucao")
+def evolucao_nps(db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
+    avaliacoes = db.query(Avaliacao).filter(Avaliacao.nps_score.isnot(None)).all()
+
+    if not avaliacoes:
+        return {"message": "Nenhuma avaliação encontrada"}
+
+    grupos = {}
+    for a in avaliacoes:
+        data_ref = a.data_atendimento or a.created_at
+        if not data_ref:
+            continue
+        chave = data_ref.strftime("%Y-%m")
+        grupos.setdefault(chave, []).append(a.nps_score)
+
+    evolucao = []
+    for chave in sorted(grupos.keys()):
+        scores = grupos[chave]
+        total = len(scores)
+        promotores = len([s for s in scores if s >= 9])
+        detratores = len([s for s in scores if s <= 6])
+        nps = round(((promotores - detratores) / total) * 100, 2)
+        evolucao.append({
+            "mes": chave,
+            "total_avaliacoes": total,
+            "nps": nps
+        })
+
+    return {"evolucao": evolucao}
+
+
 @router.post("/avaliacoes/importar")
 async def importar_planilha(file: UploadFile = File(...), db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
     conteudo = await file.read()

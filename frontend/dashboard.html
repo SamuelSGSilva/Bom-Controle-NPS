@@ -158,7 +158,15 @@
             </div>
         </div>
 
-        <div class="grid-2col" style="display: grid; gap: 24px; margin-top: 40px;">
+        <div style="background: #141414; border-radius: 12px; padding: 24px; margin-top: 40px;">
+            <h3
+                style="color: #888888; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">
+                Evolução do NPS
+            </h3>
+            <canvas id="grafico-evolucao" height="90"></canvas>
+        </div>
+
+        <div class="grid-2col" style="display: grid; gap: 24px; margin-top: 24px;">
 
             <div style="background: #141414; border-radius: 12px; padding: 24px;">
                 <h3
@@ -311,6 +319,58 @@
             });
         }
 
+        async function carregarEvolucaoNPS() {
+            const response = await fetch('http://localhost:8000/avaliacoes/relatorio/evolucao', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+
+            if (data.message || !data.evolucao || !data.evolucao.length) return;
+
+            const meses = { '01': 'Jan', '02': 'Fev', '03': 'Mar', '04': 'Abr', '05': 'Mai', '06': 'Jun', '07': 'Jul', '08': 'Ago', '09': 'Set', '10': 'Out', '11': 'Nov', '12': 'Dez' };
+            const labels = data.evolucao.map(item => {
+                const [ano, mes] = item.mes.split('-');
+                return `${meses[mes]}/${ano.slice(2)}`;
+            });
+            const valores = data.evolucao.map(item => item.nps);
+
+            const ctx = document.getElementById('grafico-evolucao').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'NPS',
+                        data: valores,
+                        borderColor: '#cc0000',
+                        backgroundColor: 'rgba(204, 0, 0, 0.15)',
+                        fill: true,
+                        tension: 0.3,
+                        pointBackgroundColor: '#cc0000',
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#888888' },
+                            grid: { color: '#1a1a1a' }
+                        },
+                        y: {
+                            ticks: { color: '#888888' },
+                            grid: { color: '#1a1a1a' },
+                            suggestedMin: -100,
+                            suggestedMax: 100
+                        }
+                    }
+                }
+            });
+        }
+
         function logout() {
             localStorage.removeItem('token');
             window.location.href = 'index.html';
@@ -319,6 +379,7 @@
         carregarNPS();
         carregarResumo();
         carregarUltimasAvaliacoes();
+        carregarEvolucaoNPS();
     </script>
 </body>
 
