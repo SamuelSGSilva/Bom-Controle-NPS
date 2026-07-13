@@ -5,6 +5,8 @@ from models.models import Cliente
 from pydantic import BaseModel
 from auth import verificar_token
 from datetime import datetime
+from services.bomcontrole_api import obter_cliente, mapear_cliente, alterar_bloqueio_cliente
+from services.sincronizacao_clientes import sincronizar_todos_clientes, CAMPOS_SEMPRE_SINCRONIZADOS
 
 router = APIRouter()
 
@@ -21,6 +23,9 @@ class ClienteSchema(BaseModel):
     cidade: str | None = None
     estado: str | None = None
     data_nascimento: datetime | None = None
+
+class BloqueioSchema(BaseModel):
+    bloquear: bool
 
 @router.post("/clientes")
 def criar_cliente(cliente: ClienteSchema, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
@@ -49,6 +54,65 @@ def deletar_cliente(id: int, db: Session = Depends(get_db), token: dict = Depend
     db.delete(cliente)
     db.commit()
     return {"message": "Cliente deletado com sucesso"}
+
+@router.post("/clientes/sincronizar-bomcontrole/{bomcontrole_id}")
+def sincronizar_cliente_bomcontrole(bomcontrole_id: int, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
+    try:
+        dados = obter_cliente(bomcontrole_id)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc))
+
+    mapeado = mapear_cliente(dados)
+
+    if not mapeado.get("email"):
+        raise HTTPException(
+            status_code=400,
+            detail="Cliente do BomControle não possui e-mail de contato cadastrado.",
+        )
+
+    cliente = db.query(Cliente).filter(Cliente.bomcontrole_id == bomcontrole_id).first()
+    if cliente:
+        for key, value in mapeado.items():
+            if key in CAMPOS_SEMPRE_SINCRONIZADOS:
+                if value is not None:
+                    setattr(cliente, key, value)
+            elif value is not None and getattr(cliente, key) is None:
+                setattr(cliente, key, value)
+    else:
+        cliente = Cliente(**mapeado)
+        db.add(cliente)
+
+    db.commit()
+    db.refresh(cliente)
+    return cliente
+
+@router.post("/clientes/sincronizar-bomcontrole")
+def sincronizar_todos_clientes_bomcontrole(db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
+    try:
+        return sincronizar_todos_clientes(db)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc))
+
+@router.post("/clientes/{id}/bloqueio")
+def alterar_bloqueio(id: int, dados: BloqueioSchema, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
+    cliente = db.query(Cliente).filter(Cliente.id == id).first()
+    if not cliente:
+        raise HTTPException(status_code=404, detail="Cliente não encontrado")
+    if not cliente.bomcontrole_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Cliente não está vinculado a um cadastro no BomControle.",
+        )
+
+    try:
+        alterar_bloqueio_cliente(cliente.bomcontrole_id, dados.bloquear)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc))
+
+    cliente.bloqueado = dados.bloquear
+    db.commit()
+    db.refresh(cliente)
+    return cliente
 
 @router.put("/clientes/{id}")
 def editar_cliente(id: int, cliente: ClienteSchema, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):

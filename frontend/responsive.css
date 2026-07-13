@@ -1,0 +1,116 @@
+/* Ajustes responsivos compartilhados por todas as telas do sistema.
+   Carregado depois do <style> de cada página para poder sobrepor regras de mesma especificidade. */
+
+@media (max-width: 900px) {
+    header {
+        flex-wrap: wrap;
+        row-gap: 12px;
+        padding: 16px 20px;
+    }
+
+    nav {
+        order: 3;
+        width: 100%;
+        flex-wrap: wrap;
+        row-gap: 10px;
+    }
+
+    main {
+        padding: 20px;
+    }
+}
+
+/* Tabelas: fallback de rolagem horizontal para tabelas que não viraram cards
+   (ex.: os quadros pequenos do dashboard/relatórios). */
+.table-container,
+.secao {
+    overflow-x: auto;
+}
+
+.grid-2col {
+    grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 1000px) {
+
+    .form-row,
+    .info-grid,
+    .grid-2col {
+        grid-template-columns: 1fr;
+    }
+
+    /* Tabelas de Clientes, Pós-venda e Histórico viram cards empilhados em
+       vez de espremer colunas ou exigir rolagem lateral. Cada <td> precisa
+       de um atributo data-label para virar o rótulo do campo. */
+    .table-container table,
+    .secao table {
+        min-width: 0;
+    }
+
+    .table-container table,
+    .table-container thead,
+    .table-container tbody,
+    .table-container th,
+    .table-container td,
+    .table-container tr,
+    .secao table,
+    .secao thead,
+    .secao tbody,
+    .secao th,
+    .secao td,
+    .secao tr {
+        display: block;
+    }
+
+    .table-container thead tr,
+    .secao thead tr {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+
+    .table-container tbody tr,
+    .secao tbody tr {
+        margin-bottom: 14px;
+        background: #141414;
+        border: 1px solid #2a2a2a;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .table-container td,
+    .secao td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        text-align: right;
+        border-bottom: 1px solid #1f1f1f;
+        white-space: normal;
+    }
+
+    .table-container tr:last-child td:last-child,
+    .secao tr:last-child td:last-child,
+    .table-container td:last-child,
+    .secao td:last-child {
+        border-bottom: none;
+    }
+
+    .table-container td::before,
+    .secao td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #888888;
+        text-align: left;
+        flex-shrink: 0;
+    }
+
+    .table-container td[data-label="Ações"],
+    .secao td[data-label="Ações"] {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+}

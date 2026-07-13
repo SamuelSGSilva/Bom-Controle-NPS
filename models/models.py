@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, Boolean
 from database import Base
 import datetime
 
@@ -18,6 +18,8 @@ class Cliente(Base):
     cidade = Column(String(100), nullable=True)
     estado = Column(String(2), nullable=True)
     data_nascimento = Column(DateTime, nullable=True)
+    bomcontrole_id = Column(Integer, nullable=True, unique=True)
+    bloqueado = Column(Boolean, nullable=True, default=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
 class PosVenda(Base):

@@ -143,7 +143,19 @@
             font-size: 14px;
             margin-top: 12px;
         }
+
+        .card + .card {
+            margin-top: 24px;
+        }
+
+        #resultado-sincronizacao {
+            color: #888888;
+            font-size: 13px;
+            margin-top: 16px;
+            white-space: pre-line;
+        }
     </style>
+    <link rel="stylesheet" href="responsive.css">
 </head>
 
 <body>
@@ -154,6 +166,7 @@
             <a href="clientes.html">Clientes</a>
             <a href="posvendas.html">Pós-venda</a>
             <a href="relatorios.html">Relatórios</a>
+            <a href="avaliacao-completa.html">Avaliações</a>
             <a href="importar.html" class="ativo">Importar</a>
         </nav>
         <button onclick="logout()">Sair</button>
@@ -172,6 +185,14 @@
             <input type="file" id="arquivo" accept=".xlsx">
 
             <button class="enviar" id="btn-enviar" onclick="importarPlanilha()" disabled>Importar Planilha</button>
+        </div>
+
+        <div class="card">
+            <h2>Sincronizar Clientes do BomControle</h2>
+            <p>Busca todos os clientes cadastrados no BomControle e atualiza a base local</p>
+
+            <button class="enviar" id="btn-sincronizar" onclick="sincronizarClientes()">Sincronizar Clientes</button>
+            <p id="resultado-sincronizacao"></p>
         </div>
     </main>
 
@@ -241,6 +262,36 @@
             } finally {
                 btnEnviar.disabled = false;
                 btnEnviar.textContent = 'Importar Planilha';
+            }
+        }
+
+        async function sincronizarClientes() {
+            const btn = document.getElementById('btn-sincronizar');
+            const resultado = document.getElementById('resultado-sincronizacao');
+
+            btn.disabled = true;
+            btn.textContent = 'Sincronizando...';
+            resultado.textContent = '';
+
+            try {
+                const response = await fetch('http://localhost:8000/clientes/sincronizar-bomcontrole', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    toast('Sincronização concluída!', 'sucesso');
+                    resultado.textContent = `Criados: ${data.criados} | Atualizados: ${data.atualizados} | Ignorados: ${data.ignorados} | Total no BomControle: ${data.total_bomcontrole}`;
+                } else {
+                    toast(data.detail || 'Erro ao sincronizar clientes', 'erro');
+                }
+            } catch (error) {
+                toast('Erro ao conectar com o servidor', 'erro');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Sincronizar Clientes';
             }
         }
 

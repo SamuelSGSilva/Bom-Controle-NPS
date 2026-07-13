@@ -58,7 +58,9 @@
 
         table {
             width: 100%;
+            min-width: 760px;
             border-collapse: collapse;
+            table-layout: fixed;
         }
 
         thead th {
@@ -69,6 +71,17 @@
             font-size: 13px;
             text-transform: uppercase;
             letter-spacing: 1px;
+        }
+
+        thead th:nth-child(1) { width: 18%; }
+        thead th:nth-child(2) { width: 22%; }
+        thead th:nth-child(3) { width: 12%; }
+        thead th:nth-child(4) { width: 14%; }
+        thead th:nth-child(5) { width: 12%; }
+        thead th:nth-child(6) { width: 22%; }
+
+        tbody td:last-child {
+            white-space: nowrap;
         }
 
         tbody tr {
@@ -84,6 +97,7 @@
             padding: 12px 16px;
             font-size: 14px;
             color: #cccccc;
+            word-break: break-word;
         }
 
         .btn-ver {
@@ -173,6 +187,7 @@
             color: #0a0a0a;
         }
     </style>
+    <link rel="stylesheet" href="responsive.css">
 </head>
 
 <body>
@@ -183,21 +198,22 @@
             <a href="clientes.html" class="ativo">Clientes</a>
             <a href="posvendas.html">Pós-venda</a>
             <a href="relatorios.html">Relatórios</a>
+            <a href="avaliacao-completa.html">Avaliações</a>
             <a href="importar.html">Importar</a>
         </nav>
         <button onclick="logout()">Sair</button>
     </header>
 
     <main>
-        <div class="table-container">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2>Clientes</h2>
-                <div style="display: flex; gap: 12px;">
-                    <input type="text" id="busca" placeholder="Buscar por nome..." onkeyup="filtrarClientes()"
-                        style="padding: 10px 16px; background: #141414; border: 1px solid #2a2a2a; border-radius: 8px; color: #f1f1f1; font-size: 14px; outline: none; width: 250px;">
-                    <button class="btn-novo" onclick="novoCliente()">+ Novo Cliente</button>
-                </div>
+        <div style="display: flex; flex-wrap: wrap; row-gap: 12px; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>Clientes</h2>
+            <div style="display: flex; flex-wrap: wrap; row-gap: 12px; gap: 12px;">
+                <input type="text" id="busca" placeholder="Buscar por nome..." onkeyup="filtrarClientes()"
+                    style="padding: 10px 16px; background: #141414; border: 1px solid #2a2a2a; border-radius: 8px; color: #f1f1f1; font-size: 14px; outline: none; width: 250px;">
+                <button class="btn-novo" onclick="novoCliente()">+ Novo Cliente</button>
             </div>
+        </div>
+        <div class="table-container">
             <table>
                 <thead>
                     <tr>
@@ -251,12 +267,12 @@
             clientesPagina.forEach(cliente => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-            <td>${cliente.nome}</td>
-            <td>${cliente.email}</td>
-            <td>${cliente.telefone || '--'}</td>
-            <td>${cliente.cpf || cliente.cnpj || '--'}</td>
-            <td>${cliente.cidade || '--'}/${cliente.estado || '--'}</td>
-            <td>
+            <td data-label="Nome">${cliente.nome}</td>
+            <td data-label="E-mail">${cliente.email}</td>
+            <td data-label="Telefone">${cliente.telefone || '--'}</td>
+            <td data-label="CPF/CNPJ">${cliente.cpf || cliente.cnpj || '--'}</td>
+            <td data-label="Cidade/Estado">${cliente.cidade || '--'}/${cliente.estado || '--'}</td>
+            <td data-label="Ações">
                 <button class="btn-ver" onclick="verHistorico(${cliente.id})">Ver</button>
                 <button class="btn-editar" onclick="editarCliente(${cliente.id})">Editar</button>
                 <button class="btn-deletar" onclick="deletarCliente(${cliente.id})">Excluir</button>
@@ -279,7 +295,7 @@
             paginacao.innerHTML = '';
             if (totalPaginas <= 1) return;
 
-            paginacao.style.cssText = 'display:flex; gap:8px; margin-top:20px; justify-content:center;';
+            paginacao.style.cssText = 'display:flex; flex-wrap:wrap; gap:8px; margin-top:20px; justify-content:center;';
 
             for (let i = 1; i <= totalPaginas; i++) {
                 const btn = document.createElement('button');
