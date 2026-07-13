@@ -161,27 +161,27 @@
             background: #aa0000;
         }
 
-        #erro-login {
+        #erro-registro {
             color: #f87171;
             font-size: 13px;
             margin-top: 12px;
             text-align: center;
         }
 
-        .link-registro {
+        .link-login {
             color: #888;
             font-size: 13px;
             text-align: center;
             margin-top: 20px;
         }
 
-        .link-registro a {
+        .link-login a {
             color: #cc0000;
             text-decoration: none;
             font-weight: 600;
         }
 
-        .link-registro a:hover {
+        .link-login a:hover {
             text-decoration: underline;
         }
     </style>
@@ -201,9 +201,9 @@
 
     <div class="lado-direito">
         <div class="login-container">
-            <h1>Bem-vindo!</h1>
-            <p class="subtitulo">Faça login para acessar o painel</p>
-            <form id="login-form">
+            <h1>Criar conta</h1>
+            <p class="subtitulo">Cadastre-se para acessar o painel</p>
+            <form id="registro-form">
                 <div class="input-wrapper">
                     <span style="color: #555; font-size: 16px;">
                         <i class="fa-regular fa-user"></i>
@@ -215,53 +215,52 @@
                         <i class="fa-solid fa-lock"></i>
                     </span>
                     <input type="password" id="password" placeholder="Senha" required>
-                    <span onclick="toggleSenha()" id="icone-olho"
-                        style="cursor: pointer; color: #555; font-size: 16px; user-select: none;">
-                        <i class="fa-regular fa-eye"></i>
-                    </span>
                 </div>
-                <button type="submit">Entrar</button>
+                <div class="input-wrapper">
+                    <span style="color: #555; font-size: 16px;">
+                        <i class="fa-solid fa-lock"></i>
+                    </span>
+                    <input type="password" id="confirmar-senha" placeholder="Confirmar senha" required>
+                </div>
+                <button type="submit">Criar conta</button>
             </form>
-            <p id="erro-login"></p>
-            <p class="link-registro">Ainda não tem uma conta? <a href="registro.html">Criar conta</a></p>
+            <p id="erro-registro"></p>
+            <p class="link-login">Já tem uma conta? <a href="index.html">Entrar</a></p>
         </div>
     </div>
 
     <script>
-        document.getElementById('login-form').addEventListener('submit', async function (e) {
+        document.getElementById('registro-form').addEventListener('submit', async function (e) {
             e.preventDefault();
-            const username = document.getElementById('username').value;
+            const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
+            const confirmarSenha = document.getElementById('confirmar-senha').value;
+            const erro = document.getElementById('erro-registro');
+            erro.textContent = '';
+
+            if (password !== confirmarSenha) {
+                erro.textContent = 'As senhas não coincidem';
+                return;
+            }
+
             try {
-                const response = await fetch('/token', {
+                const response = await fetch('/registrar', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
                 });
                 const data = await response.json();
+
                 if (response.ok) {
-                    localStorage.setItem('token', data.access_token);
-                    localStorage.setItem('username', username);
-                    window.location.href = 'dashboard.html';
+                    toast('Conta criada com sucesso! Faça login.');
+                    window.location.href = 'index.html';
                 } else {
-                    document.getElementById('erro-login').textContent = 'Usuário ou senha inválidos';
+                    erro.textContent = data.detail || 'Erro ao criar conta';
                 }
             } catch (error) {
-                document.getElementById('erro-login').textContent = 'Erro ao conectar com o servidor';
+                erro.textContent = 'Erro ao conectar com o servidor';
             }
         });
-
-        function toggleSenha() {
-            const input = document.getElementById('password');
-            const olho = document.getElementById('icone-olho');
-            if (input.type === 'password') {
-                input.type = 'text';
-                olho.innerHTML = '<i class="fa-regular fa-eye-slash"></i>';
-            } else {
-                input.type = 'password';
-                olho.innerHTML = '<i class="fa-regular fa-eye"></i>';
-            }
-        }
     </script>
 </body>
 
