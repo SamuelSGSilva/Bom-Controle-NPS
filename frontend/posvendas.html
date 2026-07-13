@@ -322,6 +322,17 @@
 
             document.getElementById('loading').style.display = 'none';
 
+            if (resPV.status === 401 || resCli.status === 401) {
+                localStorage.removeItem('token');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            if (!resPV.ok || !resCli.ok) {
+                toast('Erro ao carregar pós-vendas!', 'erro');
+                return;
+            }
+
             todosPosVendas = await resPV.json();
             todosClientesPV = await resCli.json();
             renderizarPosVendas(todosPosVendas);
@@ -406,10 +417,7 @@
             }
 
             if (busca) {
-                filtrados = filtrados.filter(pv => {
-                    const cliente = todosClientesPV.find(c => c.id === pv.cliente_id);
-                    return cliente && cliente.nome.toLowerCase().includes(busca);
-                });
+                filtrados = filtrados.filter(pv => (pv.cliente_nome || '').toLowerCase().includes(busca));
             }
 
             renderizarPosVendas(filtrados);
@@ -429,8 +437,7 @@
             }
 
             posvendas.forEach(pv => {
-                const cliente = todosClientesPV.find(c => c.id === pv.cliente_id);
-                const nomeCliente = cliente ? cliente.nome : `ID ${pv.cliente_id}`;
+                const nomeCliente = pv.cliente_nome || `ID ${pv.cliente_id}`;
                 const row = document.createElement('tr');
 
                 const cores = {
