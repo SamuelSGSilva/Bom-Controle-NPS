@@ -147,6 +147,21 @@
         select:focus {
             border-color: #cc0000;
         }
+
+        .cliente-info {
+            display: none;
+            margin-top: 8px;
+            padding: 10px 14px;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #ccc;
+        }
+
+        .cliente-info strong {
+            color: #f1f1f1;
+        }
     </style>
     <link rel="stylesheet" href="responsive.css">
 </head>
@@ -172,8 +187,9 @@
         <h2>Novo Pós-Vendas</h2>
         <form id="form-posvendas">
             <div class="form-group">
-                <label>Cliente ID</label>
-                <input type="number" id="cliente_id" required>
+                <label>Nome do Cliente</label>
+                <input type="text" id="cliente_nome" placeholder="Digite o nome e pressione Enter" required autocomplete="off">
+                <div class="cliente-info" id="cliente-info"></div>
             </div>
             <div class="form-group">
                 <label>Feedback</label>
@@ -201,11 +217,56 @@
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'index.html';
 
+        let clienteEncontrado = null;
+        const inputNome = document.getElementById('cliente_nome');
+        const clienteInfo = document.getElementById('cliente-info');
+
+        async function buscarClientePorNome() {
+            const nome = inputNome.value.trim();
+            clienteEncontrado = null;
+            clienteInfo.style.display = 'none';
+
+            if (!nome) return;
+
+            const response = await fetch(`/relatorios/clientes/buscar/${encodeURIComponent(nome)}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!response.ok) {
+                toast('Cliente não encontrado!', 'erro');
+                return;
+            }
+
+            const data = await response.json();
+            clienteEncontrado = data.cliente;
+
+            inputNome.value = clienteEncontrado.nome;
+            clienteInfo.innerHTML = `<strong>${clienteEncontrado.nome}</strong><br>${clienteEncontrado.email || '--'} · ${clienteEncontrado.telefone || '--'}`;
+            clienteInfo.style.display = 'block';
+        }
+
+        inputNome.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                buscarClientePorNome();
+            }
+        });
+
+        inputNome.addEventListener('input', function () {
+            clienteEncontrado = null;
+            clienteInfo.style.display = 'none';
+        });
+
         document.getElementById('form-posvendas').addEventListener('submit', async function (e) {
             e.preventDefault();
 
+            if (!clienteEncontrado) {
+                toast('Digite o nome do cliente e pressione Enter para buscá-lo!', 'erro');
+                return;
+            }
+
             const posVenda = {
-                cliente_id: parseInt(document.getElementById('cliente_id').value),
+                cliente_id: clienteEncontrado.id,
                 feedback: document.getElementById('feedback').value || null,
                 status: document.getElementById('status').value,
                 data_retorno: document.getElementById('data_retorno').value || null
