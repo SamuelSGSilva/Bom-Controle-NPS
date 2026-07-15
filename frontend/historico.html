@@ -318,6 +318,12 @@
         const NOTA_LIMITE_SUGESTAO_BLOQUEIO = 3;
         let clienteAtual = null;
 
+        // O backend grava created_at em UTC sem indicar o fuso na string ISO;
+        // sem o "Z" o navegador interpreta como horário local, adiantando o valor.
+        function dataLocal(isoSemFuso) {
+            return new Date(isoSemFuso.endsWith('Z') ? isoSemFuso : isoSemFuso + 'Z');
+        }
+
         async function carregarHistorico() {
             const response = await fetch(`/relatorios/clientes/${clienteId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -332,7 +338,7 @@
             document.getElementById('cpf-cliente').textContent = c.cpf || '--';
             document.getElementById('cnpj-cliente').textContent = c.cnpj || '--';
             document.getElementById('cidade-cliente').textContent = `${c.cidade || '--'}/${c.estado || '--'}`;
-            document.getElementById('data-cliente').textContent = c.created_at ? new Date(c.created_at).toLocaleString('pt-BR') : '--';
+            document.getElementById('data-cliente').textContent = c.created_at ? dataLocal(c.created_at).toLocaleString('pt-BR') : '--';
 
             // Pós-vendas
             const tabelaPV = document.getElementById('tabela-posvendas');
@@ -366,7 +372,7 @@
                 <tr>
                     <td data-label="Nota"><strong>${a.nps_score ?? '--'}</strong>/10</td>
                     <td data-label="Feedback">${a.consideracoes || a.o_que_gostou || '--'}</td>
-                    <td data-label="Data">${new Date(a.created_at).toLocaleDateString('pt-BR')}</td>
+                    <td data-label="Data">${dataLocal(a.created_at).toLocaleDateString('pt-BR')}</td>
                 </tr>`;
                 });
             }

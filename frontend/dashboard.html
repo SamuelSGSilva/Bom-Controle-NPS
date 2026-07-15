@@ -208,6 +208,12 @@
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'index.html';
 
+        // O backend grava created_at em UTC sem indicar o fuso na string ISO;
+        // sem o "Z" o navegador interpreta como horário local, adiantando o valor.
+        function dataLocal(isoSemFuso) {
+            return new Date(isoSemFuso.endsWith('Z') ? isoSemFuso : isoSemFuso + 'Z');
+        }
+
         async function carregarNPS() {
             const response = await fetch('/avaliacoes/relatorio/nps', {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -279,7 +285,7 @@
             <tr style="border-bottom: 1px solid #2a2a2a;">
                 <td style="padding: 10px 8px; font-size: 13px; color: #cccccc;">${nome}</td>
                 <td style="padding: 10px 8px;"><span style="color: ${cores[tipo]}; font-weight: 700;">${a.nps_score}</span>/10</td>
-                <td style="padding: 10px 8px; font-size: 12px; color: #888888;">${new Date(a.created_at).toLocaleDateString('pt-BR')}</td>
+                <td style="padding: 10px 8px; font-size: 12px; color: #888888;">${dataLocal(a.created_at).toLocaleDateString('pt-BR')}</td>
             </tr>`;
             });
         }

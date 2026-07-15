@@ -343,6 +343,12 @@
         const NOMES_ACAO = { create: 'Criado', update: 'Atualizado', delete: 'Excluído' };
         const CLASSE_ACAO = { create: 'badge-create', update: 'badge-update', delete: 'badge-delete' };
 
+        // O backend grava created_at em UTC sem indicar o fuso na string ISO;
+        // sem o "Z" o navegador interpreta como horário local, adiantando o valor.
+        function dataLocal(isoSemFuso) {
+            return new Date(isoSemFuso.endsWith('Z') ? isoSemFuso : isoSemFuso + 'Z');
+        }
+
         let todosLogs = [];
 
         function nomeRegistro(log) {
@@ -407,7 +413,7 @@
             }
 
             logs.forEach((log, indice) => {
-                const quando = new Date(log.created_at).toLocaleString('pt-BR');
+                const quando = dataLocal(log.created_at).toLocaleString('pt-BR');
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td data-label="Quando">${quando}</td>
@@ -430,7 +436,7 @@
             const campos = new Set([...Object.keys(antes), ...Object.keys(depois)]);
 
             document.getElementById('modal-titulo').textContent = `${NOMES_ENTIDADE[log.entidade] || log.entidade} — ${NOMES_ACAO[log.acao] || log.acao}`;
-            document.getElementById('modal-subtitulo').textContent = `${nomeRegistro(log)} · por ${log.usuario || '--'} em ${new Date(log.created_at).toLocaleString('pt-BR')}`;
+            document.getElementById('modal-subtitulo').textContent = `${nomeRegistro(log)} · por ${log.usuario || '--'} em ${dataLocal(log.created_at).toLocaleString('pt-BR')}`;
 
             const tabelaModal = document.getElementById('tabela-modal');
             tabelaModal.innerHTML = '';
