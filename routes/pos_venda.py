@@ -4,8 +4,8 @@ from database import get_db
 from models.models import PosVenda, Cliente, LogAuditoria
 from pydantic import BaseModel
 from datetime import datetime
-import json
 from auth import verificar_token
+from services.auditoria import registrar_log
 
 router = APIRouter()
 
@@ -53,10 +53,17 @@ def listar_logs_auditoria(entidade: str | None = None, db: Session = Depends(get
 def buscar_pos_venda(cliente_id: int, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
     return db.query(PosVenda).filter(PosVenda.cliente_id == cliente_id).all()
 
+def _nome_cliente(db: Session, cliente_id: int) -> str | None:
+    cliente = db.query(Cliente).filter(Cliente.id == cliente_id).first()
+    return cliente.nome if cliente else None
+
 @router.post("/pos-venda")
 def create_pos_venda(pos_venda: PosVendaCreate, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
     novo = PosVenda(**pos_venda.model_dump())
     db.add(novo)
+    db.flush()
+    dados_depois = _serializar_pos_venda(novo, _nome_cliente(db, novo.cliente_id))
+    registrar_log(db, token.get("sub"), "create", "pos_venda", novo.id, None, dados_depois)
     db.commit()
     db.refresh(novo)
     return novo
@@ -67,19 +74,8 @@ def deletar_pos_venda(id: int, db: Session = Depends(get_db), token: dict = Depe
     if not pv:
         raise HTTPException(status_code=404, detail="Pós-venda não encontrado")
 
-    cliente = db.query(Cliente).filter(Cliente.id == pv.cliente_id).first()
-    dados_antes = _serializar_pos_venda(pv, cliente.nome if cliente else None)
-    dados_antes["data_retorno"] = str(dados_antes["data_retorno"]) if dados_antes["data_retorno"] else None
-    dados_antes["created_at"] = str(dados_antes["created_at"]) if dados_antes["created_at"] else None
-
-    log = LogAuditoria(
-        usuario=token.get("sub"),
-        acao="delete",
-        entidade="pos_venda",
-        entidade_id=pv.id,
-        dados_antes=json.dumps(dados_antes, ensure_ascii=False),
-    )
-    db.add(log)
+    dados_antes = _serializar_pos_venda(pv, _nome_cliente(db, pv.cliente_id))
+    registrar_log(db, token.get("sub"), "delete", "pos_venda", pv.id, dados_antes, None)
     db.delete(pv)
     db.commit()
     return {"message": "Pós-venda deletado com sucesso"}
@@ -89,8 +85,12 @@ def editar_pos_venda(id: int, pos_venda: PosVendaCreate, db: Session = Depends(g
     db_pv = db.query(PosVenda).filter(PosVenda.id == id).first()
     if not db_pv:
         raise HTTPException(status_code=404, detail="Pós-venda não encontrado")
+    dados_antes = _serializar_pos_venda(db_pv, _nome_cliente(db, db_pv.cliente_id))
     for key, value in pos_venda.model_dump().items():
         setattr(db_pv, key, value)
+    db.flush()
+    dados_depois = _serializar_pos_venda(db_pv, _nome_cliente(db, db_pv.cliente_id))
+    registrar_log(db, token.get("sub"), "update", "pos_venda", db_pv.id, dados_antes, dados_depois)
     db.commit()
     db.refresh(db_pv)
     return db_pv

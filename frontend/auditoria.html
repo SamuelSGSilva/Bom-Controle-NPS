@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auditoria</title>
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <script src="toast.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #0a0a0a;
+            color: #f1f1f1;
+            min-height: 100vh;
+        }
+
+        header {
+            background: #141414;
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #cc0000;
+        }
+
+        header button {
+            background: transparent;
+            border: 1px solid #cc0000;
+            color: #cc0000;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        header button:hover {
+            background: #cc0000;
+            color: #fff;
+        }
+
+        nav {
+            display: flex;
+            gap: 24px;
+        }
+
+        nav a {
+            color: #888888;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: #cc0000;
+        }
+
+        nav a.ativo {
+            color: #cc0000;
+            font-weight: 600;
+        }
+
+        main {
+            padding: 32px;
+        }
+
+        h2 {
+            margin-bottom: 4px;
+            font-size: 18px;
+            color: #ffffff;
+        }
+
+        .subtitulo {
+            color: #888888;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        select, input[type="text"] {
+            padding: 10px 16px;
+            background: #141414;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            color: #f1f1f1;
+            font-size: 14px;
+            outline: none;
+        }
+
+        select {
+            cursor: pointer;
+        }
+
+        .filtros {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            min-width: 800px;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        thead th {
+            background: #cc0000;
+            color: #fff;
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        thead th:nth-child(1) { width: 16%; }
+        thead th:nth-child(2) { width: 12%; }
+        thead th:nth-child(3) { width: 12%; }
+        thead th:nth-child(4) { width: 28%; }
+        thead th:nth-child(5) { width: 18%; }
+        thead th:nth-child(6) { width: 14%; }
+
+        tbody tr {
+            border-bottom: 1px solid #2a2a2a;
+            transition: background 0.2s;
+        }
+
+        tbody tr:hover {
+            background: #1a1a1a;
+        }
+
+        tbody td {
+            padding: 12px 16px;
+            font-size: 14px;
+            color: #cccccc;
+            word-break: break-word;
+        }
+
+        .badge {
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            display: inline-block;
+        }
+
+        .badge-create { color: #00cc66; border: 1px solid #00cc66; }
+        .badge-update { color: #38bdf8; border: 1px solid #38bdf8; }
+        .badge-delete { color: #cc0000; border: 1px solid #cc0000; }
+
+        .btn-ver {
+            background: transparent;
+            border: 1px solid #cc0000;
+            color: #cc0000;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .btn-ver:hover {
+            background: #cc0000;
+            color: #fff;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #2a2a2a;
+            border-top: 4px solid #cc0000;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .modal-fundo {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .modal-fundo.ativo {
+            display: flex;
+        }
+
+        .modal-caixa {
+            background: #141414;
+            border: 1px solid #2a2a2a;
+            border-top: 3px solid #cc0000;
+            border-radius: 12px;
+            max-width: 640px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .modal-caixa h3 {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .modal-caixa .subtitulo {
+            margin-bottom: 16px;
+        }
+
+        .modal-caixa table {
+            min-width: 0;
+        }
+
+        .modal-caixa thead th {
+            background: #1a1a1a;
+            color: #cccccc;
+        }
+
+        .modal-caixa td {
+            font-size: 13px;
+        }
+
+        .modal-fechar {
+            float: right;
+            background: transparent;
+            border: none;
+            color: #888888;
+            font-size: 20px;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-fechar:hover {
+            color: #cc0000;
+        }
+
+        .campo-alterado {
+            color: #f59e0b;
+            font-weight: 600;
+        }
+    </style>
+    <link rel="stylesheet" href="responsive.css">
+</head>
+
+<body>
+    <header>
+        <img src="assets/logo.png" style="height: 40px;">
+        <nav>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="clientes.html">Clientes</a>
+            <a href="posvendas.html">Pós-venda</a>
+            <a href="relatorios.html">Relatórios</a>
+            <a href="avaliacao-completa.html">Avaliações</a>
+            <a href="importar.html">Importar</a>
+            <a href="auditoria.html" class="ativo">Auditoria</a>
+        </nav>
+        <button onclick="logout()">Sair</button>
+    </header>
+
+    <main>
+        <h2>Log de auditoria</h2>
+        <p class="subtitulo">Histórico de tudo que foi criado, alterado ou excluído no sistema</p>
+
+        <div class="filtros">
+            <select id="filtro-entidade" onchange="aplicarFiltros()">
+                <option value="">Todas as telas</option>
+                <option value="cliente">Clientes</option>
+                <option value="pos_venda">Pós-venda</option>
+            </select>
+            <select id="filtro-acao" onchange="aplicarFiltros()">
+                <option value="">Todas as ações</option>
+                <option value="create">Criado</option>
+                <option value="update">Atualizado</option>
+                <option value="delete">Excluído</option>
+            </select>
+            <input type="text" id="busca-usuario" placeholder="Buscar por usuário..." oninput="aplicarFiltros()">
+        </div>
+
+        <div id="loading" style="text-align: center; padding: 40px; display: none;">
+            <div class="spinner"></div>
+            <p style="color: #888888; margin-top: 12px;">Carregando...</p>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Quando</th>
+                        <th>Tela</th>
+                        <th>Ação</th>
+                        <th>Registro</th>
+                        <th>Usuário</th>
+                        <th>Detalhes</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-logs"></tbody>
+            </table>
+        </div>
+    </main>
+
+    <div class="modal-fundo" id="modal-detalhes">
+        <div class="modal-caixa">
+            <button class="modal-fechar" onclick="fecharModal()">&times;</button>
+            <h3 id="modal-titulo">Detalhes</h3>
+            <p class="subtitulo" id="modal-subtitulo"></p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Campo</th>
+                        <th>Antes</th>
+                        <th>Depois</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-modal"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'index.html';
+
+        const NOMES_ENTIDADE = { cliente: 'Cliente', pos_venda: 'Pós-venda' };
+        const NOMES_ACAO = { create: 'Criado', update: 'Atualizado', delete: 'Excluído' };
+        const CLASSE_ACAO = { create: 'badge-create', update: 'badge-update', delete: 'badge-delete' };
+
+        let todosLogs = [];
+
+        function nomeRegistro(log) {
+            const dados = JSON.parse(log.dados_depois || log.dados_antes || '{}');
+            if (log.entidade === 'cliente') return dados.nome || `ID ${log.entidade_id}`;
+            if (log.entidade === 'pos_venda') return dados.cliente_nome || `ID ${log.entidade_id}`;
+            return `ID ${log.entidade_id}`;
+        }
+
+        async function carregarLogs() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('tabela-logs').innerHTML = '';
+
+            const response = await fetch('/logs-auditoria', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            document.getElementById('loading').style.display = 'none';
+
+            if (response.status === 401) {
+                localStorage.removeItem('token');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            if (!response.ok) {
+                toast('Erro ao carregar log de auditoria!', 'erro');
+                return;
+            }
+
+            todosLogs = await response.json();
+
+            const params = new URLSearchParams(window.location.search);
+            const entidadeParam = params.get('entidade');
+            const acaoParam = params.get('acao');
+            if (entidadeParam) document.getElementById('filtro-entidade').value = entidadeParam;
+            if (acaoParam) document.getElementById('filtro-acao').value = acaoParam;
+
+            aplicarFiltros();
+        }
+
+        function aplicarFiltros() {
+            const entidade = document.getElementById('filtro-entidade').value;
+            const acao = document.getElementById('filtro-acao').value;
+            const usuario = document.getElementById('busca-usuario').value.trim().toLowerCase();
+
+            let filtrados = todosLogs;
+            if (entidade) filtrados = filtrados.filter(l => l.entidade === entidade);
+            if (acao) filtrados = filtrados.filter(l => l.acao === acao);
+            if (usuario) filtrados = filtrados.filter(l => (l.usuario || '').toLowerCase().includes(usuario));
+
+            renderizarLogs(filtrados);
+        }
+
+        function renderizarLogs(logs) {
+            const tabela = document.getElementById('tabela-logs');
+            tabela.innerHTML = '';
+
+            if (logs.length === 0) {
+                tabela.innerHTML = '<tr><td colspan="6" style="text-align:center">Nenhum registro encontrado</td></tr>';
+                return;
+            }
+
+            logs.forEach((log, indice) => {
+                const quando = new Date(log.created_at).toLocaleString('pt-BR');
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td data-label="Quando">${quando}</td>
+                    <td data-label="Tela">${NOMES_ENTIDADE[log.entidade] || log.entidade}</td>
+                    <td data-label="Ação"><span class="badge ${CLASSE_ACAO[log.acao] || ''}">${NOMES_ACAO[log.acao] || log.acao}</span></td>
+                    <td data-label="Registro">${nomeRegistro(log)}</td>
+                    <td data-label="Usuário">${log.usuario || '--'}</td>
+                    <td data-label="Detalhes"><button class="btn-ver" onclick="abrirModal(${indice})">Ver</button></td>
+                `;
+                tabela.appendChild(row);
+            });
+
+            window.__logsExibidos = logs;
+        }
+
+        function abrirModal(indice) {
+            const log = window.__logsExibidos[indice];
+            const antes = log.dados_antes ? JSON.parse(log.dados_antes) : {};
+            const depois = log.dados_depois ? JSON.parse(log.dados_depois) : {};
+            const campos = new Set([...Object.keys(antes), ...Object.keys(depois)]);
+
+            document.getElementById('modal-titulo').textContent = `${NOMES_ENTIDADE[log.entidade] || log.entidade} — ${NOMES_ACAO[log.acao] || log.acao}`;
+            document.getElementById('modal-subtitulo').textContent = `${nomeRegistro(log)} · por ${log.usuario || '--'} em ${new Date(log.created_at).toLocaleString('pt-BR')}`;
+
+            const tabelaModal = document.getElementById('tabela-modal');
+            tabelaModal.innerHTML = '';
+
+            campos.forEach(campo => {
+                if (campo === 'id') return;
+                const valorAntes = antes[campo] ?? '--';
+                const valorDepois = depois[campo] ?? '--';
+                const mudou = log.acao === 'update' && String(valorAntes) !== String(valorDepois);
+                tabelaModal.innerHTML += `
+                    <tr>
+                        <td>${campo}</td>
+                        <td class="${mudou ? 'campo-alterado' : ''}">${valorAntes}</td>
+                        <td class="${mudou ? 'campo-alterado' : ''}">${valorDepois}</td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('modal-detalhes').classList.add('ativo');
+        }
+
+        function fecharModal() {
+            document.getElementById('modal-detalhes').classList.remove('ativo');
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'index.html';
+        }
+
+        carregarLogs();
+    </script>
+</body>
+
+</html>

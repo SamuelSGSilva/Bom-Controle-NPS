@@ -58,6 +58,7 @@ class LogAuditoria(Base):
     entidade = Column(String(50), nullable=False)
     entidade_id = Column(Integer, nullable=False)
     dados_antes = Column(String(2000), nullable=True)
+    dados_depois = Column(String(2000), nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
 class Avaliacao(Base):

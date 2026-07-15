@@ -1,6 +1,6 @@
 import asyncio
 from fastapi import FastAPI
-from database import engine, Base, SessionLocal
+from database import engine, Base, SessionLocal, sincronizar_colunas
 from models import models
 from models.models import Usuario
 from routes import clientes, pos_venda, nps, auth, relatorios, avaliacoes
@@ -12,6 +12,7 @@ import os
 SINCRONIZACAO_INTERVALO_SEGUNDOS = 30 * 60
 
 Base.metadata.create_all(bind=engine)
+sincronizar_colunas()
 
 def criar_usuario_padrao():
     db = SessionLocal()
