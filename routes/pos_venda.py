@@ -67,7 +67,8 @@ def deletar_pos_venda(id: int, db: Session = Depends(get_db), token: dict = Depe
     if not pv:
         raise HTTPException(status_code=404, detail="Pós-venda não encontrado")
 
-    dados_antes = _serializar_pos_venda(pv, None)
+    cliente = db.query(Cliente).filter(Cliente.id == pv.cliente_id).first()
+    dados_antes = _serializar_pos_venda(pv, cliente.nome if cliente else None)
     dados_antes["data_retorno"] = str(dados_antes["data_retorno"]) if dados_antes["data_retorno"] else None
     dados_antes["created_at"] = str(dados_antes["created_at"]) if dados_antes["created_at"] else None
 

@@ -282,13 +282,14 @@
                     <option value="concluido">Concluído</option>
                 </select>
                 <button class="btn-novo" onclick="novoPosVendas()">+ Novo Pós-Vendas</button>
+                <button class="btn-editar" id="btn-ver-excluidos" onclick="alternarExcluidos()">Ver Excluídos</button>
             </div>
             <div id="loading" style="text-align: center; padding: 40px; display: none;">
                 <div class="spinner"></div>
                 <p style="color: #888888; margin-top: 12px;">Carregando...</p>
             </div>
         </div>
-        <div class="table-container">
+        <div class="table-container" id="container-posvendas">
             <table>
                 <thead>
                     <tr>
@@ -300,6 +301,21 @@
                     </tr>
                 </thead>
                 <tbody id="tabela-posvendas"></tbody>
+            </table>
+        </div>
+        <div class="table-container" id="container-excluidos" style="display: none;">
+            <h2>Pós-vendas excluídos</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Status</th>
+                        <th>Feedback</th>
+                        <th>Excluído por</th>
+                        <th>Quando</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-excluidos"></tbody>
             </table>
         </div>
     </main>
@@ -336,6 +352,54 @@
             todosPosVendas = await resPV.json();
             todosClientesPV = await resCli.json();
             renderizarPosVendas(todosPosVendas);
+        }
+
+        let mostrandoExcluidos = false;
+
+        async function alternarExcluidos() {
+            mostrandoExcluidos = !mostrandoExcluidos;
+            document.getElementById('container-posvendas').style.display = mostrandoExcluidos ? 'none' : 'block';
+            document.getElementById('container-excluidos').style.display = mostrandoExcluidos ? 'block' : 'none';
+            document.getElementById('btn-ver-excluidos').textContent = mostrandoExcluidos ? 'Voltar' : 'Ver Excluídos';
+
+            if (mostrandoExcluidos) {
+                await carregarExcluidos();
+            }
+        }
+
+        async function carregarExcluidos() {
+            const tabela = document.getElementById('tabela-excluidos');
+            tabela.innerHTML = '';
+
+            const response = await fetch('/logs-auditoria?entidade=pos_venda', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!response.ok) {
+                toast('Erro ao carregar pós-vendas excluídos!', 'erro');
+                return;
+            }
+
+            const logs = await response.json();
+
+            if (logs.length === 0) {
+                tabela.innerHTML = '<tr><td colspan="5" style="text-align:center">Nenhum pós-venda excluído</td></tr>';
+                return;
+            }
+
+            logs.forEach(log => {
+                const dados = JSON.parse(log.dados_antes);
+                const nomeCliente = dados.cliente_nome || `ID ${dados.cliente_id}`;
+                const quando = new Date(log.created_at).toLocaleString('pt-BR');
+                tabela.innerHTML += `
+            <tr>
+                <td data-label="Cliente">${nomeCliente}</td>
+                <td data-label="Status">${dados.status || '--'}</td>
+                <td data-label="Feedback">${dados.feedback || '--'}</td>
+                <td data-label="Excluído por">${log.usuario || '--'}</td>
+                <td data-label="Quando">${quando}</td>
+            </tr>`;
+            });
         }
 
         async function deletarPosVenda(id) {
