@@ -433,8 +433,8 @@
                 </div>
 
                 <div class="pergunta">
-                    <label>De 0 a 5, qual a chance de você indicar a AutoLuiz para um colega da área?</label>
-                    <div class="notas" data-campo="nps_score" data-min="0" data-max="5"></div>
+                    <label>De 0 a 10, qual a chance de você indicar a AutoLuiz para um colega da área?</label>
+                    <div class="notas" data-campo="nps_score" data-max="10"></div>
                     <div class="legenda"><span>Pouco provável</span><span>Muito provável</span></div>
                 </div>
             </div>
@@ -534,7 +534,7 @@
         document.querySelectorAll('.notas').forEach(container => {
             const campo = container.dataset.campo;
             const max = container.dataset.max ? parseInt(container.dataset.max) : 5;
-            const min = container.dataset.min ? parseInt(container.dataset.min) : (max === 10 ? 0 : 1);
+            const min = max === 10 ? 0 : 1;
             const extraLabels = container.dataset.extraLabels ? container.dataset.extraLabels.split(',') : [];
 
             for (let i = min; i <= max; i++) {
