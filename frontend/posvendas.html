@@ -248,6 +248,140 @@
         .autocomplete-item.ativo {
             background: #1a1a1a;
         }
+
+        input[type="date"] {
+            padding: 10px 16px;
+            background: #141414;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            color: #f1f1f1;
+            font-size: 14px;
+            outline: none;
+            color-scheme: dark;
+        }
+
+        .modal-fundo {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .modal-fundo.ativo {
+            display: flex;
+        }
+
+        .modal-caixa {
+            background: #141414;
+            border: 1px solid #2a2a2a;
+            border-top: 3px solid #cc0000;
+            border-radius: 12px;
+            max-width: 560px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .modal-caixa h3 {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .modal-caixa .subtitulo {
+            color: #888888;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+
+        .modal-fechar {
+            float: right;
+            background: transparent;
+            border: none;
+            color: #888888;
+            font-size: 20px;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-fechar:hover {
+            color: #cc0000;
+        }
+
+        .modal-secao {
+            margin-bottom: 20px;
+        }
+
+        .modal-secao h4 {
+            font-size: 13px;
+            color: #888888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .comentario-item {
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #cccccc;
+        }
+
+        .comentario-item .data {
+            color: #888888;
+            font-size: 11px;
+            margin-bottom: 6px;
+        }
+
+        .comentario-item p {
+            margin-bottom: 6px;
+        }
+
+        .comentario-item p:last-child {
+            margin-bottom: 0;
+        }
+
+        .modal-caixa textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px 14px;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            color: #f1f1f1;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            outline: none;
+        }
+
+        .modal-caixa textarea:focus {
+            border-color: #cc0000;
+        }
+
+        .btn-salvar {
+            background: #cc0000;
+            color: #fff;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+        .btn-salvar:hover {
+            background: #aa0000;
+        }
     </style>
     <link rel="stylesheet" href="responsive.css">
 </head>
@@ -282,6 +416,8 @@
                     <option value="em andamento">Em Andamento</option>
                     <option value="concluido">Concluído</option>
                 </select>
+                <input type="date" id="filtro-periodo-de" title="Cadastrado a partir de" onchange="aplicarFiltros()">
+                <input type="date" id="filtro-periodo-ate" title="Cadastrado até" onchange="aplicarFiltros()">
                 <button class="btn-novo" onclick="novoPosVendas()">+ Novo Pós-Vendas</button>
                 <a class="btn-editar" href="auditoria.html?entidade=pos_venda" style="text-decoration: none; display: inline-flex; align-items: center;">Ver Excluídos</a>
             </div>
@@ -306,9 +442,35 @@
         </div>
     </main>
 
+    <div class="modal-fundo" id="modal-detalhes">
+        <div class="modal-caixa">
+            <button class="modal-fechar" onclick="fecharModalDetalhes()">&times;</button>
+            <h3 id="modal-titulo">Detalhes</h3>
+            <p class="subtitulo" id="modal-subtitulo"></p>
+
+            <div class="modal-secao">
+                <h4>Comentários do cliente</h4>
+                <div id="modal-comentarios"></div>
+            </div>
+
+            <div class="modal-secao">
+                <h4>Observações internas</h4>
+                <textarea id="modal-observacoes" placeholder="Anote aqui observações internas sobre este pós-venda..."></textarea>
+                <br>
+                <button class="btn-salvar" onclick="salvarObservacoes()">Salvar observações</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'index.html';
+
+        // O backend grava created_at em UTC sem indicar o fuso na string ISO;
+        // sem o "Z" o navegador interpreta como horário local, adiantando o valor.
+        function dataLocal(isoSemFuso) {
+            return new Date(isoSemFuso.endsWith('Z') ? isoSemFuso : isoSemFuso + 'Z');
+        }
 
         let todosPosVendas = [];
         let todosClientesPV = [];
@@ -411,6 +573,8 @@
         function aplicarFiltros() {
             const status = document.getElementById('filtro-status').value;
             const busca = document.getElementById('busca-cliente').value.trim().toLowerCase();
+            const periodoDe = document.getElementById('filtro-periodo-de').value;
+            const periodoAte = document.getElementById('filtro-periodo-ate').value;
 
             let filtrados = todosPosVendas;
 
@@ -420,6 +584,16 @@
 
             if (busca) {
                 filtrados = filtrados.filter(pv => (pv.cliente_nome || '').toLowerCase().includes(busca));
+            }
+
+            if (periodoDe) {
+                const inicio = new Date(periodoDe + 'T00:00:00');
+                filtrados = filtrados.filter(pv => dataLocal(pv.created_at) >= inicio);
+            }
+
+            if (periodoAte) {
+                const fim = new Date(periodoAte + 'T23:59:59');
+                filtrados = filtrados.filter(pv => dataLocal(pv.created_at) <= fim);
             }
 
             renderizarPosVendas(filtrados);
@@ -456,6 +630,7 @@
             <td data-label="Feedback">${pv.feedback || '--'}</td>
             <td data-label="Ações">
                <button class="btn-ver" onclick="verCliente(${pv.cliente_id})">Ver</button>
+                <button class="btn-editar" onclick="abrirModalDetalhes(${pv.id})">Detalhes</button>
                 <button class="btn-editar" onclick="editarPosVenda(${pv.id})">Editar</button>
                 <button class="btn-deletar" onclick="deletarPosVenda(${pv.id})">Excluir</button>
             </td>
@@ -466,6 +641,81 @@
 
         function verCliente(clienteId) {
             window.location.href = `historico.html?id=${clienteId}`;
+        }
+
+        let posVendaAtual = null;
+
+        async function abrirModalDetalhes(id) {
+            const pv = todosPosVendas.find(p => p.id === id);
+            if (!pv) return;
+            posVendaAtual = pv;
+
+            document.getElementById('modal-titulo').textContent = pv.cliente_nome || `Cliente ID ${pv.cliente_id}`;
+            document.getElementById('modal-subtitulo').textContent = `Pós-venda cadastrado em ${dataLocal(pv.created_at).toLocaleDateString('pt-BR')}`;
+            document.getElementById('modal-observacoes').value = pv.observacoes || '';
+
+            const comentariosDiv = document.getElementById('modal-comentarios');
+            comentariosDiv.innerHTML = '<p style="color:#888; font-size:13px;">Carregando...</p>';
+            document.getElementById('modal-detalhes').classList.add('ativa');
+
+            const response = await fetch(`/avaliacoes/${pv.cliente_id}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!response.ok) {
+                comentariosDiv.innerHTML = '<p style="color:#888; font-size:13px;">Erro ao carregar comentários.</p>';
+                return;
+            }
+
+            const avaliacoes = await response.json();
+            const comComentario = avaliacoes.filter(a => a.o_que_gostou || a.o_que_melhorar || a.consideracoes);
+
+            if (comComentario.length === 0) {
+                comentariosDiv.innerHTML = '<p style="color:#888; font-size:13px;">Este cliente não deixou comentários nas avaliações.</p>';
+                return;
+            }
+
+            comentariosDiv.innerHTML = comComentario.slice().reverse().map(a => `
+                <div class="comentario-item">
+                    <div class="data">${dataLocal(a.created_at).toLocaleDateString('pt-BR')}</div>
+                    ${a.o_que_gostou ? `<p><strong>Gostou:</strong> ${a.o_que_gostou}</p>` : ''}
+                    ${a.o_que_melhorar ? `<p><strong>Melhorar:</strong> ${a.o_que_melhorar}</p>` : ''}
+                    ${a.consideracoes ? `<p><strong>Considerações:</strong> ${a.consideracoes}</p>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function fecharModalDetalhes() {
+            document.getElementById('modal-detalhes').classList.remove('ativa');
+            posVendaAtual = null;
+        }
+
+        async function salvarObservacoes() {
+            if (!posVendaAtual) return;
+            const observacoes = document.getElementById('modal-observacoes').value || null;
+
+            const response = await fetch(`/pos-venda/${posVendaAtual.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    cliente_id: posVendaAtual.cliente_id,
+                    feedback: posVendaAtual.feedback,
+                    status: posVendaAtual.status,
+                    data_retorno: posVendaAtual.data_retorno,
+                    observacoes
+                })
+            });
+
+            if (response.ok) {
+                toast('Observações salvas com sucesso!');
+                fecharModalDetalhes();
+                carregarPosVendas();
+            } else {
+                toast('Erro ao salvar observações!', 'erro');
+            }
         }
 
         function novoPosVendas() {

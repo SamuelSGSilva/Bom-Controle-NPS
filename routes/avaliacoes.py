@@ -54,17 +54,18 @@ def criar_avaliacao(avaliacao: AvaliacaoSchema, db: Session = Depends(get_db), t
 
 @router.get("/avaliacoes/relatorio/nps")
 def relatorio_nps(db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
-    avaliacoes = db.query(Avaliacao).filter(Avaliacao.nps_score.isnot(None)).all()
-    total = len(avaliacoes)
+    todas = db.query(Avaliacao).all()
+    total = len(todas)
 
     if total == 0:
         return {"message": "Nenhuma avaliação encontrada"}
 
-    promotores = len([a for a in avaliacoes if a.nps_score >= 9])
-    neutros = len([a for a in avaliacoes if 7 <= a.nps_score <= 8])
-    detratores = len([a for a in avaliacoes if a.nps_score <= 6])
+    com_nps = [a for a in todas if a.nps_score is not None]
+    promotores = len([a for a in com_nps if a.nps_score >= 9])
+    neutros = len([a for a in com_nps if 7 <= a.nps_score <= 8])
+    detratores = len([a for a in com_nps if a.nps_score <= 6])
 
-    nps = ((promotores - detratores) / total) * 100
+    nps = ((promotores - detratores) / len(com_nps)) * 100 if com_nps else 0
 
     return {
         "total_avaliacoes": total,
@@ -86,8 +87,20 @@ def painel_resultados(db: Session = Depends(get_db), token: dict = Depends(verif
     if total == 0:
         return {"message": "Nenhuma avaliação encontrada"}
 
+    # Alguns campos usam valores acima de 5 pra opções que não são nota
+    # (nota_link_pagamento: 6=Pix, 7=Boleto; nota_entrega_prazo/nota_embalagem: 6=Não tem).
+    # Esses valores precisam ficar fora das médias, senão inflam a nota real.
+    VALORES_NAO_NUMERICOS = {
+        'nota_link_pagamento': {6, 7},
+        'nota_entrega_prazo': {6},
+        'nota_embalagem': {6},
+    }
+
+    def eh_nota_valida(campo, valor):
+        return valor is not None and valor not in VALORES_NAO_NUMERICOS.get(campo, set())
+
     def media(campo):
-        valores = [getattr(a, campo) for a in avaliacoes if getattr(a, campo) is not None]
+        valores = [getattr(a, campo) for a in avaliacoes if eh_nota_valida(campo, getattr(a, campo))]
         return round(sum(valores) / len(valores), 2) if valores else None
 
     def status_nps(score):
@@ -105,7 +118,7 @@ def painel_resultados(db: Session = Depends(get_db), token: dict = Depends(verif
     for a in avaliacoes:
         for campo in campos_notas:
             v = getattr(a, campo)
-            if v is not None:
+            if eh_nota_valida(campo, v):
                 notas_todas.append(v)
 
     media_geral = round(sum(notas_todas) / len(notas_todas), 2) if notas_todas else None

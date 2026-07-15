@@ -14,6 +14,7 @@ class PosVendaCreate(BaseModel):
     feedback: str | None = None
     status: str = "pendente"
     data_retorno: datetime | None = None
+    observacoes: str | None = None
 
 def _serializar_pos_venda(pv: PosVenda, cliente_nome: str | None):
     return {
@@ -23,6 +24,7 @@ def _serializar_pos_venda(pv: PosVenda, cliente_nome: str | None):
         "feedback": pv.feedback,
         "status": pv.status,
         "data_retorno": pv.data_retorno,
+        "observacoes": pv.observacoes,
         "created_at": pv.created_at,
     }
 
