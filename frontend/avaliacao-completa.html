@@ -174,6 +174,18 @@
             font-size: 14px;
         }
 
+        .notas.faltando {
+            border: 2px solid #cc0000;
+            border-radius: 8px;
+            padding: 8px;
+            animation: piscar 1s ease-in-out 2;
+        }
+
+        @keyframes piscar {
+            0%, 100% { box-shadow: none; }
+            50% { box-shadow: 0 0 0 4px rgba(204, 0, 0, 0.4); }
+        }
+
         .legenda {
             display: flex;
             justify-content: space-between;
@@ -390,14 +402,14 @@
                 <div class="pergunta">
                     <span class="categoria">Transporte</span>
                     <label>O produto chegou no prazo combinado?</label>
-                    <div class="notas" data-campo="nota_entrega_prazo"></div>
+                    <div class="notas" data-campo="nota_entrega_prazo" data-max="6" data-extra-labels="Não tem"></div>
                     <div class="legenda"><span>Muito ruim</span><span>Excelente</span></div>
                 </div>
 
                 <div class="pergunta">
                     <span class="categoria">Transporte</span>
                     <label>A embalagem estava adequada e o produto chegou sem avarias?</label>
-                    <div class="notas" data-campo="nota_embalagem"></div>
+                    <div class="notas" data-campo="nota_embalagem" data-max="6" data-extra-labels="Não tem"></div>
                     <div class="legenda"><span>Muito ruim</span><span>Excelente</span></div>
                 </div>
             </div>
@@ -548,6 +560,7 @@
                     container.querySelectorAll('.nota').forEach(b => b.classList.remove('selecionada'));
                     btn.classList.add('selecionada');
                     respostas[campo] = i;
+                    container.classList.remove('faltando');
                 };
                 container.appendChild(btn);
             }
@@ -570,18 +583,32 @@
         function mudarEtapa(direcao) {
             const proxima = etapaAtual + direcao;
             if (proxima < 1 || proxima > totalEtapas) return;
+            irParaEtapa(proxima);
+        }
 
+        function irParaEtapa(numero) {
             document.querySelector(`.etapa[data-etapa="${etapaAtual}"]`).classList.remove('ativa');
-            document.querySelector(`.etapa[data-etapa="${proxima}"]`).classList.add('ativa');
-
-            etapaAtual = proxima;
+            document.querySelector(`.etapa[data-etapa="${numero}"]`).classList.add('ativa');
+            etapaAtual = numero;
             atualizarProgresso();
-
             document.getElementById('btn-anterior').style.visibility = etapaAtual === 1 ? 'hidden' : 'visible';
             document.getElementById('btn-proximo').style.display = etapaAtual === totalEtapas ? 'none' : 'block';
             document.getElementById('btn-enviar').style.display = etapaAtual === totalEtapas ? 'block' : 'none';
-
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function validarNotasCompletas() {
+            const faltando = [...document.querySelectorAll('.notas[data-campo]')]
+                .filter(container => respostas[container.dataset.campo] === null || respostas[container.dataset.campo] === undefined);
+
+            faltando.forEach(container => container.classList.add('faltando'));
+
+            if (faltando.length === 0) return true;
+
+            const primeiraEtapa = parseInt(faltando[0].closest('.etapa').dataset.etapa);
+            toast('Responda todas as perguntas de nota antes de enviar', 'aviso');
+            irParaEtapa(primeiraEtapa);
+            return false;
         }
 
         async function enviarAvaliacao() {
@@ -593,6 +620,10 @@
                     toast('Selecione o cliente antes de enviar', 'aviso');
                     return;
                 }
+            }
+
+            if (!validarNotasCompletas()) {
+                return;
             }
 
             respostas.numero_os = document.getElementById('numero_os').value || null;

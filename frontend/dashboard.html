@@ -268,23 +268,23 @@
             const clientes = await resCli.json();
             const tabela = document.getElementById('tabela-ultimas-avaliacoes');
 
-            const comNPS = avaliacoes.filter(a => a.nps_score !== null);
-
-            if (!comNPS.length) {
+            if (!avaliacoes.length) {
                 tabela.innerHTML = '<tr><td colspan="3" style="color:#888; text-align:center; padding:20px;">Nenhuma avaliação</td></tr>';
                 return;
             }
 
-            const ultimas = comNPS.slice(-5).reverse();
+            const ultimas = avaliacoes.slice(-5).reverse();
             ultimas.forEach(a => {
                 const cliente = clientes.find(c => c.id === a.cliente_id);
                 const nome = cliente ? cliente.nome : `ID ${a.cliente_id}`;
-                const cores = { promotor: '#00cc66', neutro: '#f59e0b', detrator: '#cc0000' };
-                const tipo = a.nps_score >= 9 ? 'promotor' : a.nps_score >= 7 ? 'neutro' : 'detrator';
+                const cores = { promotor: '#00cc66', neutro: '#f59e0b', detrator: '#cc0000', semnota: '#888888' };
+                const temNota = a.nps_score !== null && a.nps_score !== undefined;
+                const tipo = !temNota ? 'semnota' : a.nps_score >= 9 ? 'promotor' : a.nps_score >= 7 ? 'neutro' : 'detrator';
+                const nota = temNota ? `${a.nps_score}/10` : '--';
                 tabela.innerHTML += `
             <tr style="border-bottom: 1px solid #2a2a2a;">
                 <td style="padding: 10px 8px; font-size: 13px; color: #cccccc;">${nome}</td>
-                <td style="padding: 10px 8px;"><span style="color: ${cores[tipo]}; font-weight: 700;">${a.nps_score}</span>/10</td>
+                <td style="padding: 10px 8px;"><span style="color: ${cores[tipo]}; font-weight: 700;">${nota}</span></td>
                 <td style="padding: 10px 8px; font-size: 12px; color: #888888;">${dataLocal(a.created_at).toLocaleDateString('pt-BR')}</td>
             </tr>`;
             });
