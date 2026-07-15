@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
-from models.models import Cliente, LogAuditoria
+from models.models import Cliente
 from pydantic import BaseModel
 from auth import verificar_token
 from datetime import datetime
-import json
+from services.auditoria import registrar_log
 from services.bomcontrole_api import obter_cliente, mapear_cliente, alterar_bloqueio_cliente
 from services.sincronizacao_clientes import sincronizar_todos_clientes, CAMPOS_SEMPRE_SINCRONIZADOS
 
@@ -52,6 +52,8 @@ class BloqueioSchema(BaseModel):
 def criar_cliente(cliente: ClienteSchema, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
     novo = Cliente(**cliente.model_dump())
     db.add(novo)
+    db.flush()
+    registrar_log(db, token.get("sub"), "create", "cliente", novo.id, None, _serializar_cliente(novo))
     db.commit()
     db.refresh(novo)
     return novo
@@ -73,14 +75,7 @@ def deletar_cliente(id: int, db: Session = Depends(get_db), token: dict = Depend
     if not cliente:
         raise HTTPException(status_code=404, detail="Cliente não encontrado")
 
-    log = LogAuditoria(
-        usuario=token.get("sub"),
-        acao="delete",
-        entidade="cliente",
-        entidade_id=cliente.id,
-        dados_antes=json.dumps(_serializar_cliente(cliente), ensure_ascii=False),
-    )
-    db.add(log)
+    registrar_log(db, token.get("sub"), "delete", "cliente", cliente.id, _serializar_cliente(cliente), None)
     db.delete(cliente)
     db.commit()
     return {"message": "Cliente deletado com sucesso"}
@@ -139,7 +134,10 @@ def alterar_bloqueio(id: int, dados: BloqueioSchema, db: Session = Depends(get_d
     except RuntimeError as exc:
         raise HTTPException(status_code=502, detail=str(exc))
 
+    dados_antes = _serializar_cliente(cliente)
     cliente.bloqueado = dados.bloquear
+    db.flush()
+    registrar_log(db, token.get("sub"), "update", "cliente", cliente.id, dados_antes, _serializar_cliente(cliente))
     db.commit()
     db.refresh(cliente)
     return cliente
@@ -149,8 +147,11 @@ def editar_cliente(id: int, cliente: ClienteSchema, db: Session = Depends(get_db
     db_cliente = db.query(Cliente).filter(Cliente.id == id).first()
     if not db_cliente:
         raise HTTPException(status_code=404, detail="Cliente não encontrado")
+    dados_antes = _serializar_cliente(db_cliente)
     for key, value in cliente.model_dump().items():
         setattr(db_cliente, key, value)
+    db.flush()
+    registrar_log(db, token.get("sub"), "update", "cliente", db_cliente.id, dados_antes, _serializar_cliente(db_cliente))
     db.commit()
     db.refresh(db_cliente)
     return db_cliente
