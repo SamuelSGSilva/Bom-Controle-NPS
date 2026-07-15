@@ -168,6 +168,12 @@
             color: #fff;
         }
 
+        .nota-texto {
+            width: auto;
+            padding: 0 16px;
+            font-size: 14px;
+        }
+
         .legenda {
             display: flex;
             justify-content: space-between;
@@ -363,7 +369,7 @@
                 <div class="pergunta">
                     <span class="categoria">Financeiro</span>
                     <label>O link de pagamento chegou sem problemas?</label>
-                    <div class="notas" data-campo="nota_link_pagamento" data-max="7"></div>
+                    <div class="notas" data-campo="nota_link_pagamento" data-max="7" data-extra-labels="Pix,Boleto"></div>
                     <div class="legenda"><span>Muito ruim</span><span>Excelente</span></div>
                 </div>
 
@@ -529,11 +535,13 @@
             const campo = container.dataset.campo;
             const max = container.dataset.max ? parseInt(container.dataset.max) : 5;
             const min = max === 10 ? 0 : 1;
+            const extraLabels = container.dataset.extraLabels ? container.dataset.extraLabels.split(',') : [];
 
             for (let i = min; i <= max; i++) {
                 const btn = document.createElement('button');
-                btn.textContent = i;
-                btn.className = 'nota';
+                const extra = i > 5 ? extraLabels[i - 6] : null;
+                btn.textContent = extra || i;
+                btn.className = extra ? 'nota nota-texto' : 'nota';
                 btn.type = 'button';
                 btn.onclick = () => {
                     container.querySelectorAll('.nota').forEach(b => b.classList.remove('selecionada'));

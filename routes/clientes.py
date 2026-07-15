@@ -1,14 +1,35 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
-from models.models import Cliente
+from models.models import Cliente, LogAuditoria
 from pydantic import BaseModel
 from auth import verificar_token
 from datetime import datetime
+import json
 from services.bomcontrole_api import obter_cliente, mapear_cliente, alterar_bloqueio_cliente
 from services.sincronizacao_clientes import sincronizar_todos_clientes, CAMPOS_SEMPRE_SINCRONIZADOS
 
 router = APIRouter()
+
+def _serializar_cliente(cliente: Cliente):
+    return {
+        "id": cliente.id,
+        "nome": cliente.nome,
+        "email": cliente.email,
+        "telefone": cliente.telefone,
+        "cpf": cliente.cpf,
+        "cnpj": cliente.cnpj,
+        "cep": cliente.cep,
+        "logradouro": cliente.logradouro,
+        "numero": cliente.numero,
+        "bairro": cliente.bairro,
+        "cidade": cliente.cidade,
+        "estado": cliente.estado,
+        "data_nascimento": str(cliente.data_nascimento) if cliente.data_nascimento else None,
+        "bomcontrole_id": cliente.bomcontrole_id,
+        "bloqueado": cliente.bloqueado,
+        "created_at": str(cliente.created_at) if cliente.created_at else None,
+    }
 
 class ClienteSchema(BaseModel):
     nome: str
@@ -51,6 +72,15 @@ def deletar_cliente(id: int, db: Session = Depends(get_db), token: dict = Depend
     cliente = db.query(Cliente).filter(Cliente.id == id).first()
     if not cliente:
         raise HTTPException(status_code=404, detail="Cliente não encontrado")
+
+    log = LogAuditoria(
+        usuario=token.get("sub"),
+        acao="delete",
+        entidade="cliente",
+        entidade_id=cliente.id,
+        dados_antes=json.dumps(_serializar_cliente(cliente), ensure_ascii=False),
+    )
+    db.add(log)
     db.delete(cliente)
     db.commit()
     return {"message": "Cliente deletado com sucesso"}

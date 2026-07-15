@@ -49,6 +49,17 @@ class Usuario(Base):
     hashed_password = Column(String(255), nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
+class LogAuditoria(Base):
+    __tablename__ = "logs_auditoria"
+
+    id = Column(Integer, primary_key=True, index=True)
+    usuario = Column(String(100), nullable=True)
+    acao = Column(String(20), nullable=False)
+    entidade = Column(String(50), nullable=False)
+    entidade_id = Column(Integer, nullable=False)
+    dados_antes = Column(String(2000), nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
 class Avaliacao(Base):
     __tablename__ = "avaliacoes"
 
