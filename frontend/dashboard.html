@@ -273,11 +273,11 @@
                 const cliente = clientes.find(c => c.id === a.cliente_id);
                 const nome = cliente ? cliente.nome : `ID ${a.cliente_id}`;
                 const cores = { promotor: '#00cc66', neutro: '#f59e0b', detrator: '#cc0000' };
-                const tipo = a.nps_score >= 9 ? 'promotor' : a.nps_score >= 7 ? 'neutro' : 'detrator';
+                const tipo = a.nps_score === 5 ? 'promotor' : a.nps_score === 4 ? 'neutro' : 'detrator';
                 tabela.innerHTML += `
             <tr style="border-bottom: 1px solid #2a2a2a;">
                 <td style="padding: 10px 8px; font-size: 13px; color: #cccccc;">${nome}</td>
-                <td style="padding: 10px 8px;"><span style="color: ${cores[tipo]}; font-weight: 700;">${a.nps_score}</span>/10</td>
+                <td style="padding: 10px 8px;"><span style="color: ${cores[tipo]}; font-weight: 700;">${a.nps_score}</span>/5</td>
                 <td style="padding: 10px 8px; font-size: 12px; color: #888888;">${new Date(a.created_at).toLocaleDateString('pt-BR')}</td>
             </tr>`;
             });

@@ -314,7 +314,7 @@
 
         const params = new URLSearchParams(window.location.search);
         const clienteId = params.get('id');
-        const NOTA_LIMITE_SUGESTAO_BLOQUEIO = 3;
+        const NOTA_LIMITE_SUGESTAO_BLOQUEIO = 2;
         let clienteAtual = null;
 
         async function carregarHistorico() {
@@ -363,7 +363,7 @@
                 avaliacoes.forEach(a => {
                     tabelaNPS.innerHTML += `
                 <tr>
-                    <td data-label="Nota"><strong>${a.nps_score ?? '--'}</strong>/10</td>
+                    <td data-label="Nota"><strong>${a.nps_score ?? '--'}</strong>/5</td>
                     <td data-label="Feedback">${a.consideracoes || a.o_que_gostou || '--'}</td>
                     <td data-label="Data">${new Date(a.created_at).toLocaleDateString('pt-BR')}</td>
                 </tr>`;
