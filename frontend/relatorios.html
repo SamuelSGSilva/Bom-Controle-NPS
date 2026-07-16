@@ -213,6 +213,7 @@
             <div class="card">
                 <h3>Zona NPS</h3>
                 <p id="classificacao" style="font-size: 20px;">--</p>
+                <p id="classificacao-media" style="font-size: 13px; color: #888888; margin-top: 4px;">--</p>
             </div>
         </div>
 
@@ -370,6 +371,7 @@
 
             document.getElementById('p-total').textContent = data.resumo.total_avaliacoes;
             document.getElementById('p-media').textContent = data.resumo.media_geral ?? '--';
+            document.getElementById('classificacao-media').textContent = data.resumo.media_geral != null ? `Média geral: ${data.resumo.media_geral}` : '';
             document.getElementById('p-min').textContent = data.resumo.nota_min ?? '--';
             document.getElementById('p-max').textContent = data.resumo.nota_max ?? '--';
 
