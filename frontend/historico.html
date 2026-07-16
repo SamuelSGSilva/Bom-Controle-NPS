@@ -501,7 +501,7 @@
                     </div>
                     <div>
                         <label>NPS (indicação)</label>
-                        <input type="number" id="edit_nps_score" min="0" max="10">
+                        <input type="number" id="edit_nps_score" min="1" max="5">
                     </div>
 
                     <div class="form-secao">Comentários</div>
@@ -533,7 +533,7 @@
 
         const params = new URLSearchParams(window.location.search);
         const clienteId = params.get('id');
-        const NOTA_LIMITE_SUGESTAO_BLOQUEIO = 3;
+        const NOTA_LIMITE_SUGESTAO_BLOQUEIO = 2;
         let clienteAtual = null;
         let todasAvaliacoes = [];
 
@@ -592,7 +592,7 @@
                 avaliacoes.forEach(a => {
                     tabelaNPS.innerHTML += `
                 <tr>
-                    <td data-label="Nota"><strong>${a.nps_score ?? '--'}</strong>/10</td>
+                    <td data-label="Nota"><strong>${a.nps_score ?? '--'}</strong>/5</td>
                     <td data-label="Feedback">${a.consideracoes || a.o_que_gostou || '--'}</td>
                     <td data-label="Data">${dataLocal(a.created_at).toLocaleDateString('pt-BR')}</td>
                     <td data-label="Ações"><button class="btn-editar" onclick="abrirModalAvaliacao(${a.id})">Editar</button></td>
