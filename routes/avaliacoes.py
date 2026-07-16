@@ -8,8 +8,18 @@ from auth import verificar_token
 import openpyxl
 from io import BytesIO
 from services.google_sheets_sync import buscar_registros_google_sheets, converter_linha_para_payload
+from services.auditoria import registrar_log
 
 router = APIRouter()
+
+def _nome_cliente(db: Session, cliente_id: int) -> str | None:
+    cliente = db.query(Cliente).filter(Cliente.id == cliente_id).first()
+    return cliente.nome if cliente else None
+
+def _serializar_avaliacao(a: Avaliacao, cliente_nome: str | None):
+    dados = {c.name: getattr(a, c.name) for c in Avaliacao.__table__.columns}
+    dados["cliente_nome"] = cliente_nome
+    return dados
 
 class AvaliacaoSchema(BaseModel):
     cliente_id: int
@@ -40,6 +50,9 @@ def listar_avaliacoes(db: Session = Depends(get_db), token: dict = Depends(verif
 def criar_avaliacao_publico(avaliacao: AvaliacaoSchema, db: Session = Depends(get_db)):
     nova = Avaliacao(**avaliacao.model_dump())
     db.add(nova)
+    db.flush()
+    dados_depois = _serializar_avaliacao(nova, _nome_cliente(db, nova.cliente_id))
+    registrar_log(db, None, "create", "avaliacao", nova.id, None, dados_depois)
     db.commit()
     db.refresh(nova)
     return {"message": "Avaliação registrada com sucesso!"}
@@ -48,9 +61,24 @@ def criar_avaliacao_publico(avaliacao: AvaliacaoSchema, db: Session = Depends(ge
 def criar_avaliacao(avaliacao: AvaliacaoSchema, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
     nova = Avaliacao(**avaliacao.model_dump())
     db.add(nova)
+    db.flush()
+    dados_depois = _serializar_avaliacao(nova, _nome_cliente(db, nova.cliente_id))
+    registrar_log(db, token.get("sub"), "create", "avaliacao", nova.id, None, dados_depois)
     db.commit()
     db.refresh(nova)
     return nova
+
+@router.delete("/avaliacoes/{id}")
+def deletar_avaliacao(id: int, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
+    avaliacao = db.query(Avaliacao).filter(Avaliacao.id == id).first()
+    if not avaliacao:
+        raise HTTPException(status_code=404, detail="Avaliação não encontrada")
+
+    dados_antes = _serializar_avaliacao(avaliacao, _nome_cliente(db, avaliacao.cliente_id))
+    registrar_log(db, token.get("sub"), "delete", "avaliacao", avaliacao.id, dados_antes, None)
+    db.delete(avaliacao)
+    db.commit()
+    return {"message": "Avaliação deletada com sucesso"}
 
 @router.get("/avaliacoes/relatorio/nps")
 def relatorio_nps(db: Session = Depends(get_db), token: dict = Depends(verificar_token)):

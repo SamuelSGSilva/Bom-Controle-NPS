@@ -194,6 +194,9 @@
                             <th
                                 style="color: #888888; font-size: 12px; text-align: left; padding: 8px; border-bottom: 1px solid #2a2a2a;">
                                 Data</th>
+                            <th
+                                style="color: #888888; font-size: 12px; text-align: left; padding: 8px; border-bottom: 1px solid #2a2a2a;">
+                                Ações</th>
                         </tr>
                     </thead>
                     <tbody id="tabela-ultimas-avaliacoes"></tbody>
@@ -267,9 +270,10 @@
             const avaliacoes = await resNPS.json();
             const clientes = await resCli.json();
             const tabela = document.getElementById('tabela-ultimas-avaliacoes');
+            tabela.innerHTML = '';
 
             if (!avaliacoes.length) {
-                tabela.innerHTML = '<tr><td colspan="3" style="color:#888; text-align:center; padding:20px;">Nenhuma avaliação</td></tr>';
+                tabela.innerHTML = '<tr><td colspan="4" style="color:#888; text-align:center; padding:20px;">Nenhuma avaliação</td></tr>';
                 return;
             }
 
@@ -286,8 +290,28 @@
                 <td style="padding: 10px 8px; font-size: 13px; color: #cccccc;">${nome}</td>
                 <td style="padding: 10px 8px;"><span style="color: ${cores[tipo]}; font-weight: 700;">${nota}</span></td>
                 <td style="padding: 10px 8px; font-size: 12px; color: #888888;">${dataLocal(a.created_at).toLocaleDateString('pt-BR')}</td>
+                <td style="padding: 10px 8px;">
+                    <button onclick="excluirAvaliacao(${a.id})" style="background: transparent; border: 1px solid #888888; color: #888888; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 11px;">Excluir</button>
+                </td>
             </tr>`;
             });
+        }
+
+        async function excluirAvaliacao(id) {
+            if (!confirm('Tem certeza que deseja excluir esta avaliação?')) return;
+
+            const response = await fetch(`/avaliacoes/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                toast('Avaliação excluída com sucesso!');
+                await carregarNPS();
+                await carregarUltimasAvaliacoes();
+            } else {
+                toast('Erro ao excluir avaliação!', 'erro');
+            }
         }
 
         function renderizarGrafico(promotores, neutros, detratores) {

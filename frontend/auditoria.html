@@ -285,6 +285,7 @@
                 <option value="">Todas as telas</option>
                 <option value="cliente">Clientes</option>
                 <option value="pos_venda">Pós-venda</option>
+                <option value="avaliacao">Avaliações</option>
             </select>
             <select id="filtro-acao" onchange="aplicarFiltros()">
                 <option value="">Todas as ações</option>
@@ -339,7 +340,7 @@
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'index.html';
 
-        const NOMES_ENTIDADE = { cliente: 'Cliente', pos_venda: 'Pós-venda' };
+        const NOMES_ENTIDADE = { cliente: 'Cliente', pos_venda: 'Pós-venda', avaliacao: 'Avaliação' };
         const NOMES_ACAO = { create: 'Criado', update: 'Atualizado', delete: 'Excluído' };
         const CLASSE_ACAO = { create: 'badge-create', update: 'badge-update', delete: 'badge-delete' };
 
@@ -355,6 +356,7 @@
             const dados = JSON.parse(log.dados_depois || log.dados_antes || '{}');
             if (log.entidade === 'cliente') return dados.nome || `ID ${log.entidade_id}`;
             if (log.entidade === 'pos_venda') return dados.cliente_nome || `ID ${log.entidade_id}`;
+            if (log.entidade === 'avaliacao') return dados.cliente_nome || `ID ${log.entidade_id}`;
             return `ID ${log.entidade_id}`;
         }
 
