@@ -184,6 +184,135 @@
             border-left: 4px solid #cc0000;
         }
 
+        .btn-editar {
+            background: transparent;
+            border: 1px solid #38bdf8;
+            color: #38bdf8;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .btn-editar:hover {
+            background: #38bdf8;
+            color: #0a0a0a;
+        }
+
+        .modal-fundo {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .modal-fundo.ativo {
+            display: flex;
+        }
+
+        .modal-caixa {
+            background: #141414;
+            border: 1px solid #2a2a2a;
+            border-top: 3px solid #cc0000;
+            border-radius: 12px;
+            max-width: 640px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .modal-caixa h3 {
+            font-size: 16px;
+            margin-bottom: 16px;
+        }
+
+        .modal-fechar {
+            float: right;
+            background: transparent;
+            border: none;
+            color: #888888;
+            font-size: 20px;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-fechar:hover {
+            color: #cc0000;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .form-grid .full {
+            grid-column: 1 / -1;
+        }
+
+        .form-grid label {
+            display: block;
+            font-size: 12px;
+            color: #888888;
+            margin-bottom: 4px;
+        }
+
+        .form-grid input,
+        .form-grid textarea {
+            width: 100%;
+            padding: 10px 12px;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            color: #f1f1f1;
+            font-size: 13px;
+            font-family: inherit;
+            outline: none;
+        }
+
+        .form-grid input:focus,
+        .form-grid textarea:focus {
+            border-color: #cc0000;
+        }
+
+        .form-grid textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .form-secao {
+            grid-column: 1 / -1;
+            font-size: 11px;
+            color: #cc0000;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 8px;
+            margin-bottom: -4px;
+        }
+
+        .btn-salvar {
+            background: #cc0000;
+            color: #fff;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 18px;
+            transition: background 0.2s;
+        }
+
+        .btn-salvar:hover {
+            background: #aa0000;
+        }
+
         .card-bloqueio p {
             font-size: 14px;
             color: #f1f1f1;
@@ -302,12 +431,101 @@
                         <th>Nota</th>
                         <th>Feedback</th>
                         <th>Data</th>
+                        <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody id="tabela-nps"></tbody>
             </table>
         </div>
     </main>
+
+    <div class="modal-fundo" id="modal-editar-avaliacao">
+        <div class="modal-caixa">
+            <button class="modal-fechar" onclick="fecharModalAvaliacao()">&times;</button>
+            <h3>Editar avaliação</h3>
+            <form id="form-editar-avaliacao" onsubmit="salvarAvaliacao(event)">
+                <div class="form-grid">
+                    <div class="full">
+                        <label>Número da OS</label>
+                        <input type="text" id="edit_numero_os">
+                    </div>
+                    <div>
+                        <label>Produto/Serviço</label>
+                        <input type="text" id="edit_produto_servico">
+                    </div>
+                    <div>
+                        <label>Cidade/Estado</label>
+                        <input type="text" id="edit_cidade_estado">
+                    </div>
+
+                    <div class="form-secao">Notas (1 a 5, exceto NPS que é 0 a 10 — deixe em branco se não se aplica)</div>
+                    <div>
+                        <label>Primeiro contato</label>
+                        <input type="number" id="edit_nota_primeiro_contato" min="1" max="5">
+                    </div>
+                    <div>
+                        <label>Clareza das informações</label>
+                        <input type="number" id="edit_nota_clareza_informacoes" min="1" max="5">
+                    </div>
+                    <div>
+                        <label>Processo de fechamento</label>
+                        <input type="number" id="edit_nota_processo_fechamento" min="1" max="5">
+                    </div>
+                    <div>
+                        <label>Link de pagamento (6=Pix, 7=Boleto)</label>
+                        <input type="number" id="edit_nota_link_pagamento" min="1" max="7">
+                    </div>
+                    <div>
+                        <label>Nota fiscal</label>
+                        <input type="number" id="edit_nota_nota_fiscal" min="1" max="5">
+                    </div>
+                    <div>
+                        <label>Entrega no prazo (6=Não tem)</label>
+                        <input type="number" id="edit_nota_entrega_prazo" min="1" max="6">
+                    </div>
+                    <div>
+                        <label>Embalagem (6=Não tem)</label>
+                        <input type="number" id="edit_nota_embalagem" min="1" max="6">
+                    </div>
+                    <div>
+                        <label>Entrega técnica</label>
+                        <input type="number" id="edit_nota_entrega_tecnica" min="1" max="5">
+                    </div>
+                    <div>
+                        <label>Suporte ao produto</label>
+                        <input type="number" id="edit_nota_suporte_produto" min="1" max="5">
+                    </div>
+                    <div>
+                        <label>Avaliação geral</label>
+                        <input type="number" id="edit_avaliacao_geral" min="1" max="5">
+                    </div>
+                    <div>
+                        <label>NPS (indicação)</label>
+                        <input type="number" id="edit_nps_score" min="0" max="10">
+                    </div>
+
+                    <div class="form-secao">Comentários</div>
+                    <div class="full">
+                        <label>O que mais gostou</label>
+                        <textarea id="edit_o_que_gostou"></textarea>
+                    </div>
+                    <div class="full">
+                        <label>O que pode melhorar</label>
+                        <textarea id="edit_o_que_melhorar"></textarea>
+                    </div>
+                    <div class="full">
+                        <label>Considerações</label>
+                        <textarea id="edit_consideracoes"></textarea>
+                    </div>
+                    <div>
+                        <label>CS Responsável</label>
+                        <input type="text" id="edit_cs_responsavel">
+                    </div>
+                </div>
+                <button type="submit" class="btn-salvar">Salvar alterações</button>
+            </form>
+        </div>
+    </div>
 
     <script>
         const token = localStorage.getItem('token');
@@ -317,6 +535,7 @@
         const clienteId = params.get('id');
         const NOTA_LIMITE_SUGESTAO_BLOQUEIO = 3;
         let clienteAtual = null;
+        let todasAvaliacoes = [];
 
         // O backend grava created_at em UTC sem indicar o fuso na string ISO;
         // sem o "Z" o navegador interpreta como horário local, adiantando o valor.
@@ -342,6 +561,7 @@
 
             // Pós-vendas
             const tabelaPV = document.getElementById('tabela-posvendas');
+            tabelaPV.innerHTML = '';
             if (data.pos_vendas.length === 0) {
                 tabelaPV.innerHTML = '<tr><td colspan="3" class="vazio">Nenhum pós-venda registrado</td></tr>';
             } else {
@@ -364,8 +584,10 @@
             const avaliacoes = await resAvaliacoes.json();
 
             const tabelaNPS = document.getElementById('tabela-nps');
+            tabelaNPS.innerHTML = '';
+            todasAvaliacoes = avaliacoes;
             if (avaliacoes.length === 0) {
-                tabelaNPS.innerHTML = '<tr><td colspan="3" class="vazio">Nenhuma avaliação registrada</td></tr>';
+                tabelaNPS.innerHTML = '<tr><td colspan="4" class="vazio">Nenhuma avaliação registrada</td></tr>';
             } else {
                 avaliacoes.forEach(a => {
                     tabelaNPS.innerHTML += `
@@ -373,6 +595,7 @@
                     <td data-label="Nota"><strong>${a.nps_score ?? '--'}</strong>/10</td>
                     <td data-label="Feedback">${a.consideracoes || a.o_que_gostou || '--'}</td>
                     <td data-label="Data">${dataLocal(a.created_at).toLocaleDateString('pt-BR')}</td>
+                    <td data-label="Ações"><button class="btn-editar" onclick="abrirModalAvaliacao(${a.id})">Editar</button></td>
                 </tr>`;
                 });
             }
@@ -430,6 +653,88 @@
                 }
             } catch (error) {
                 toast('Erro ao conectar com o servidor', 'erro');
+            }
+        }
+
+        function abrirModalAvaliacao(id) {
+            const a = todasAvaliacoes.find(av => av.id === id);
+            if (!a) return;
+
+            document.getElementById('form-editar-avaliacao').dataset.id = id;
+            document.getElementById('edit_numero_os').value = a.numero_os || '';
+            document.getElementById('edit_produto_servico').value = a.produto_servico || '';
+            document.getElementById('edit_cidade_estado').value = a.cidade_estado || '';
+            document.getElementById('edit_nota_primeiro_contato').value = a.nota_primeiro_contato ?? '';
+            document.getElementById('edit_nota_clareza_informacoes').value = a.nota_clareza_informacoes ?? '';
+            document.getElementById('edit_nota_processo_fechamento').value = a.nota_processo_fechamento ?? '';
+            document.getElementById('edit_nota_link_pagamento').value = a.nota_link_pagamento ?? '';
+            document.getElementById('edit_nota_nota_fiscal').value = a.nota_nota_fiscal ?? '';
+            document.getElementById('edit_nota_entrega_prazo').value = a.nota_entrega_prazo ?? '';
+            document.getElementById('edit_nota_embalagem').value = a.nota_embalagem ?? '';
+            document.getElementById('edit_nota_entrega_tecnica').value = a.nota_entrega_tecnica ?? '';
+            document.getElementById('edit_nota_suporte_produto').value = a.nota_suporte_produto ?? '';
+            document.getElementById('edit_avaliacao_geral').value = a.avaliacao_geral ?? '';
+            document.getElementById('edit_nps_score').value = a.nps_score ?? '';
+            document.getElementById('edit_o_que_gostou').value = a.o_que_gostou || '';
+            document.getElementById('edit_o_que_melhorar').value = a.o_que_melhorar || '';
+            document.getElementById('edit_consideracoes').value = a.consideracoes || '';
+            document.getElementById('edit_cs_responsavel').value = a.cs_responsavel || '';
+
+            document.getElementById('modal-editar-avaliacao').classList.add('ativa');
+        }
+
+        function fecharModalAvaliacao() {
+            document.getElementById('modal-editar-avaliacao').classList.remove('ativa');
+        }
+
+        function valorNumeroOuNull(id) {
+            const valor = document.getElementById(id).value;
+            return valor === '' ? null : parseInt(valor);
+        }
+
+        async function salvarAvaliacao(event) {
+            event.preventDefault();
+            const id = document.getElementById('form-editar-avaliacao').dataset.id;
+            const original = todasAvaliacoes.find(av => av.id === Number(id));
+
+            const payload = {
+                cliente_id: original.cliente_id,
+                numero_os: document.getElementById('edit_numero_os').value || null,
+                produto_servico: document.getElementById('edit_produto_servico').value || null,
+                cidade_estado: document.getElementById('edit_cidade_estado').value || null,
+                data_atendimento: original.data_atendimento,
+                nota_primeiro_contato: valorNumeroOuNull('edit_nota_primeiro_contato'),
+                nota_clareza_informacoes: valorNumeroOuNull('edit_nota_clareza_informacoes'),
+                nota_processo_fechamento: valorNumeroOuNull('edit_nota_processo_fechamento'),
+                nota_link_pagamento: valorNumeroOuNull('edit_nota_link_pagamento'),
+                nota_nota_fiscal: valorNumeroOuNull('edit_nota_nota_fiscal'),
+                nota_entrega_prazo: valorNumeroOuNull('edit_nota_entrega_prazo'),
+                nota_embalagem: valorNumeroOuNull('edit_nota_embalagem'),
+                nota_entrega_tecnica: valorNumeroOuNull('edit_nota_entrega_tecnica'),
+                nota_suporte_produto: valorNumeroOuNull('edit_nota_suporte_produto'),
+                avaliacao_geral: valorNumeroOuNull('edit_avaliacao_geral'),
+                nps_score: valorNumeroOuNull('edit_nps_score'),
+                o_que_gostou: document.getElementById('edit_o_que_gostou').value || null,
+                o_que_melhorar: document.getElementById('edit_o_que_melhorar').value || null,
+                consideracoes: document.getElementById('edit_consideracoes').value || null,
+                cs_responsavel: document.getElementById('edit_cs_responsavel').value || null
+            };
+
+            const response = await fetch(`/avaliacoes/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                toast('Avaliação atualizada com sucesso!');
+                fecharModalAvaliacao();
+                carregarHistorico();
+            } else {
+                toast('Erro ao atualizar avaliação!', 'erro');
             }
         }
 

@@ -40,6 +40,7 @@ class AvaliacaoSchema(BaseModel):
     nps_score: int | None = None
     o_que_gostou: str | None = None
     o_que_melhorar: str | None = None
+    consideracoes: str | None = None
     cs_responsavel: str | None = None
 
 @router.get("/avaliacoes")
@@ -79,6 +80,22 @@ def deletar_avaliacao(id: int, db: Session = Depends(get_db), token: dict = Depe
     db.delete(avaliacao)
     db.commit()
     return {"message": "Avaliação deletada com sucesso"}
+
+@router.put("/avaliacoes/{id}")
+def editar_avaliacao(id: int, avaliacao: AvaliacaoSchema, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
+    db_avaliacao = db.query(Avaliacao).filter(Avaliacao.id == id).first()
+    if not db_avaliacao:
+        raise HTTPException(status_code=404, detail="Avaliação não encontrada")
+
+    dados_antes = _serializar_avaliacao(db_avaliacao, _nome_cliente(db, db_avaliacao.cliente_id))
+    for key, value in avaliacao.model_dump().items():
+        setattr(db_avaliacao, key, value)
+    db.flush()
+    dados_depois = _serializar_avaliacao(db_avaliacao, _nome_cliente(db, db_avaliacao.cliente_id))
+    registrar_log(db, token.get("sub"), "update", "avaliacao", db_avaliacao.id, dados_antes, dados_depois)
+    db.commit()
+    db.refresh(db_avaliacao)
+    return db_avaliacao
 
 @router.get("/avaliacoes/relatorio/nps")
 def relatorio_nps(db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
