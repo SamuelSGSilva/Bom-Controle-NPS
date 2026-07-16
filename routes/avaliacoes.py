@@ -106,9 +106,9 @@ def relatorio_nps(db: Session = Depends(get_db), token: dict = Depends(verificar
         return {"message": "Nenhuma avaliação encontrada"}
 
     com_nps = [a for a in todas if a.nps_score is not None]
-    promotores = len([a for a in com_nps if a.nps_score >= 9])
-    neutros = len([a for a in com_nps if 7 <= a.nps_score <= 8])
-    detratores = len([a for a in com_nps if a.nps_score <= 6])
+    promotores = len([a for a in com_nps if a.nps_score == 5])
+    neutros = len([a for a in com_nps if a.nps_score == 4])
+    detratores = len([a for a in com_nps if a.nps_score <= 3])
 
     nps = ((promotores - detratores) / len(com_nps)) * 100 if com_nps else 0
 
@@ -171,8 +171,8 @@ def painel_resultados(db: Session = Depends(get_db), token: dict = Depends(verif
     nota_max = max(notas_todas) if notas_todas else None
 
     nps_scores = [a.nps_score for a in avaliacoes if a.nps_score is not None]
-    promotores = len([n for n in nps_scores if n >= 9])
-    detratores = len([n for n in nps_scores if n <= 6])
+    promotores = len([n for n in nps_scores if n == 5])
+    detratores = len([n for n in nps_scores if n <= 3])
     nps = round(((promotores - detratores) / len(nps_scores)) * 100, 2) if nps_scores else 0
 
     return {
@@ -219,8 +219,8 @@ def evolucao_nps(db: Session = Depends(get_db), token: dict = Depends(verificar_
     for chave in sorted(grupos.keys()):
         scores = grupos[chave]
         total = len(scores)
-        promotores = len([s for s in scores if s >= 9])
-        detratores = len([s for s in scores if s <= 6])
+        promotores = len([s for s in scores if s == 5])
+        detratores = len([s for s in scores if s <= 3])
         nps = round(((promotores - detratores) / total) * 100, 2)
         evolucao.append({
             "mes": chave,
