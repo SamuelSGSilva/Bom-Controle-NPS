@@ -218,25 +218,39 @@
         }
 
         .modal-caixa h3 {
-            font-size: 16px;
-            margin-bottom: 4px;
+            font-size: 17px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .modal-caixa .subtitulo {
-            margin-bottom: 16px;
+            margin-bottom: 18px;
         }
 
         .modal-caixa table {
             min-width: 0;
+            border-spacing: 0;
         }
 
         .modal-caixa thead th {
             background: #1a1a1a;
-            color: #cccccc;
+            color: #888888;
+            font-size: 11px;
         }
 
-        .modal-caixa td {
+        .modal-caixa tbody td {
             font-size: 13px;
+            padding: 10px 16px;
+        }
+
+        .modal-caixa tbody tr:nth-child(even) {
+            background: #111111;
+        }
+
+        .modal-caixa tbody tr:first-child td {
+            padding-top: 12px;
         }
 
         .modal-fechar {
@@ -321,7 +335,7 @@
     <div class="modal-fundo" id="modal-detalhes">
         <div class="modal-caixa">
             <button class="modal-fechar" onclick="fecharModal()">&times;</button>
-            <h3 id="modal-titulo">Detalhes</h3>
+            <h3><span id="modal-titulo-entidade">Detalhes</span><span class="badge" id="modal-titulo-badge"></span></h3>
             <p class="subtitulo" id="modal-subtitulo"></p>
             <table>
                 <thead>
@@ -344,10 +358,67 @@
         const NOMES_ACAO = { create: 'Criado', update: 'Atualizado', delete: 'Excluído' };
         const CLASSE_ACAO = { create: 'badge-create', update: 'badge-update', delete: 'badge-delete' };
 
+        const NOMES_CAMPO = {
+            cliente_id: 'Cliente', cliente_nome: 'Nome do cliente',
+            nome: 'Nome', email: 'E-mail', telefone: 'Telefone', cpf: 'CPF', cnpj: 'CNPJ',
+            cep: 'CEP', logradouro: 'Logradouro', numero: 'Número', bairro: 'Bairro',
+            cidade: 'Cidade', estado: 'Estado', data_nascimento: 'Data de nascimento',
+            bomcontrole_id: 'ID BomControle', bloqueado: 'Bloqueado',
+            feedback: 'Feedback', status: 'Status', data_retorno: 'Data de retorno',
+            observacoes: 'Observações internas',
+            numero_os: 'Número da OS', produto_servico: 'Produto/Serviço',
+            data_atendimento: 'Data de atendimento', cidade_estado: 'Cidade/Estado',
+            nota_primeiro_contato: 'Nota: primeiro contato',
+            nota_clareza_informacoes: 'Nota: clareza das informações',
+            nota_processo_fechamento: 'Nota: processo de fechamento',
+            nota_link_pagamento: 'Nota: link de pagamento',
+            nota_nota_fiscal: 'Nota: nota fiscal',
+            nota_entrega_prazo: 'Nota: entrega no prazo',
+            nota_embalagem: 'Nota: embalagem',
+            nota_entrega_tecnica: 'Nota: entrega técnica',
+            nota_suporte_produto: 'Nota: suporte ao produto',
+            avaliacao_geral: 'Avaliação geral', nps_score: 'NPS (indicação)',
+            o_que_gostou: 'O que gostou', o_que_melhorar: 'O que pode melhorar',
+            consideracoes: 'Considerações', media_geral: 'Média geral',
+            resp_entrega_tecnica: 'Responsável entrega técnica', cs_responsavel: 'CS responsável',
+            created_at: 'Criado em',
+        };
+
+        const CAMPOS_DATA = new Set(['data_nascimento', 'data_retorno', 'data_atendimento', 'created_at']);
+
+        function nomeCampo(campo) {
+            return NOMES_CAMPO[campo] || campo;
+        }
+
         // O backend grava created_at em UTC sem indicar o fuso na string ISO;
         // sem o "Z" o navegador interpreta como horário local, adiantando o valor.
         function dataLocal(isoSemFuso) {
             return new Date(isoSemFuso.endsWith('Z') ? isoSemFuso : isoSemFuso + 'Z');
+        }
+
+        // Campos vindos do log de auditoria são strings cruas do Python (com ou sem fuso já embutido).
+        function parseDataAuditoria(valor) {
+            let s = String(valor).trim().replace(' ', 'T');
+            s = s.replace(/(\.\d{3})\d*/, '$1');
+            if (!/Z$|[+-]\d{2}:?\d{2}$/.test(s)) s += 'Z';
+            const d = new Date(s);
+            return isNaN(d.getTime()) ? null : d;
+        }
+
+        function formatarDataHora(d) {
+            const data = d.toLocaleDateString('pt-BR');
+            const hora = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            return `${data}, ${hora}`;
+        }
+
+        function formatarValorCampo(campo, valor) {
+            if (valor === null || valor === undefined || valor === '') return '--';
+            if (CAMPOS_DATA.has(campo)) {
+                const d = parseDataAuditoria(valor);
+                if (d) return formatarDataHora(d);
+            }
+            if (typeof valor === 'boolean') return valor ? 'Sim' : 'Não';
+            return valor;
         }
 
         let todosLogs = [];
@@ -415,7 +486,7 @@
             }
 
             logs.forEach((log, indice) => {
-                const quando = dataLocal(log.created_at).toLocaleString('pt-BR');
+                const quando = formatarDataHora(dataLocal(log.created_at));
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td data-label="Quando">${quando}</td>
@@ -437,20 +508,24 @@
             const depois = log.dados_depois ? JSON.parse(log.dados_depois) : {};
             const campos = new Set([...Object.keys(antes), ...Object.keys(depois)]);
 
-            document.getElementById('modal-titulo').textContent = `${NOMES_ENTIDADE[log.entidade] || log.entidade} — ${NOMES_ACAO[log.acao] || log.acao}`;
-            document.getElementById('modal-subtitulo').textContent = `${nomeRegistro(log)} · por ${log.usuario || '--'} em ${dataLocal(log.created_at).toLocaleString('pt-BR')}`;
+            document.getElementById('modal-titulo-entidade').textContent = NOMES_ENTIDADE[log.entidade] || log.entidade;
+            const badge = document.getElementById('modal-titulo-badge');
+            badge.textContent = NOMES_ACAO[log.acao] || log.acao;
+            badge.className = `badge ${CLASSE_ACAO[log.acao] || ''}`;
+            document.getElementById('modal-subtitulo').textContent = `${nomeRegistro(log)} · por ${log.usuario || '--'} em ${formatarDataHora(dataLocal(log.created_at))}`;
 
             const tabelaModal = document.getElementById('tabela-modal');
             tabelaModal.innerHTML = '';
 
             campos.forEach(campo => {
                 if (campo === 'id') return;
-                const valorAntes = antes[campo] ?? '--';
-                const valorDepois = depois[campo] ?? '--';
-                const mudou = log.acao === 'update' && String(valorAntes) !== String(valorDepois);
+                const valorAntes = formatarValorCampo(campo, antes[campo]);
+                const valorDepois = formatarValorCampo(campo, depois[campo]);
+                if (valorAntes === '--' && valorDepois === '--') return;
+                const mudou = log.acao === 'update' && valorAntes !== valorDepois;
                 tabelaModal.innerHTML += `
                     <tr>
-                        <td>${campo}</td>
+                        <td>${nomeCampo(campo)}</td>
                         <td class="${mudou ? 'campo-alterado' : ''}">${valorAntes}</td>
                         <td class="${mudou ? 'campo-alterado' : ''}">${valorDepois}</td>
                     </tr>
