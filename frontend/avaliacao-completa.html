@@ -290,6 +290,63 @@
         #agradecimento p {
             color: #888888;
         }
+
+        .autocomplete-wrapper {
+            position: relative;
+        }
+
+        .autocomplete-lista {
+            display: none;
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            max-height: 220px;
+            overflow-y: auto;
+            z-index: 10;
+        }
+
+        .autocomplete-item {
+            padding: 10px 14px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #f1f1f1;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        .autocomplete-item:hover,
+        .autocomplete-item.ativo {
+            background: #2a0a0a;
+            color: #ff6b6b;
+        }
+
+        .autocomplete-item span {
+            display: block;
+            font-size: 12px;
+            color: #888888;
+        }
+
+        .cliente-info {
+            display: none;
+            margin-top: 8px;
+            padding: 10px 14px;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #ccc;
+        }
+
+        .cliente-info strong {
+            color: #f1f1f1;
+        }
     </style>
     <link rel="stylesheet" href="responsive.css">
 </head>
@@ -321,9 +378,11 @@
 
                 <div class="pergunta" id="campo-cliente" style="display:none;">
                     <label>Cliente</label>
-                    <select id="cliente_id">
-                        <option value="">Selecione o cliente</option>
-                    </select>
+                    <div class="autocomplete-wrapper">
+                        <input type="text" id="cliente_nome" placeholder="Digite o nome do cliente..." autocomplete="off">
+                        <div class="autocomplete-lista" id="lista-sugestoes-cliente"></div>
+                    </div>
+                    <div class="cliente-info" id="cliente-info"></div>
                 </div>
 
                 <div class="pergunta" id="campo-cs-responsavel" style="display:none;">
@@ -516,6 +575,124 @@
             cs_responsavel: null
         };
 
+        let clientesDisponiveis = [];
+        let sugestoesClienteAtuais = [];
+        let indiceClienteAtivo = -1;
+
+        const inputClienteNome = document.getElementById('cliente_nome');
+        const clienteInfo = document.getElementById('cliente-info');
+        const listaSugestoesCliente = document.getElementById('lista-sugestoes-cliente');
+
+        function selecionarCliente(cliente) {
+            if (cliente) {
+                respostas.cliente_id = cliente.id;
+                inputClienteNome.value = cliente.nome;
+                clienteInfo.innerHTML = `<strong>${cliente.nome}</strong><br>${cliente.email || '--'} · ${cliente.telefone || '--'}`;
+                clienteInfo.style.display = 'block';
+            } else {
+                respostas.cliente_id = null;
+                clienteInfo.style.display = 'none';
+                clienteInfo.innerHTML = '';
+            }
+            esconderSugestoesCliente();
+        }
+
+        function esconderSugestoesCliente() {
+            if (listaSugestoesCliente) {
+                listaSugestoesCliente.style.display = 'none';
+                listaSugestoesCliente.innerHTML = '';
+            }
+            sugestoesClienteAtuais = [];
+            indiceClienteAtivo = -1;
+        }
+
+        function renderizarSugestoesCliente(texto) {
+            if (!listaSugestoesCliente) return;
+
+            const busca = (texto || '').toLowerCase().trim();
+            sugestoesClienteAtuais = clientesDisponiveis
+                .filter(c => {
+                    const nome = (c.nome || '').toLowerCase();
+                    const email = (c.email || '').toLowerCase();
+                    const cpf = (c.cpf || '').toLowerCase();
+                    return nome.includes(busca) || email.includes(busca) || cpf.includes(busca);
+                })
+                .slice(0, 8);
+
+            indiceClienteAtivo = -1;
+
+            if (sugestoesClienteAtuais.length === 0) {
+                esconderSugestoesCliente();
+                return;
+            }
+
+            listaSugestoesCliente.innerHTML = sugestoesClienteAtuais.map((c, i) => `
+                <div class="autocomplete-item" data-indice="${i}">
+                    ${c.nome}
+                    <span>${c.email || ''} ${c.telefone ? '· ' + c.telefone : ''}</span>
+                </div>
+            `).join('');
+            listaSugestoesCliente.style.display = 'block';
+
+            listaSugestoesCliente.querySelectorAll('.autocomplete-item').forEach(item => {
+                item.addEventListener('mousedown', function (e) {
+                    e.preventDefault();
+                    selecionarCliente(sugestoesClienteAtuais[Number(item.dataset.indice)]);
+                });
+            });
+        }
+
+        function destacarSugestaoCliente() {
+            if (!listaSugestoesCliente) return;
+            listaSugestoesCliente.querySelectorAll('.autocomplete-item').forEach((item, i) => {
+                item.classList.toggle('ativo', i === indiceClienteAtivo);
+            });
+        }
+
+        if (inputClienteNome) {
+            inputClienteNome.addEventListener('input', function () {
+                respostas.cliente_id = null;
+                clienteInfo.style.display = 'none';
+
+                const texto = inputClienteNome.value;
+                if (!texto.trim()) {
+                    esconderSugestoesCliente();
+                    return;
+                }
+                renderizarSugestoesCliente(texto);
+            });
+
+            inputClienteNome.addEventListener('focus', function () {
+                if (inputClienteNome.value.trim()) {
+                    renderizarSugestoesCliente(inputClienteNome.value);
+                }
+            });
+
+            inputClienteNome.addEventListener('keydown', function (e) {
+                if (sugestoesClienteAtuais.length === 0) return;
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    indiceClienteAtivo = Math.min(indiceClienteAtivo + 1, sugestoesClienteAtuais.length - 1);
+                    destacarSugestaoCliente();
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    indiceClienteAtivo = Math.max(indiceClienteAtivo - 1, 0);
+                    destacarSugestaoCliente();
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const escolhido = indiceClienteAtivo >= 0 ? sugestoesClienteAtuais[indiceClienteAtivo] : sugestoesClienteAtuais[0];
+                    selecionarCliente(escolhido);
+                } else if (e.key === 'Escape') {
+                    esconderSugestoesCliente();
+                }
+            });
+
+            inputClienteNome.addEventListener('blur', function () {
+                esconderSugestoesCliente();
+            });
+        }
+
         if (modoInterno) {
             document.getElementById('nav-interno').style.display = 'flex';
             document.getElementById('btn-sair').style.display = 'block';
@@ -527,13 +704,7 @@
             })
                 .then(response => response.json())
                 .then(clientes => {
-                    const select = document.getElementById('cliente_id');
-                    clientes.forEach(cliente => {
-                        const option = document.createElement('option');
-                        option.value = cliente.id;
-                        option.textContent = cliente.nome;
-                        select.appendChild(option);
-                    });
+                    clientesDisponiveis = clientes;
                 })
                 .catch(() => toast('Erro ao carregar clientes', 'erro'));
         }
@@ -613,7 +784,6 @@
 
         async function enviarAvaliacao() {
             if (modoInterno) {
-                respostas.cliente_id = parseInt(document.getElementById('cliente_id').value) || null;
                 respostas.cs_responsavel = document.getElementById('cs_responsavel').value || null;
 
                 if (!respostas.cliente_id) {

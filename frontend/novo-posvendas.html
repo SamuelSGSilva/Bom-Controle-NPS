@@ -339,6 +339,12 @@
             renderizarSugestoes(texto);
         });
 
+        inputNome.addEventListener('focus', function () {
+            if (inputNome.value.trim()) {
+                renderizarSugestoes(inputNome.value.trim());
+            }
+        });
+
         inputNome.addEventListener('keydown', function (e) {
             if (sugestoesAtuais.length === 0) return;
 
