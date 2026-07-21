@@ -203,6 +203,65 @@
         .autocomplete-item.ativo {
             background: #1a1a1a;
         }
+
+        .label-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .btn-link-add {
+            background: transparent;
+            border: none;
+            color: #38bdf8;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: underline;
+        }
+
+        .btn-link-add:hover {
+            color: #7dd3fc;
+        }
+
+        .autocomplete-item-add {
+            background: #1a1a2e;
+            color: #38bdf8;
+            font-weight: 600;
+            border-top: 1px solid #2a2a2a;
+        }
+
+        .autocomplete-item-add:hover {
+            background: #252545;
+        }
+
+        .modal-fundo {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-fundo.ativo {
+            display: flex;
+        }
+
+        .modal-caixa {
+            background: #141414;
+            border: 1px solid #2a2a2a;
+            border-top: 3px solid #cc0000;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 24px;
+        }
     </style>
     <link rel="stylesheet" href="responsive.css">
 </head>
@@ -229,7 +288,10 @@
         <h2>Novo Pós-Vendas</h2>
         <form id="form-posvendas">
             <div class="form-group">
-                <label>Nome do Cliente</label>
+                <div class="label-header">
+                    <label style="margin-bottom: 0;">Nome do Cliente</label>
+                    <button type="button" class="btn-link-add" onclick="abrirModalNovoCliente()">+ Cadastrar sem Bom Controle</button>
+                </div>
                 <div class="autocomplete-wrapper">
                     <input type="text" id="cliente_nome" placeholder="Digite o nome do cliente" required autocomplete="off">
                     <div class="autocomplete-lista" id="lista-sugestoes"></div>
@@ -257,6 +319,50 @@
             <button type="submit">Cadastrar Pós-Venda</button>
         </form>
     </main>
+
+    <!-- Modal Novo Cliente Sem Bom Controle -->
+    <div class="modal-fundo" id="modal-novo-cliente">
+        <div class="modal-caixa">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-size: 16px; color: #fff;">Cadastrar Cliente (Sem Bom Controle)</h3>
+                <button type="button" onclick="fecharModalNovoCliente()" style="background:none; border:none; color:#888; font-size:20px; cursor:pointer;">&times;</button>
+            </div>
+            <form id="form-quick-cliente">
+                <div class="form-group">
+                    <label>Nome Completo *</label>
+                    <input type="text" id="mc_nome" required placeholder="Nome do cliente">
+                </div>
+                <div class="form-group">
+                    <label>E-mail *</label>
+                    <input type="email" id="mc_email" required placeholder="cliente@exemplo.com">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Telefone</label>
+                        <input type="text" id="mc_telefone" placeholder="(00) 00000-0000">
+                    </div>
+                    <div class="form-group">
+                        <label>CPF / CNPJ</label>
+                        <input type="text" id="mc_doc" placeholder="CPF ou CNPJ">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Cidade</label>
+                        <input type="text" id="mc_cidade" placeholder="Cidade">
+                    </div>
+                    <div class="form-group">
+                        <label>Estado (UF)</label>
+                        <input type="text" id="mc_estado" maxlength="2" placeholder="UF">
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 20px;">
+                    <button type="button" onclick="fecharModalNovoCliente()" style="flex: 1; padding: 12px; background: transparent; border: 1px solid #2a2a2a; border-radius: 8px; color: #ccc; cursor: pointer;">Cancelar</button>
+                    <button type="submit" style="flex: 1; margin-top: 0;">Salvar e Selecionar</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script>
         const token = localStorage.getItem('token');
@@ -299,26 +405,36 @@
                 .slice(0, 8);
             indiceAtivo = -1;
 
-            if (sugestoesAtuais.length === 0) {
-                listaSugestoes.style.display = 'none';
-                listaSugestoes.innerHTML = '';
-                return;
-            }
-
-            listaSugestoes.innerHTML = sugestoesAtuais.map((c, i) => `
+            let html = sugestoesAtuais.map((c, i) => `
                 <div class="autocomplete-item" data-indice="${i}">
                     ${c.nome}
                     <span>${c.email || ''}</span>
                 </div>
             `).join('');
+
+            html += `
+                <div class="autocomplete-item autocomplete-item-add" id="btn-add-sugestao">
+                    + Cadastrar "${texto}" sem Bom Controle
+                </div>
+            `;
+
+            listaSugestoes.innerHTML = html;
             listaSugestoes.style.display = 'block';
 
-            listaSugestoes.querySelectorAll('.autocomplete-item').forEach(item => {
+            listaSugestoes.querySelectorAll('.autocomplete-item:not(.autocomplete-item-add)').forEach(item => {
                 item.addEventListener('mousedown', function (e) {
                     e.preventDefault();
                     selecionarCliente(sugestoesAtuais[Number(item.dataset.indice)]);
                 });
             });
+
+            const btnAdd = document.getElementById('btn-add-sugestao');
+            if (btnAdd) {
+                btnAdd.addEventListener('mousedown', function (e) {
+                    e.preventDefault();
+                    abrirModalNovoCliente(texto);
+                });
+            }
         }
 
         function destacarSugestao() {
@@ -359,7 +475,7 @@
             } else if (e.key === 'Enter') {
                 e.preventDefault();
                 const escolhido = indiceAtivo >= 0 ? sugestoesAtuais[indiceAtivo] : sugestoesAtuais[0];
-                selecionarCliente(escolhido);
+                if (escolhido) selecionarCliente(escolhido);
             } else if (e.key === 'Escape') {
                 esconderSugestoes();
             }
@@ -367,6 +483,66 @@
 
         inputNome.addEventListener('blur', function () {
             esconderSugestoes();
+        });
+
+        function abrirModalNovoCliente(nomeInicial = '') {
+            document.getElementById('mc_nome').value = nomeInicial || inputNome.value.trim();
+            document.getElementById('mc_email').value = '';
+            document.getElementById('mc_telefone').value = '';
+            document.getElementById('mc_doc').value = '';
+            document.getElementById('mc_cidade').value = '';
+            document.getElementById('mc_estado').value = '';
+            esconderSugestoes();
+            document.getElementById('modal-novo-cliente').classList.add('ativo');
+        }
+
+        function fecharModalNovoCliente() {
+            document.getElementById('modal-novo-cliente').classList.remove('ativo');
+        }
+
+        document.getElementById('form-quick-cliente').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const doc = document.getElementById('mc_doc').value.trim();
+            const docLimpo = doc.replace(/\D/g, '');
+            let cpf = null;
+            let cnpj = null;
+            if (docLimpo.length === 11) cpf = doc;
+            else if (docLimpo.length === 14) cnpj = doc;
+
+            const novoCliente = {
+                nome: document.getElementById('mc_nome').value.trim(),
+                email: document.getElementById('mc_email').value.trim(),
+                telefone: document.getElementById('mc_telefone').value.trim() || null,
+                cpf: cpf,
+                cnpj: cnpj,
+                cidade: document.getElementById('mc_cidade').value.trim() || null,
+                estado: document.getElementById('mc_estado').value.trim() || null
+            };
+
+            try {
+                const res = await fetch('/clientes', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(novoCliente)
+                });
+
+                if (res.ok) {
+                    const clienteCriado = await res.json();
+                    toast('Cliente cadastrado com sucesso!');
+                    clientesDisponiveis.push(clienteCriado);
+                    selecionarCliente(clienteCriado);
+                    fecharModalNovoCliente();
+                } else {
+                    const errData = await res.json().catch(() => ({}));
+                    const msg = errData.detail || 'Erro ao cadastrar cliente. Verifique se o e-mail já está cadastrado.';
+                    toast(msg, 'erro');
+                }
+            } catch (err) {
+                toast('Erro de conexão ao cadastrar cliente!', 'erro');
+            }
         });
 
         carregarClientes();
