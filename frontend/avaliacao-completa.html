@@ -5,68 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pesquisa de Satisfação - AutoLuiz</title>
-    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="responsive.css">
     <script src="toast.js"></script>
-
+    <script src="navbar.js" defer></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', sans-serif;
-        }
 
-        body {
-            background: #0a0a0a;
-            color: #f1f1f1;
-            min-height: 100vh;
-        }
-
-        header {
-            background: #141414;
-            padding: 16px 32px;
-            border-bottom: 3px solid #cc0000;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        header nav {
-            display: flex;
-            gap: 24px;
-        }
-
-        header nav a {
-            color: #888888;
-            text-decoration: none;
-            font-size: 14px;
-            transition: color 0.2s;
-        }
-
-        header nav a:hover {
-            color: #cc0000;
-        }
-
-        header nav a.ativo {
-            color: #cc0000;
-            font-weight: 600;
-        }
-
-        header button {
-            background: transparent;
-            border: 1px solid #cc0000;
-            color: #cc0000;
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s;
-        }
-
-        header button:hover {
-            background: #cc0000;
-            color: #fff;
-        }
 
         select {
             width: 100%;

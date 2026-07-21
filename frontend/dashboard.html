@@ -5,123 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
-    <link rel="icon" type="image/png" href="assets/favicon.png">
-    <script src="toast.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', sans-serif;
-        }
-
-        body {
-            background: #0a0a0a;
-            color: #f1f1f1;
-            min-height: 100vh;
-        }
-
-        header {
-            background: #141414;
-            padding: 16px 32px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 3px solid #cc0000;
-        }
-
-        header h1 {
-            color: #ffffff;
-            font-size: 20px;
-        }
-
-        header button {
-            background: transparent;
-            border: 1px solid #cc0000;
-            color: #cc0000;
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s;
-        }
-
-        header button:hover {
-            background: #cc0000;
-            color: #fff;
-        }
-
-        main {
-            padding: 32px;
-        }
-
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 20px;
-        }
-
-        .card {
-            background: #141414;
-            border-radius: 12px;
-            padding: 24px;
-            border-left: 4px solid #cc0000;
-            text-align: center;
-        }
-
-        .card h3 {
-            color: #888888;
-            font-size: 13px;
-            margin-bottom: 12px;
-            text-trasnform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .card p {
-            color: #ffffff;
-            font-size: 36px;
-            font-weight: 700;
-        }
-
-        nav {
-            display: flex;
-            gap: 24px;
-        }
-
-        nav a {
-            color: #888888;
-            text-decoration: none;
-            font-size: 14px;
-            transition: color 0.2s;
-        }
-
-        nav a:hover {
-            color: #cc0000;
-        }
-
-        nav a.ativo {
-            color: #cc0000;
-            font-weight: 600;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="responsive.css">
+    <script src="toast.js"></script>
+    <script src="navbar.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
-    <header>
-        <img src="assets/logo.png" style="height: 40px;">
-        <nav>
-            <a href="dashboard.html" class="ativo">Dashboard</a>
-            <a href="clientes.html">Clientes</a>
-            <a href="posvendas.html">Pós-venda</a>
-            <a href="relatorios.html">Relatórios</a>
-            <a href="avaliacao-completa.html">Avaliações</a>
-            <a href="importar.html">Importar</a>
-            <a href="auditoria.html">Auditoria</a>
-        </nav>
-        <button onclick="logout()"> Sair</button>
-    </header>
+
 
     <main>
         <div style="margin-bottom: 24px;">
