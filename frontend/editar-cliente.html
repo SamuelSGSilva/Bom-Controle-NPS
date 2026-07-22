@@ -5,30 +5,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Cliente</title>
-    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="responsive.css">
     <script src="toast.js"></script>
-    <link rel="stylesheet" href="global.css">
+    <script src="navbar.js" defer></script>
 </head>
 
 <body>
-    <header>
-        <img src="assets/logo.png" style="height: 40px;">
-        <nav>
-            <a href="dashboard.html">Dashboard</a>
-            <a href="clientes.html">Clientes</a>
-            <a href="novo-cliente.html">Novo Cliente</a>
-            <a href="editar-cliente.html" class="ativo">Editar Cliente</a>
-            <a href="posvendas.html">Pós-venda</a>
-            <a href="relatorios.html">Relatórios</a>
-            <a href="avaliacao-completa.html">Avaliações</a>
-            <a href="importar.html">Importar</a>
-            <a href="auditoria.html">Auditoria</a>
-        </nav>
-        <button onclick="logout()">Sair</button>
-    </header>
 
-    <main>
-        <h2>Novo Cliente</h2>
+    <main class="form-card">
+        <h2>Editar Cliente</h2>
+
         <form id="form-cliente">
             <div class="form-group">
                 <label>Nome completo</label>

@@ -6,9 +6,187 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AutoLuiz - NPS</title>
     <link rel="icon" type="image/png" href="assets/favicon.png">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
     <script src="toast.js"></script>
-    <link rel="stylesheet" href="global.css">
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        @media (max-width: 700px) {
+            body {
+                height: auto;
+                min-height: 100vh;
+                overflow-y: auto;
+            }
+
+            .lado-esquerdo {
+                display: none;
+            }
+
+            .lado-direito {
+                width: 100%;
+            }
+        }
+
+        .lado-esquerdo {
+            width: 40%;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .lado-esquerdo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        .lado-esquerdo .overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent 40%, rgba(0, 0, 0, 0.85) 100%);
+        }
+
+        .lado-esquerdo .marca {
+            position: absolute;
+            bottom: 32px;
+            left: 32px;
+        }
+
+        .lado-esquerdo .marca .linha {
+            width: 36px;
+            height: 4px;
+            background: #cc0000;
+            border-radius: 2px;
+            margin-bottom: 12px;
+        }
+
+        .lado-esquerdo .marca h2 {
+            color: #fff;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .lado-esquerdo .marca p {
+            color: #888;
+            font-size: 13px;
+        }
+
+        .lado-direito {
+            width: 60%;
+            background: #0a0a0a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 380px;
+        }
+
+        h1 {
+            color: #ffffff;
+            font-size: 26px;
+            margin-bottom: 8px;
+        }
+
+        p.subtitulo {
+            color: #888888;
+            font-size: 14px;
+            margin-bottom: 32px;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            background: #141414;
+            border: 1px solid #2a2a2a;
+            border-radius: 10px;
+            padding: 0 16px;
+            height: 50px;
+            gap: 10px;
+            margin-bottom: 14px;
+            transition: border 0.2s;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: #cc0000;
+        }
+
+        .input-wrapper i {
+            color: #555;
+            font-size: 18px;
+        }
+
+        .input-wrapper input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #f1f1f1;
+            font-size: 14px;
+            width: 100%;
+            padding: 0;
+            margin: 0;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #cc0000;
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 8px;
+        }
+
+        button:hover {
+            background: #aa0000;
+        }
+
+        #erro-login {
+            color: #f87171;
+            font-size: 13px;
+            margin-top: 12px;
+            text-align: center;
+        }
+
+        .link-registro {
+            color: #888;
+            font-size: 13px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .link-registro a {
+            color: #cc0000;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .link-registro a:hover {
+            text-decoration: underline;
+        }
+    </style>
+    <link rel="stylesheet" href="responsive.css">
 </head>
 
 <body>

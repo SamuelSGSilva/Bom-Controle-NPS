@@ -5,9 +5,294 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pesquisa de Satisfação - AutoLuiz</title>
-    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="responsive.css">
     <script src="toast.js"></script>
-    <link rel="stylesheet" href="global.css">
+    <script src="navbar.js" defer></script>
+    <style>
+
+
+        select {
+            width: 100%;
+            padding: 12px 16px;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            color: #f1f1f1;
+            font-size: 14px;
+            outline: none;
+            transition: border 0.2s;
+            font-family: inherit;
+        }
+
+        select:focus {
+            border-color: #cc0000;
+        }
+
+        main {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 32px;
+            background: #141414;
+            border-radius: 12px;
+            border-top: 3px solid #cc0000;
+        }
+
+        h2 {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        p.subtitulo {
+            color: #888888;
+            font-size: 14px;
+            margin-bottom: 28px;
+        }
+
+        .etapa {
+            display: none;
+        }
+
+        .etapa.ativa {
+            display: block;
+        }
+
+        .pergunta {
+            margin-bottom: 24px;
+        }
+
+        .pergunta label {
+            display: block;
+            font-size: 14px;
+            color: #f1f1f1;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .pergunta .categoria {
+            display: inline-block;
+            background: #2a0a0a;
+            color: #ff6b6b;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 3px 10px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+
+        .notas {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .nota {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            border: 2px solid #2a2a2a;
+            background: transparent;
+            color: #f1f1f1;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nota:hover {
+            border-color: #cc0000;
+            color: #cc0000;
+        }
+
+        .nota.selecionada {
+            background: #cc0000;
+            border-color: #cc0000;
+            color: #fff;
+        }
+
+        .nota-texto {
+            width: auto;
+            padding: 0 16px;
+            font-size: 14px;
+        }
+
+        .notas.faltando {
+            border: 2px solid #cc0000;
+            border-radius: 8px;
+            padding: 8px;
+            animation: piscar 1s ease-in-out 2;
+        }
+
+        @keyframes piscar {
+            0%, 100% { box-shadow: none; }
+            50% { box-shadow: 0 0 0 4px rgba(204, 0, 0, 0.4); }
+        }
+
+        .legenda {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #888888;
+            margin-top: 8px;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            color: #f1f1f1;
+            font-size: 14px;
+            outline: none;
+            transition: border 0.2s;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            border-color: #cc0000;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 90px;
+        }
+
+        .botoes {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 32px;
+            gap: 12px;
+        }
+
+        button.nav {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button.anterior {
+            background: transparent;
+            border: 1px solid #2a2a2a;
+            color: #888888;
+        }
+
+        button.anterior:hover {
+            border-color: #cc0000;
+            color: #cc0000;
+        }
+
+        button.proximo,
+        button.enviar {
+            background: #cc0000;
+            color: #fff;
+        }
+
+        button.proximo:hover,
+        button.enviar:hover {
+            background: #aa0000;
+        }
+
+        .progresso {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 28px;
+        }
+
+        .progresso .bola {
+            flex: 1;
+            height: 4px;
+            border-radius: 2px;
+            background: #2a2a2a;
+            transition: background 0.2s;
+        }
+
+        .progresso .bola.ativa {
+            background: #cc0000;
+        }
+
+        #agradecimento {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        #agradecimento h2 {
+            color: #00cc66;
+            margin-bottom: 12px;
+        }
+
+        #agradecimento p {
+            color: #888888;
+        }
+
+        .autocomplete-wrapper {
+            position: relative;
+        }
+
+        .autocomplete-lista {
+            display: none;
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            max-height: 220px;
+            overflow-y: auto;
+            z-index: 10;
+        }
+
+        .autocomplete-item {
+            padding: 10px 14px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #f1f1f1;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        .autocomplete-item:hover,
+        .autocomplete-item.ativo {
+            background: #2a0a0a;
+            color: #ff6b6b;
+        }
+
+        .autocomplete-item span {
+            display: block;
+            font-size: 12px;
+            color: #888888;
+        }
+
+        .cliente-info {
+            display: none;
+            margin-top: 8px;
+            padding: 10px 14px;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #ccc;
+        }
+
+        .cliente-info strong {
+            color: #f1f1f1;
+        }
+    </style>
+    <link rel="stylesheet" href="responsive.css">
 </head>
 
 <body>
