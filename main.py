@@ -1,5 +1,6 @@
 import asyncio
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from database import engine, Base, SessionLocal, sincronizar_colunas
 from models import models
 from models.models import Usuario
@@ -71,6 +72,6 @@ app.include_router(nps.router)
 app.include_router(relatorios.router)
 app.include_router(avaliacoes.router)
 
-@app.get("/")
-def root():
-    return {"message": "API está funcionando!"}
+# Serve o frontend (HTML/CSS/JS) na mesma origem da API, para que o fetch('/token')
+# etc. funcione sem CORS. Precisa vir DEPOIS dos routers para não sobrepô-los.
+app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
