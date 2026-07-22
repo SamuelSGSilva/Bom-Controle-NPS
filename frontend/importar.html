@@ -9,32 +9,282 @@
     <link rel="stylesheet" href="responsive.css">
     <script src="toast.js"></script>
     <script src="navbar.js" defer></script>
+    <style>
+        .pagina-importar {
+            max-width: 720px;
+            margin: 0 auto;
+        }
+
+        .secao-importar {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-top: 3px solid var(--primary);
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .secao-importar h2 {
+            font-size: 18px;
+            margin-bottom: 6px;
+        }
+
+        .secao-importar .descricao {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        /* Área de upload */
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 40px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-bottom: 16px;
+        }
+
+        .upload-area:hover,
+        .upload-area.dragover {
+            border-color: var(--primary);
+            background: rgba(204, 0, 0, 0.06);
+        }
+
+        .upload-area .icone {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(204, 0, 0, 0.12);
+        }
+
+        .upload-area .icone svg {
+            width: 24px;
+            height: 24px;
+            stroke: var(--primary);
+        }
+
+        .upload-area .texto-principal {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+
+        .upload-area .texto-secundario {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .upload-area .texto-secundario span {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Arquivo selecionado */
+        .arquivo-selecionado {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            background: var(--bg-card-hover);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            margin-bottom: 16px;
+        }
+
+        .arquivo-selecionado.visivel {
+            display: flex;
+        }
+
+        .arquivo-selecionado .icone-arquivo {
+            width: 36px;
+            height: 36px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-sm);
+            background: rgba(0, 204, 102, 0.12);
+        }
+
+        .arquivo-selecionado .icone-arquivo svg {
+            width: 18px;
+            height: 18px;
+            stroke: #00cc66;
+        }
+
+        .arquivo-selecionado .info-arquivo {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .arquivo-selecionado .nome {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .arquivo-selecionado .tamanho {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .btn-remover-arquivo {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+            line-height: 1;
+        }
+
+        .btn-remover-arquivo:hover {
+            color: var(--primary);
+            background: rgba(204, 0, 0, 0.12);
+        }
+
+        input[type="file"]#arquivo {
+            display: none;
+        }
+
+        .btn-acao {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-acao:hover:not(:disabled) {
+            background: var(--primary-hover);
+        }
+
+        .btn-acao:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        /* Resultado da sincronização */
+        .resultado-sync {
+            display: none;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .resultado-sync.visivel {
+            display: grid;
+        }
+
+        .resultado-sync .item {
+            background: var(--bg-card-hover);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 14px;
+            text-align: center;
+        }
+
+        .resultado-sync .item .valor {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .resultado-sync .item .rotulo {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+    </style>
 </head>
 
 <body>
 
 
     <main>
-        <div class="card">
-            <h2>Importar Pesquisa de Satisfação</h2>
-            <p>Envie a planilha preenchida pela equipe de CS para importar as avaliações automaticamente</p>
+        <div class="pagina-importar">
 
-            <div class="upload-area" id="upload-area" onclick="document.getElementById('arquivo').click()">
-                <p>Clique aqui ou arraste a planilha (.xlsx)</p>
-                <p id="nome-arquivo"></p>
-            </div>
+            <section class="secao-importar">
+                <h2>Importar Pesquisa de Satisfação</h2>
+                <p class="descricao">Envie a planilha preenchida pela equipe de CS para importar as avaliações automaticamente.</p>
 
-            <input type="file" id="arquivo" accept=".xlsx">
+                <div class="upload-area" id="upload-area" onclick="document.getElementById('arquivo').click()">
+                    <div class="icone">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                    </div>
+                    <p class="texto-principal">Clique aqui ou arraste a planilha</p>
+                    <p class="texto-secundario">Apenas arquivos <span>.xlsx</span></p>
+                </div>
 
-            <button class="enviar" id="btn-enviar" onclick="importarPlanilha()" disabled>Importar Planilha</button>
-        </div>
+                <div class="arquivo-selecionado" id="arquivo-selecionado">
+                    <div class="icone-arquivo">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                        </svg>
+                    </div>
+                    <div class="info-arquivo">
+                        <p class="nome" id="nome-arquivo"></p>
+                        <p class="tamanho" id="tamanho-arquivo"></p>
+                    </div>
+                    <button class="btn-remover-arquivo" onclick="removerArquivo()" title="Remover arquivo">&times;</button>
+                </div>
 
-        <div class="card">
-            <h2>Sincronizar Clientes do BomControle</h2>
-            <p>Busca todos os clientes cadastrados no BomControle e atualiza a base local</p>
+                <input type="file" id="arquivo" accept=".xlsx">
 
-            <button class="enviar" id="btn-sincronizar" onclick="sincronizarClientes()">Sincronizar Clientes</button>
-            <p id="resultado-sincronizacao"></p>
+                <button class="btn-acao" id="btn-enviar" onclick="importarPlanilha()" disabled>Importar Planilha</button>
+            </section>
+
+            <section class="secao-importar">
+                <h2>Sincronizar Clientes do BomControle</h2>
+                <p class="descricao">Busca todos os clientes cadastrados no BomControle e atualiza a base local.</p>
+
+                <button class="btn-acao" id="btn-sincronizar" onclick="sincronizarClientes()">Sincronizar Clientes</button>
+
+                <div class="resultado-sync" id="resultado-sincronizacao">
+                    <div class="item">
+                        <p class="valor" id="sync-criados">0</p>
+                        <p class="rotulo">Criados</p>
+                    </div>
+                    <div class="item">
+                        <p class="valor" id="sync-atualizados">0</p>
+                        <p class="rotulo">Atualizados</p>
+                    </div>
+                    <div class="item">
+                        <p class="valor" id="sync-ignorados">0</p>
+                        <p class="rotulo">Ignorados</p>
+                    </div>
+                    <div class="item">
+                        <p class="valor" id="sync-total">0</p>
+                        <p class="rotulo">Total no BomControle</p>
+                    </div>
+                </div>
+            </section>
+
         </div>
     </main>
 
@@ -44,32 +294,53 @@
 
         const inputArquivo = document.getElementById('arquivo');
         const uploadArea = document.getElementById('upload-area');
+        const arquivoSelecionado = document.getElementById('arquivo-selecionado');
         const nomeArquivo = document.getElementById('nome-arquivo');
+        const tamanhoArquivo = document.getElementById('tamanho-arquivo');
         const btnEnviar = document.getElementById('btn-enviar');
 
-        inputArquivo.addEventListener('change', function() {
-            if (this.files.length > 0) {
-                nomeArquivo.textContent = this.files[0].name;
-                btnEnviar.disabled = false;
+        function formatarTamanho(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        function selecionarArquivo(arquivo) {
+            if (!arquivo.name.toLowerCase().endsWith('.xlsx')) {
+                toast('Apenas arquivos .xlsx são aceitos', 'aviso');
+                return;
             }
+            nomeArquivo.textContent = arquivo.name;
+            tamanhoArquivo.textContent = formatarTamanho(arquivo.size);
+            arquivoSelecionado.classList.add('visivel');
+            btnEnviar.disabled = false;
+        }
+
+        function removerArquivo() {
+            inputArquivo.value = '';
+            arquivoSelecionado.classList.remove('visivel');
+            btnEnviar.disabled = true;
+        }
+
+        inputArquivo.addEventListener('change', function () {
+            if (this.files.length > 0) selecionarArquivo(this.files[0]);
         });
 
-        uploadArea.addEventListener('dragover', function(e) {
+        uploadArea.addEventListener('dragover', function (e) {
             e.preventDefault();
             uploadArea.classList.add('dragover');
         });
 
-        uploadArea.addEventListener('dragleave', function() {
+        uploadArea.addEventListener('dragleave', function () {
             uploadArea.classList.remove('dragover');
         });
 
-        uploadArea.addEventListener('drop', function(e) {
+        uploadArea.addEventListener('drop', function (e) {
             e.preventDefault();
             uploadArea.classList.remove('dragover');
             if (e.dataTransfer.files.length > 0) {
                 inputArquivo.files = e.dataTransfer.files;
-                nomeArquivo.textContent = e.dataTransfer.files[0].name;
-                btnEnviar.disabled = false;
+                selecionarArquivo(e.dataTransfer.files[0]);
             }
         });
 
@@ -94,15 +365,15 @@
 
                 if (response.ok) {
                     toast(data.message, 'sucesso');
-                    nomeArquivo.textContent = '';
-                    inputArquivo.value = '';
+                    removerArquivo();
                 } else {
                     toast(data.detail || 'Erro ao importar planilha', 'erro');
+                    btnEnviar.disabled = false;
                 }
             } catch (error) {
                 toast('Erro ao conectar com o servidor', 'erro');
-            } finally {
                 btnEnviar.disabled = false;
+            } finally {
                 btnEnviar.textContent = 'Importar Planilha';
             }
         }
@@ -113,7 +384,7 @@
 
             btn.disabled = true;
             btn.textContent = 'Sincronizando...';
-            resultado.textContent = '';
+            resultado.classList.remove('visivel');
 
             try {
                 const response = await fetch('/clientes/sincronizar-bomcontrole', {
@@ -125,7 +396,11 @@
 
                 if (response.ok) {
                     toast('Sincronização concluída!', 'sucesso');
-                    resultado.textContent = `Criados: ${data.criados} | Atualizados: ${data.atualizados} | Ignorados: ${data.ignorados} | Total no BomControle: ${data.total_bomcontrole}`;
+                    document.getElementById('sync-criados').textContent = data.criados;
+                    document.getElementById('sync-atualizados').textContent = data.atualizados;
+                    document.getElementById('sync-ignorados').textContent = data.ignorados;
+                    document.getElementById('sync-total').textContent = data.total_bomcontrole;
+                    resultado.classList.add('visivel');
                 } else {
                     toast(data.detail || 'Erro ao sincronizar clientes', 'erro');
                 }
