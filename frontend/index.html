@@ -144,6 +144,22 @@
             margin: 0;
         }
 
+        /* Sem contorno/realce vermelho no campo interno (foco e autofill do Chrome) */
+        .input-wrapper input:focus,
+        .input-wrapper input:focus-visible {
+            outline: none;
+            box-shadow: none;
+            border: none;
+        }
+
+        .input-wrapper input:-webkit-autofill,
+        .input-wrapper input:-webkit-autofill:focus {
+            -webkit-box-shadow: 0 0 0 1000px #141414 inset;
+            -webkit-text-fill-color: #f1f1f1;
+            border: none;
+            transition: background-color 9999s ease-in-out 0s;
+        }
+
         button {
             width: 100%;
             padding: 14px;
