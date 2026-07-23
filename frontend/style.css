@@ -293,6 +293,69 @@ button[type="submit"]:hover, .btn-primary:hover, .btn-novo:hover {
     color: #ffffff;
 }
 
+/* Polimento: botões principais com gradiente e leve elevação */
+button[type="submit"], .btn-primary, .btn-novo, .enviar, .busca button, .btn-salvar {
+    background: linear-gradient(135deg, #e01b1b 0%, #a40d0d 100%);
+    box-shadow: 0 6px 18px -6px rgba(204, 0, 0, 0.5);
+}
+
+button[type="submit"]:hover, .btn-primary:hover, .btn-novo:hover,
+.enviar:hover:not(:disabled), .busca button:hover, .btn-salvar:hover {
+    background: linear-gradient(135deg, #e01b1b 0%, #a40d0d 100%);
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 24px -8px rgba(204, 0, 0, 0.65);
+}
+
+/* Botão de ação principal (Importar / Enviar / Sincronizar) */
+.enviar {
+    width: 100%;
+    padding: 14px;
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: var(--transition);
+}
+
+.enviar:disabled {
+    background: #232323;
+    color: #666;
+    cursor: not-allowed;
+    box-shadow: none;
+    filter: none;
+    transform: none;
+}
+
+/* Área de upload (dropzone) da tela Importar */
+input[type="file"] { display: none; }
+
+.upload-area {
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 36px 20px;
+    margin-top: 20px;
+    cursor: pointer;
+    text-align: center;
+    transition: var(--transition);
+}
+
+.upload-area:hover, .upload-area.dragover {
+    border-color: var(--primary);
+    background: rgba(204, 0, 0, 0.05);
+}
+
+.upload-area p { margin: 0; color: var(--text-light); font-size: 15px; }
+#nome-arquivo { color: #00cc66; font-size: 13px; margin-top: 10px; }
+#resultado-sincronizacao { color: var(--text-muted); font-size: 13px; margin-top: 16px; white-space: pre-line; }
+
+/* Cartões de descrição (fora do grid de KPIs) alinham à esquerda */
+main > .card { text-align: left; }
+main > .card + .card { margin-top: 20px; }
+
 /* Tabelas */
 .table-container {
     background: var(--bg-card);
