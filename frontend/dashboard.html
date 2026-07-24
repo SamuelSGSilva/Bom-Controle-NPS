@@ -183,7 +183,7 @@
                 <td style="padding: 10px 8px;"><span style="color: ${cores[tipo]}; font-weight: 700;">${nota}</span></td>
                 <td style="padding: 10px 8px; font-size: 12px; color: #888888;">${dataLocal(a.created_at).toLocaleDateString('pt-BR')}</td>
                 <td style="padding: 10px 8px;">
-                    <button onclick="excluirAvaliacao(${a.id})" style="background: transparent; border: 1px solid #888888; color: #888888; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 11px;">Excluir</button>
+                    <button class="btn-deletar" onclick="excluirAvaliacao(${a.id})">Excluir</button>
                 </td>
             </tr>`;
             });
@@ -219,7 +219,9 @@
                         backgroundColor: ['#00cc66', '#f59e0b', '#cc0000'],
                         borderRadius: 6,
                         borderSkipped: false,
-                        maxBarThickness: 46,
+                        maxBarThickness: 90,
+                        categoryPercentage: 0.7,
+                        barPercentage: 0.9,
                     }]
                 },
                 options: {
