@@ -14,12 +14,12 @@
 
 <body>
 
-
     <main>
-        <div style="margin-bottom: 24px;">
-            <h2 id="boas-vindas" style="font-size: 18px; color: #ffffff;">Olá! 👋</h2>
-            <p style="color: #888888; font-size: 14px;">Aqui está o resumo do dia.</p>
+        <div style="margin-bottom: 28px;">
+            <h2 id="boas-vindas" style="font-size: 20px; font-weight: 700; color: #ffffff; letter-spacing: -0.3px;">Olá! 👋</h2>
+            <p style="color: #666670; font-size: 14px; margin-top: 4px;">Aqui está o resumo do dia.</p>
         </div>
+
         <div class="cards">
             <div class="card">
                 <h3>Índice NPS</h3>
@@ -51,44 +51,27 @@
             </div>
         </div>
 
-        <div style="background: #141414; border-radius: 12px; padding: 24px; margin-top: 40px;">
-            <h3
-                style="color: #888888; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">
-                Evolução do NPS
-            </h3>
+        <div class="chart-card" style="margin-top: 32px;">
+            <div class="chart-card-title">Evolução do NPS</div>
             <div style="height: 180px;"><canvas id="grafico-evolucao"></canvas></div>
         </div>
 
         <div class="grid-2col" style="display: grid; gap: 24px; margin-top: 24px;">
 
-            <div style="background: #141414; border-radius: 12px; padding: 24px;">
-                <h3
-                    style="color: #888888; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">
-                    Distribuição NPS
-                </h3>
+            <div class="chart-card">
+                <div class="chart-card-title">Distribuição NPS</div>
                 <div style="height: 190px;"><canvas id="grafico-nps"></canvas></div>
             </div>
 
-            <div style="background: #141414; border-radius: 12px; padding: 24px; overflow-x: auto;">
-                <h3
-                    style="color: #888888; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">
-                    Últimas Avaliações
-                </h3>
+            <div class="chart-card" style="overflow-x: auto;">
+                <div class="chart-card-title">Últimas Avaliações</div>
                 <table style="width: 100%; min-width: 320px; border-collapse: collapse;">
                     <thead>
                         <tr>
-                            <th
-                                style="color: #888888; font-size: 12px; text-align: left; padding: 8px; border-bottom: 1px solid #2a2a2a;">
-                                Cliente</th>
-                            <th
-                                style="color: #888888; font-size: 12px; text-align: left; padding: 8px; border-bottom: 1px solid #2a2a2a;">
-                                Nota</th>
-                            <th
-                                style="color: #888888; font-size: 12px; text-align: left; padding: 8px; border-bottom: 1px solid #2a2a2a;">
-                                Data</th>
-                            <th
-                                style="color: #888888; font-size: 12px; text-align: left; padding: 8px; border-bottom: 1px solid #2a2a2a;">
-                                Ações</th>
+                            <th style="background: transparent; color: #555560; font-size: 11px; text-align: left; padding: 0 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.08); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Cliente</th>
+                            <th style="background: transparent; color: #555560; font-size: 11px; text-align: left; padding: 0 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.08); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Nota</th>
+                            <th style="background: transparent; color: #555560; font-size: 11px; text-align: left; padding: 0 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.08); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Data</th>
+                            <th style="background: transparent; color: #555560; font-size: 11px; text-align: left; padding: 0 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.08); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Ações</th>
                         </tr>
                     </thead>
                     <tbody id="tabela-ultimas-avaliacoes"></tbody>
@@ -98,13 +81,10 @@
         </div>
     </main>
 
-
     <script>
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'index.html';
 
-        // O backend grava created_at em UTC sem indicar o fuso na string ISO;
-        // sem o "Z" o navegador interpreta como horário local, adiantando o valor.
         function dataLocal(isoSemFuso) {
             return new Date(isoSemFuso.endsWith('Z') ? isoSemFuso : isoSemFuso + 'Z');
         }
@@ -131,7 +111,6 @@
             document.getElementById('total').textContent = data.total_avaliacoes;
 
             renderizarGrafico(data.promotores, data.neutros, data.detratores);
-
         }
 
         async function carregarResumo() {
@@ -165,7 +144,7 @@
             tabela.innerHTML = '';
 
             if (!avaliacoes.length) {
-                tabela.innerHTML = '<tr><td colspan="4" style="color:#888; text-align:center; padding:20px;">Nenhuma avaliação</td></tr>';
+                tabela.innerHTML = '<tr><td colspan="4" style="color:#666; text-align:center; padding:24px; font-size:13px;">Nenhuma avaliação registrada</td></tr>';
                 return;
             }
 
@@ -173,16 +152,15 @@
             ultimas.forEach(a => {
                 const cliente = clientes.find(c => c.id === a.cliente_id);
                 const nome = cliente ? cliente.nome : `ID ${a.cliente_id}`;
-                const cores = { promotor: '#00cc66', neutro: '#f59e0b', detrator: '#cc0000', semnota: '#888888' };
                 const temNota = a.nps_score !== null && a.nps_score !== undefined;
                 const tipo = !temNota ? 'semnota' : a.nps_score === 5 ? 'promotor' : a.nps_score === 4 ? 'neutro' : 'detrator';
                 const nota = temNota ? `${a.nps_score}/5` : '--';
                 tabela.innerHTML += `
-            <tr style="border-bottom: 1px solid #2a2a2a;">
-                <td style="padding: 10px 8px; font-size: 13px; color: #cccccc;">${nome}</td>
-                <td style="padding: 10px 8px;"><span style="color: ${cores[tipo]}; font-weight: 700;">${nota}</span></td>
-                <td style="padding: 10px 8px; font-size: 12px; color: #888888;">${dataLocal(a.created_at).toLocaleDateString('pt-BR')}</td>
-                <td style="padding: 10px 8px;">
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <td style="padding: 12px 8px; font-size: 13px; color: #d0d0d8;">${nome}</td>
+                <td style="padding: 12px 8px;"><span class="nota-badge nota-${tipo}">${nota}</span></td>
+                <td style="padding: 12px 8px; font-size: 12px; color: #666670;">${dataLocal(a.created_at).toLocaleDateString('pt-BR')}</td>
+                <td style="padding: 12px 8px;">
                     <button class="btn-deletar" onclick="excluirAvaliacao(${a.id})">Excluir</button>
                 </td>
             </tr>`;
@@ -216,8 +194,12 @@
                     labels: ['Satisfeitos', 'Indiferentes', 'Insatisfeitos'],
                     datasets: [{
                         data: [promotores, neutros, detratores],
-                        backgroundColor: ['#00cc66', '#f59e0b', '#cc0000'],
-                        borderRadius: 6,
+                        backgroundColor: [
+                            'rgba(34,197,94,0.85)',
+                            'rgba(245,158,11,0.85)',
+                            'rgba(248,113,113,0.85)'
+                        ],
+                        borderRadius: 8,
                         borderSkipped: false,
                         maxBarThickness: 90,
                         categoryPercentage: 0.7,
@@ -232,15 +214,12 @@
                     },
                     scales: {
                         x: {
-                            ticks: { color: '#888888' },
-                            grid: { color: '#1a1a1a' }
+                            ticks: { color: '#666670' },
+                            grid: { color: 'rgba(255,255,255,0.04)' }
                         },
                         y: {
-                            ticks: {
-                                color: '#888888',
-                                stepSize: 1
-                            },
-                            grid: { color: '#1a1a1a' },
+                            ticks: { color: '#666670', stepSize: 1 },
+                            grid: { color: 'rgba(255,255,255,0.04)' },
                             beginAtZero: true
                         }
                     }
@@ -272,11 +251,13 @@
                         label: 'NPS',
                         data: valores,
                         borderColor: '#cc0000',
-                        backgroundColor: 'rgba(204, 0, 0, 0.15)',
+                        backgroundColor: 'rgba(204, 0, 0, 0.10)',
                         fill: true,
-                        tension: 0.3,
+                        tension: 0.4,
                         pointBackgroundColor: '#cc0000',
-                        pointRadius: 4
+                        pointBorderColor: '#191920',
+                        pointBorderWidth: 2,
+                        pointRadius: 5
                     }]
                 },
                 options: {
@@ -287,12 +268,12 @@
                     },
                     scales: {
                         x: {
-                            ticks: { color: '#888888' },
-                            grid: { color: '#1a1a1a' }
+                            ticks: { color: '#666670' },
+                            grid: { color: 'rgba(255,255,255,0.04)' }
                         },
                         y: {
-                            ticks: { color: '#888888' },
-                            grid: { color: '#1a1a1a' },
+                            ticks: { color: '#666670' },
+                            grid: { color: 'rgba(255,255,255,0.04)' },
                             suggestedMin: -100,
                             suggestedMax: 100
                         }
