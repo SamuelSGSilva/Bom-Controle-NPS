@@ -16,8 +16,8 @@
 
     <main>
         <div style="margin-bottom: 28px;">
-            <h2 id="boas-vindas" style="font-size: 20px; font-weight: 700; color: #ffffff; letter-spacing: -0.3px;">Olá! 👋</h2>
-            <p style="color: #666670; font-size: 14px; margin-top: 4px;">Aqui está o resumo do dia.</p>
+            <h2 id="boas-vindas" style="font-size: 20px; font-weight: 700; color: #f1f1f1; letter-spacing: -0.3px;">Olá! 👋</h2>
+            <p style="color: #888888; font-size: 14px; margin-top: 4px;">Aqui está o resumo do dia.</p>
         </div>
 
         <div class="cards">
@@ -68,10 +68,10 @@
                 <table style="width: 100%; min-width: 320px; border-collapse: collapse;">
                     <thead>
                         <tr>
-                            <th style="background: transparent; color: #555560; font-size: 11px; text-align: left; padding: 0 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.08); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Cliente</th>
-                            <th style="background: transparent; color: #555560; font-size: 11px; text-align: left; padding: 0 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.08); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Nota</th>
-                            <th style="background: transparent; color: #555560; font-size: 11px; text-align: left; padding: 0 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.08); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Data</th>
-                            <th style="background: transparent; color: #555560; font-size: 11px; text-align: left; padding: 0 8px 12px; border-bottom: 1px solid rgba(255,255,255,0.08); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Ações</th>
+                            <th style="background: linear-gradient(180deg, #b81616 0%, #8f0f0f 100%); color: #f4f4f4; font-size: 11px; text-align: left; padding: 12px 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px;">Cliente</th>
+                            <th style="background: linear-gradient(180deg, #b81616 0%, #8f0f0f 100%); color: #f4f4f4; font-size: 11px; text-align: left; padding: 12px 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px;">Nota</th>
+                            <th style="background: linear-gradient(180deg, #b81616 0%, #8f0f0f 100%); color: #f4f4f4; font-size: 11px; text-align: left; padding: 12px 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px;">Data</th>
+                            <th style="background: linear-gradient(180deg, #b81616 0%, #8f0f0f 100%); color: #f4f4f4; font-size: 11px; text-align: left; padding: 12px 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px;">Ações</th>
                         </tr>
                     </thead>
                     <tbody id="tabela-ultimas-avaliacoes"></tbody>
@@ -144,7 +144,7 @@
             tabela.innerHTML = '';
 
             if (!avaliacoes.length) {
-                tabela.innerHTML = '<tr><td colspan="4" style="color:#666; text-align:center; padding:24px; font-size:13px;">Nenhuma avaliação registrada</td></tr>';
+                tabela.innerHTML = '<tr><td colspan="4" style="color:#888888; text-align:center; padding:24px; font-size:13px;">Nenhuma avaliação registrada</td></tr>';
                 return;
             }
 
@@ -153,14 +153,14 @@
                 const cliente = clientes.find(c => c.id === a.cliente_id);
                 const nome = cliente ? cliente.nome : `ID ${a.cliente_id}`;
                 const temNota = a.nps_score !== null && a.nps_score !== undefined;
-                const tipo = !temNota ? 'semnota' : a.nps_score === 5 ? 'promotor' : a.nps_score === 4 ? 'neutro' : 'detrator';
                 const nota = temNota ? `${a.nps_score}/5` : '--';
+                const badgeClass = temNota ? 'nota-badge' : 'nota-badge nota-semnota';
                 tabela.innerHTML += `
-            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                <td style="padding: 12px 8px; font-size: 13px; color: #d0d0d8;">${nome}</td>
-                <td style="padding: 12px 8px;"><span class="nota-badge nota-${tipo}">${nota}</span></td>
-                <td style="padding: 12px 8px; font-size: 12px; color: #666670;">${dataLocal(a.created_at).toLocaleDateString('pt-BR')}</td>
-                <td style="padding: 12px 8px;">
+            <tr style="border-bottom: 1px solid #1e1e1e;">
+                <td style="padding: 12px 10px; font-size: 13px; color: #cccccc;">${nome}</td>
+                <td style="padding: 12px 10px;"><span class="${badgeClass}">${nota}</span></td>
+                <td style="padding: 12px 10px; font-size: 12px; color: #888888;">${dataLocal(a.created_at).toLocaleDateString('pt-BR')}</td>
+                <td style="padding: 12px 10px;">
                     <button class="btn-deletar" onclick="excluirAvaliacao(${a.id})">Excluir</button>
                 </td>
             </tr>`;
@@ -184,7 +184,7 @@
             }
         }
 
-        if (window.Chart) { Chart.defaults.font.size = 11; Chart.defaults.color = '#8b8b93'; }
+        if (window.Chart) { Chart.defaults.font.size = 11; Chart.defaults.color = '#888888'; }
 
         function renderizarGrafico(promotores, neutros, detratores) {
             const ctx = document.getElementById('grafico-nps').getContext('2d');
@@ -195,9 +195,9 @@
                     datasets: [{
                         data: [promotores, neutros, detratores],
                         backgroundColor: [
-                            'rgba(34,197,94,0.85)',
-                            'rgba(245,158,11,0.85)',
-                            'rgba(248,113,113,0.85)'
+                            'rgba(204, 0, 0, 0.85)',
+                            'rgba(136, 136, 136, 0.5)',
+                            'rgba(60, 60, 60, 0.85)'
                         ],
                         borderRadius: 8,
                         borderSkipped: false,
@@ -209,17 +209,15 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
+                    plugins: { legend: { display: false } },
                     scales: {
                         x: {
-                            ticks: { color: '#666670' },
-                            grid: { color: 'rgba(255,255,255,0.04)' }
+                            ticks: { color: '#888888' },
+                            grid: { color: '#1a1a1a' }
                         },
                         y: {
-                            ticks: { color: '#666670', stepSize: 1 },
-                            grid: { color: 'rgba(255,255,255,0.04)' },
+                            ticks: { color: '#888888', stepSize: 1 },
+                            grid: { color: '#1a1a1a' },
                             beginAtZero: true
                         }
                     }
@@ -251,11 +249,11 @@
                         label: 'NPS',
                         data: valores,
                         borderColor: '#cc0000',
-                        backgroundColor: 'rgba(204, 0, 0, 0.10)',
+                        backgroundColor: 'rgba(204, 0, 0, 0.12)',
                         fill: true,
                         tension: 0.4,
                         pointBackgroundColor: '#cc0000',
-                        pointBorderColor: '#191920',
+                        pointBorderColor: '#141414',
                         pointBorderWidth: 2,
                         pointRadius: 5
                     }]
@@ -263,17 +261,15 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
+                    plugins: { legend: { display: false } },
                     scales: {
                         x: {
-                            ticks: { color: '#666670' },
-                            grid: { color: 'rgba(255,255,255,0.04)' }
+                            ticks: { color: '#888888' },
+                            grid: { color: '#1a1a1a' }
                         },
                         y: {
-                            ticks: { color: '#666670' },
-                            grid: { color: 'rgba(255,255,255,0.04)' },
+                            ticks: { color: '#888888' },
+                            grid: { color: '#1a1a1a' },
                             suggestedMin: -100,
                             suggestedMax: 100
                         }
