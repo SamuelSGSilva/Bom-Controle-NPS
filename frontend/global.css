@@ -362,13 +362,31 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
     outline-offset: 2px;
 }
 
-.tipo-doc-toggle { display: flex; gap: 8px; margin-bottom: 16px; }
-.tipo-doc-btn {
-    flex: 1; padding: 10px; background: var(--surface);
-    border: 1px solid var(--line); border-radius: 8px;
-    color: var(--muted); font-size: 13px; cursor: pointer; transition: all .2s;
+/* Container que coloca os botões lado a lado com um pequeno espaço */
+.tipo-doc-toggle { 
+    display: flex; 
+    gap: 8px; 
+    margin-bottom: 16px; 
 }
-.tipo-doc-btn.ativo { border-color: var(--red); color: var(--red); }
+
+/* Estilo base do botão (fundo escuro, borda discreta) */
+.tipo-doc-btn {
+    flex: 1; /* Faz os botões dividirem o espaço igualmente (50% cada) */
+    padding: 10px; 
+    background: var(--surface);
+    border: 1px solid var(--line); 
+    border-radius: 8px;
+    color: var(--muted); 
+    font-size: 13px; 
+    cursor: pointer; 
+    transition: all .2s ease;
+}
+
+/* Estilo do botão quando está selecionado (borda e texto vermelhos) */
+.tipo-doc-btn.ativo { 
+    border-color: var(--red); 
+    color: var(--red); 
+}
 
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .form-grid .full { grid-column: 1 / -1; }
