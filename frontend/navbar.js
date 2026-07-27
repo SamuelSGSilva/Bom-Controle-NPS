@@ -3,7 +3,8 @@
         const existingHeader = document.querySelector('header');
         const headerHTML = `
             <div class="header-logo-wrapper">
-                <a href="dashboard.html"><img src="assets/logo.png" alt="Bom Controle NPS" class="header-logo"></a>
+                <!-- AQUI ESTÁ A CORREÇÃO: O estilo direto na tag img trava o tamanho -->
+                <a href="dashboard.html"><img src="assets/logo.png" alt="Bom Controle NPS" class="header-logo" style="height: 28px !important; width: auto !important; display: block;"></a>
             </div>
             <nav id="nav-menu">
                 <a href="dashboard.html" data-page="dashboard.html">Dashboard</a>
@@ -17,7 +18,7 @@
                 <a href="auditoria.html" data-page="auditoria.html">Auditoria</a>
             </nav>
             <div style="display: flex; align-items: center; gap: 12px;">
-                <button class="btn-logout" onclick="logout()">Sair</button>
+                <button class="btn-logout" onclick="logout()" style="background: transparent; border: 1px solid var(--red); color: var(--red); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600;">Sair</button>
                 <button class="mobile-toggle" onclick="toggleMenuMobile()" aria-label="Menu">☰</button>
             </div>
         `;
