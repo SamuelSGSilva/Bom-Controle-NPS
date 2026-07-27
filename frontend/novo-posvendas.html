@@ -303,6 +303,7 @@
 
             const posVenda = {
                 cliente_id: clienteEncontrado.id,
+                produto_servico: document.getElementById('produto').value || null,
                 feedback: document.getElementById('feedback').value || null,
                 status: document.getElementById('status').value,
                 data_retorno: document.getElementById('data_retorno').value || null
