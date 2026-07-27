@@ -276,33 +276,77 @@
     titulo.innerHTML = `<span style="text-transform: capitalize;">${nomeTela}</span> <span class="${badgeClass}" style="font-size: 11px;">${acaoTexto}</span>`;
     subtitulo.textContent = `${nomeRegistro} · por ${nomeUsuario} em ${dataLocal(log.created_at).toLocaleString('pt-BR')}`;
 
-    // 5. Preenchendo a Tabela de Detalhes
+    // 5. TRADUTOR DE CAMPOS (Deixa os nomes bonitos)
+    const dicionarioCampos = {
+        "id": "ID",
+        "numero_os": "Número da OS",
+        "produto_servico": "Produto/Serviço",
+        "data_atendimento": "Data do Atendimento",
+        "cidade_estado": "Cidade/Estado",
+        "nota_primeiro_contato": "Nota - Primeiro Contato",
+        "nota_clareza_informacoes": "Nota - Clareza de Informações",
+        "nota_processo_fechamento": "Nota - Processo de Fechamento",
+        "nota_link_pagamento": "Nota - Link de Pagamento",
+        "nota_nota_fiscal": "Nota - Nota Fiscal",
+        "nota_entrega_prazo": "Nota - Prazo de Entrega",
+        "nota_embalagem": "Nota - Embalagem",
+        "nota_entrega_tecnica": "Nota - Entrega Técnica",
+        "nota_suporte_produto": "Nota - Suporte do Produto",
+        "avaliacao_geral": "Avaliação Geral",
+        "nps_score": "Score NPS",
+        "consideracoes": "Considerações",
+        "o_que_gostou": "O que gostou",
+        "o_que_melhorar": "O que melhorar",
+        "media_geral": "Média Geral",
+        "resp_entrega_tecnica": "Resp. pela Entrega Técnica",
+        "cs_responsavel": "CS Responsável",
+        "created_at": "Data de Criação",
+        "cliente_nome": "Cliente"
+    };
+
+    // Função interna para limpar as horas longas
+    function formatarDado(valor) {
+        if (valor === null || valor === undefined || valor === '') return '--';
+        
+        // Se for texto longo de data (ex: 2026-07-27 18:23:45.730000+00:00)
+        if (typeof valor === 'string' && valor.match(/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}/)) {
+            // Tenta criar uma data lidando com o fuso horário
+            const data = new Date(valor.includes('+') || valor.endsWith('Z') ? valor : valor + 'Z');
+            if (!isNaN(data.getTime())) {
+                // Retorna DD/MM/AAAA HH:MM (cortando os segundos e milissegundos)
+                return data.toLocaleDateString('pt-BR') + ' às ' + data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            }
+        }
+        return valor;
+    }
+
+    // 6. Preenchendo a Tabela de Detalhes
     corpoTabela.innerHTML = '';
     
-    // Pegar todas as chaves (campos) que existem no Antes ou no Depois
     const todasAsChaves = new Set([...Object.keys(objAntes), ...Object.keys(objDepois)]);
 
     if (todasAsChaves.size > 0) {
         todasAsChaves.forEach(chave => {
-            const valorAntes = objAntes[chave] !== undefined && objAntes[chave] !== null ? objAntes[chave] : '--';
-            const valorDepois = objDepois[chave] !== undefined && objDepois[chave] !== null ? objDepois[chave] : '--';
+            // Se tiver no dicionário, usa o nome bonito. Se não, usa o original tirando o "underline"
+            const nomeAmigavel = dicionarioCampos[chave] || chave.replace(/_/g, ' '); 
+            
+            // Aplica a formatação de data/hora nos valores
+            const valorAntes = formatarDado(objAntes[chave]);
+            const valorDepois = formatarDado(objDepois[chave]);
 
-            // Se for uma atualização e o campo não mudou, pula para não poluir a tela
             if (acaoTexto === 'Atualizado' && valorAntes === valorDepois) {
                 return; 
             }
 
-            // Exibir apenas os campos que realmente foram modificados/criados
             corpoTabela.innerHTML += `
                 <tr>
-                    <td style="font-weight: 500; color: #fff; width: 25%;">${chave}</td>
+                    <td style="font-weight: 500; color: #fff; width: 25%; text-transform: capitalize;">${nomeAmigavel}</td>
                     <td style="color: #ccc; word-break: break-word; white-space: pre-wrap; overflow-wrap: break-word;">${valorAntes}</td>
                     <td style="color: #ccc; word-break: break-word; white-space: pre-wrap; overflow-wrap: break-word;">${valorDepois}</td>
                 </tr>
             `;
         });
         
-        // Caso todos os campos sejam iguais (nenhuma mudança real na atualização)
         if (corpoTabela.innerHTML === '') {
              corpoTabela.innerHTML = `<tr><td colspan="3" class="vazio">Nenhuma alteração nos dados foi detectada.</td></tr>`;
         }
@@ -312,7 +356,6 @@
 
     modal.classList.add('ativo');
 }
-
         function fecharModalAuditoria() {
             document.getElementById('modal-auditoria').classList.remove('ativo');
         }
