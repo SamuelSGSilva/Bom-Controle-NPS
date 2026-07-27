@@ -84,13 +84,15 @@
 
         let todosLogs = [];
 
-        // Função com o nome exato que o seu código está procurando
+        // Função ajustada para procurar o ID "tabela-logs"
         async function carregarLogs() {
             document.getElementById('loading').style.display = 'block';
-            document.getElementById('tabela-auditoria').innerHTML = '';
+
+            // CORREÇÃO AQUI: Mudamos de 'tabela-auditoria' para 'tabela-logs'
+            const tabela = document.getElementById('tabela-logs');
+            if (tabela) tabela.innerHTML = '';
 
             try {
-                // A rota correta do seu backend
                 const response = await fetch('/logs-auditoria', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -116,7 +118,14 @@
         }
 
         function renderizarLogs(logs) {
-            const tabela = document.getElementById('tabela-auditoria');
+            // CORREÇÃO AQUI: Mudamos de 'tabela-auditoria' para 'tabela-logs'
+            const tabela = document.getElementById('tabela-logs');
+
+            if (!tabela) {
+                console.error("Tabela não encontrada no HTML! Verifique se a tag <tbody> tem o id='tabela-logs'");
+                return;
+            }
+
             tabela.innerHTML = '';
 
             if (logs.length === 0) {
