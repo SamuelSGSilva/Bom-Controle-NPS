@@ -205,42 +205,45 @@
     const elAcao = document.getElementById('filtro-acao');
     const elUsuario = document.getElementById('busca-usuario');
 
-    // Pega os valores selecionados (em minúsculo para facilitar a busca)
-    const tela = elTela ? elTela.value.toLowerCase() : '';
-    const acao = elAcao ? elAcao.value.toLowerCase() : '';
+    const tela = elTela ? elTela.value : '';
+    const acao = elAcao ? elAcao.value : '';
     const buscaUser = elUsuario ? elUsuario.value.trim().toLowerCase() : '';
+
+    // ==========================================
+    // NOSSO ESPIÃO: Vai mostrar o que o HTML está enviando
+    // ==========================================
+    console.log("👀 O valor que o filtro TELA capturou foi:", `"${tela}"`);
+    if (todosLogs.length > 0) {
+        console.log("👀 Um exemplo de entidade no banco é:", `"${todosLogs[0].entidade || todosLogs[0].tela}"`);
+    }
 
     let filtrados = todosLogs;
 
     // 1. FILTRANDO A TELA
-    if (tela && tela !== 'todas as telas' && tela !== 'todas') {
+    if (tela && tela.toLowerCase() !== 'todas as telas' && tela.toLowerCase() !== 'todas') {
         filtrados = filtrados.filter(l => {
-            // Pega o nome que vem do banco (entidade)
             let nomeBanco = (l.entidade || l.tela || l.tabela || '').toLowerCase();
             
-            // Função para limpar acentos, underlines e traços
             const limpaTexto = texto => texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[-_]/g, ' ').trim();
             
             const bancoLimpo = limpaTexto(nomeBanco);
-            const filtroLimpo = limpaTexto(tela);
+            const filtroLimpo = limpaTexto(tela.toLowerCase());
             
-            // Compara de forma flexível (ex: "avaliacoes" inclui "avaliacao")
             return bancoLimpo.includes(filtroLimpo) || filtroLimpo.includes(bancoLimpo);
         });
     }
 
     // 2. FILTRANDO A AÇÃO
-    if (acao && acao !== 'todas as ações' && acao !== 'todas') {
+    if (acao && acao.toLowerCase() !== 'todas as ações' && acao.toLowerCase() !== 'todas') {
         filtrados = filtrados.filter(l => {
             let acaoBanco = (l.acao || l.action || '').toLowerCase();
             
-            // Traduz a ação do banco para o português para bater com o filtro
             if (acaoBanco === 'create') acaoBanco = 'criado';
             if (acaoBanco === 'update') acaoBanco = 'atualizado';
             if (acaoBanco === 'delete') acaoBanco = 'excluído';
             
             const limpaTexto = texto => texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-            return limpaTexto(acaoBanco) === limpaTexto(acao);
+            return limpaTexto(acaoBanco) === limpaTexto(acao.toLowerCase());
         });
     }
 
@@ -252,7 +255,6 @@
         });
     }
 
-    // Redesenha a tabela só com os dados filtrados
     renderizarLogs(filtrados);
 }
 
