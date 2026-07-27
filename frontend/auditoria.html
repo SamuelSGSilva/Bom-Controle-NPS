@@ -269,14 +269,28 @@
                          (objReferencia.numero_os ? `OS: ${objReferencia.numero_os}` : null) || 
                          (objReferencia.id ? `ID: ${objReferencia.id}` : '--');
 
-    const nomeTela = log.entidade || log.tela || log.tabela || 'Desconhecida';
+    // ==========================================
+    // NOVIDADE: TRADUTOR DO NOME DA TELA
+    // ==========================================
+    let nomeTela = log.entidade || log.tela || log.tabela || 'Desconhecida';
+    nomeTela = nomeTela.toLowerCase();
+    
+    if (nomeTela === 'pos_venda' || nomeTela === 'pos-venda') {
+        nomeTela = 'Pós-venda';
+    } else if (nomeTela === 'avaliacao') {
+        nomeTela = 'Avaliação';
+    } else {
+        // Se for outro nome, apenas tira o underline e coloca espaço
+        nomeTela = nomeTela.replace(/_/g, ' '); 
+    }
+
     const nomeUsuario = log.usuario || log.usuario_nome || '--';
 
-    // 4. Preenchendo o Cabeçalho
+    // 4. Preenchendo o Cabeçalho (Agora com o nome da tela bonito)
     titulo.innerHTML = `<span style="text-transform: capitalize;">${nomeTela}</span> <span class="${badgeClass}" style="font-size: 11px;">${acaoTexto}</span>`;
     subtitulo.textContent = `${nomeRegistro} · por ${nomeUsuario} em ${dataLocal(log.created_at).toLocaleString('pt-BR')}`;
 
-    // 5. TRADUTOR DE CAMPOS (Com "Cliente" no lugar de "Nome do Cliente")
+    // 5. TRADUTOR DE CAMPOS
     const dicionarioCampos = {
         "id": "ID",
         "numero_os": "Número da OS",
@@ -301,7 +315,7 @@
         "resp_entrega_tecnica": "Resp. pela Entrega Técnica",
         "cs_responsavel": "CS Responsável",
         "created_at": "Data de Criação",
-        "cliente_nome": "Cliente" // <-- Nome limpo aqui
+        "cliente_nome": "Cliente" 
     };
 
     function formatarDado(valor) {
@@ -322,12 +336,10 @@
 
     if (todasAsChaves.size > 0) {
         todasAsChaves.forEach(chave => {
-            // REGRA PARA ESCONDER O CLIENTE_ID
             if (chave === 'cliente_id') {
                 return;
             }
 
-            // Puxa o nome bonito do dicionário. Se não tiver lá, ele arruma os underlines sozinho.
             let nomeAmigavel = dicionarioCampos[chave];
             if (!nomeAmigavel) {
                 nomeAmigavel = chave.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
@@ -336,11 +348,12 @@
             const valorAntes = formatarDado(objAntes[chave]);
             const valorDepois = formatarDado(objDepois[chave]);
 
+            // Se você quiser que TODOS os campos apareçam (mesmo os que não mudaram), 
+            // basta apagar estas 3 linhas abaixo:
             if (acaoTexto === 'Atualizado' && valorAntes === valorDepois) {
                 return; 
             }
 
-            // Removi o text-transform: capitalize do HTML para respeitar as letras minúsculas do dicionário
             corpoTabela.innerHTML += `
                 <tr>
                     <td style="font-weight: 500; color: #fff; width: 25%;">${nomeAmigavel}</td>
@@ -363,7 +376,7 @@
             document.getElementById('modal-auditoria').classList.remove('ativo');
         }
 
-        carregarLogs();
+        carregarLogs();h
     </script>
 </body>
 
