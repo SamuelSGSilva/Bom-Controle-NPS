@@ -228,11 +228,21 @@
     renderizarLogs(filtrados);
 }
 
-        function abrirModalAuditoria(log) {
+       function abrirModalAuditoria(log) {
+    // 1. Arrumando a Ação e a Cor
+    let acaoTexto = log.acao || log.action || '--';
     let badgeClass = 'badge';
-    if (log.acao === 'Criado') badgeClass = 'badge badge-create';
-    else if (log.acao === 'Atualizado') badgeClass = 'badge badge-update';
-    else if (log.acao === 'Excluído') badgeClass = 'badge badge-delete';
+    
+    if (acaoTexto === 'create' || acaoTexto === 'Criado') {
+        acaoTexto = 'Criado';
+        badgeClass = 'badge badge-create';
+    } else if (acaoTexto === 'update' || acaoTexto === 'Atualizado') {
+        acaoTexto = 'Atualizado';
+        badgeClass = 'badge badge-update';
+    } else if (acaoTexto === 'delete' || acaoTexto === 'Excluído') {
+        acaoTexto = 'Excluído';
+        badgeClass = 'badge badge-delete';
+    }
 
     const titulo = document.getElementById('modal-titulo');
     const subtitulo = document.getElementById('modal-subtitulo');
@@ -241,27 +251,63 @@
 
     if (!titulo || !subtitulo || !corpoTabela || !modal) return;
 
-    // CORREÇÃO: Mesma proteção de nomes aplicada aqui no modal
-    const nomeRegistro = log.registro || log.registro_nome || log.entidade_nome || log.cliente_nome || 'Registro';
-    const nomeUsuario = log.usuario || log.usuario_nome || log.nome_usuario || 'Sistema';
+    // 2. Extraindo os dados do JSON (Antes e Depois)
+    let objAntes = {};
+    let objDepois = {};
 
-    titulo.innerHTML = `${log.tela} <span class="${badgeClass}" style="font-size: 11px;">${log.acao}</span>`;
+    if (log.dados_antes) {
+        try { objAntes = JSON.parse(log.dados_antes); } catch(e) {}
+    }
+    if (log.dados_depois) {
+        try { objDepois = JSON.parse(log.dados_depois); } catch(e) {}
+    }
+
+    // 3. Descobrindo o nome do Registro
+    const objReferencia = Object.keys(objDepois).length ? objDepois : objAntes;
+    const nomeRegistro = objReferencia.cliente_nome || 
+                         objReferencia.nome || 
+                         (objReferencia.numero_os ? `OS: ${objReferencia.numero_os}` : null) || 
+                         (objReferencia.id ? `ID: ${objReferencia.id}` : '--');
+
+    const nomeTela = log.entidade || log.tela || log.tabela || 'Desconhecida';
+    const nomeUsuario = log.usuario || log.usuario_nome || '--';
+
+    // 4. Preenchendo o Cabeçalho
+    titulo.innerHTML = `<span style="text-transform: capitalize;">${nomeTela}</span> <span class="${badgeClass}" style="font-size: 11px;">${acaoTexto}</span>`;
     subtitulo.textContent = `${nomeRegistro} · por ${nomeUsuario} em ${dataLocal(log.created_at).toLocaleString('pt-BR')}`;
 
+    // 5. Preenchendo a Tabela de Detalhes
     corpoTabela.innerHTML = '';
+    
+    // Pegar todas as chaves (campos) que existem no Antes ou no Depois
+    const todasAsChaves = new Set([...Object.keys(objAntes), ...Object.keys(objDepois)]);
 
-    if (log.detalhes && Array.isArray(log.detalhes)) {
-        log.detalhes.forEach(detalhe => {
+    if (todasAsChaves.size > 0) {
+        todasAsChaves.forEach(chave => {
+            const valorAntes = objAntes[chave] !== undefined && objAntes[chave] !== null ? objAntes[chave] : '--';
+            const valorDepois = objDepois[chave] !== undefined && objDepois[chave] !== null ? objDepois[chave] : '--';
+
+            // Se for uma atualização e o campo não mudou, pula para não poluir a tela
+            if (acaoTexto === 'Atualizado' && valorAntes === valorDepois) {
+                return; 
+            }
+
+            // Exibir apenas os campos que realmente foram modificados/criados
             corpoTabela.innerHTML += `
                 <tr>
-                    <td style="font-weight: 500; color: #fff;">${detalhe.campo}</td>
-                    <td style="color: #ccc;">${detalhe.antes || '--'}</td>
-                    <td style="color: #ccc;">${detalhe.depois || '--'}</td>
+                    <td style="font-weight: 500; color: #fff;">${chave}</td>
+                    <td style="color: #ccc; word-break: break-word;">${valorAntes}</td>
+                    <td style="color: #ccc; word-break: break-word;">${valorDepois}</td>
                 </tr>
             `;
         });
+        
+        // Caso todos os campos sejam iguais (nenhuma mudança real na atualização)
+        if (corpoTabela.innerHTML === '') {
+             corpoTabela.innerHTML = `<tr><td colspan="3" class="vazio">Nenhuma alteração nos dados foi detectada.</td></tr>`;
+        }
     } else {
-        corpoTabela.innerHTML = `<tr><td colspan="3" class="vazio">Nenhum detalhe adicional disponível para esta ação.</td></tr>`;
+        corpoTabela.innerHTML = `<tr><td colspan="3" class="vazio">Nenhum detalhe adicional disponível.</td></tr>`;
     }
 
     modal.classList.add('ativo');
