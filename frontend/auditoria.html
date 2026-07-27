@@ -127,42 +127,45 @@
         }
 
         function renderizarLogs(logs) {
-            // CORREÇÃO AQUI: Mudamos de 'tabela-auditoria' para 'tabela-logs'
-            const tabela = document.getElementById('tabela-logs');
+    const tabela = document.getElementById('tabela-logs');
+    
+    if (!tabela) {
+        console.error("Tabela não encontrada no HTML!");
+        return;
+    }
+    
+    tabela.innerHTML = '';
 
-            if (!tabela) {
-                console.error("Tabela não encontrada no HTML! Verifique se a tag <tbody> tem o id='tabela-logs'");
-                return;
-            }
+    if (logs.length === 0) {
+        tabela.innerHTML = '<tr><td colspan="6" class="vazio">Nenhum registro encontrado</td></tr>';
+        return;
+    }
 
-            tabela.innerHTML = '';
+    logs.forEach(log => {
+        const row = document.createElement('tr');
 
-            if (logs.length === 0) {
-                tabela.innerHTML = '<tr><td colspan="6" class="vazio">Nenhum registro encontrado</td></tr>';
-                return;
-            }
+        let badgeClass = 'badge';
+        if (log.acao === 'Criado') badgeClass = 'badge badge-create';
+        else if (log.acao === 'Atualizado') badgeClass = 'badge badge-update';
+        else if (log.acao === 'Excluído') badgeClass = 'badge badge-delete';
 
-            logs.forEach(log => {
-                const row = document.createElement('tr');
+        // CORREÇÃO: Busca por todas as variações de nomes possíveis que o seu backend pode estar enviando
+        const nomeRegistro = log.registro || log.registro_nome || log.entidade_nome || log.cliente_nome || '--';
+        const nomeUsuario = log.usuario || log.usuario_nome || log.nome_usuario || '--';
 
-                let badgeClass = 'badge';
-                if (log.acao === 'Criado') badgeClass = 'badge badge-create';
-                else if (log.acao === 'Atualizado') badgeClass = 'badge badge-update';
-                else if (log.acao === 'Excluído') badgeClass = 'badge badge-delete';
-
-                row.innerHTML = `
+        row.innerHTML = `
             <td data-label="Quando">${dataLocal(log.created_at).toLocaleString('pt-BR')}</td>
             <td data-label="Tela" style="font-weight: 500; color: #fff;">${log.tela}</td>
             <td data-label="Ação"><span class="${badgeClass}">${log.acao}</span></td>
-            <td data-label="Registro">${log.registro_nome || '--'}</td>
-            <td data-label="Usuário">${log.usuario_nome || '--'}</td>
+            <td data-label="Registro">${nomeRegistro}</td>
+            <td data-label="Usuário">${nomeUsuario}</td>
             <td data-label="Detalhes">
                 <button class="btn-ver" onclick='abrirModalAuditoria(${JSON.stringify(log).replace(/'/g, "&apos;")})'>Ver</button>
             </td>
         `;
-                tabela.appendChild(row);
-            });
-        }
+        tabela.appendChild(row);
+    });
+}
 
         function aplicarFiltros() {
     // 1. Buscamos os elementos no HTML
@@ -193,32 +196,27 @@
 }
 
         function abrirModalAuditoria(log) {
-    // Escolhe a cor do botão baseado na ação
     let badgeClass = 'badge';
     if (log.acao === 'Criado') badgeClass = 'badge badge-create';
     else if (log.acao === 'Atualizado') badgeClass = 'badge badge-update';
     else if (log.acao === 'Excluído') badgeClass = 'badge badge-delete';
 
-    // Pega os elementos do HTML
     const titulo = document.getElementById('modal-titulo');
     const subtitulo = document.getElementById('modal-subtitulo');
     const corpoTabela = document.getElementById('modal-tabela-corpo');
     const modal = document.getElementById('modal-auditoria');
 
-    // Se algum elemento não existir, avisa no console e para, sem quebrar a tela
-    if (!titulo || !subtitulo || !corpoTabela || !modal) {
-        console.error("Erro: Um dos elementos do modal não foi encontrado no HTML.");
-        return; 
-    }
+    if (!titulo || !subtitulo || !corpoTabela || !modal) return;
 
-    // Preenche os dados
+    // CORREÇÃO: Mesma proteção de nomes aplicada aqui no modal
+    const nomeRegistro = log.registro || log.registro_nome || log.entidade_nome || log.cliente_nome || 'Registro';
+    const nomeUsuario = log.usuario || log.usuario_nome || log.nome_usuario || 'Sistema';
+
     titulo.innerHTML = `${log.tela} <span class="${badgeClass}" style="font-size: 11px;">${log.acao}</span>`;
-    subtitulo.textContent = `${log.registro_nome || 'Registro'} · por ${log.usuario_nome || 'Sistema'} em ${dataLocal(log.created_at).toLocaleString('pt-BR')}`;
+    subtitulo.textContent = `${nomeRegistro} · por ${nomeUsuario} em ${dataLocal(log.created_at).toLocaleString('pt-BR')}`;
 
-    // Limpa a tabela anterior
     corpoTabela.innerHTML = '';
 
-    // Verifica se existem detalhes e preenche a tabela
     if (log.detalhes && Array.isArray(log.detalhes)) {
         log.detalhes.forEach(detalhe => {
             corpoTabela.innerHTML += `
@@ -233,7 +231,6 @@
         corpoTabela.innerHTML = `<tr><td colspan="3" class="vazio">Nenhum detalhe adicional disponível para esta ação.</td></tr>`;
     }
 
-    // Abre o modal
     modal.classList.add('ativo');
 }
 
