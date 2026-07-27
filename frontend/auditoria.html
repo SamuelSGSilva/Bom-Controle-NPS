@@ -202,29 +202,24 @@
 
         function aplicarFiltros() {
     const elTela = document.getElementById('filtro-tela');
-    const elAcao = document.getElementById('filtro-acao');
+    const elAcao = document.getElementById('filtro-acao'); 
     const elUsuario = document.getElementById('busca-usuario');
 
     const tela = elTela ? elTela.value : '';
     const acao = elAcao ? elAcao.value : '';
     const buscaUser = elUsuario ? elUsuario.value.trim().toLowerCase() : '';
 
-    // ==========================================
-    // NOSSO ESPIÃO: Vai mostrar o que o HTML está enviando
-    // ==========================================
-    console.log("👀 O valor que o filtro TELA capturou foi:", `"${tela}"`);
-    if (todosLogs.length > 0) {
-        console.log("👀 Um exemplo de entidade no banco é:", `"${todosLogs[0].entidade || todosLogs[0].tela}"`);
-    }
+    // 👀 ESPIONAGEM ATIVADA: Para vermos se o HTML está enviando certo
+    console.log("🔍 Filtro de Tela:", `"${tela}"`);
+    console.log("🔍 Filtro de Ação:", `"${acao}"`);
 
     let filtrados = todosLogs;
 
-    // 1. FILTRANDO A TELA
-    if (tela && tela.toLowerCase() !== 'todas as telas' && tela.toLowerCase() !== 'todas') {
+    // 1. FILTRO DE TELA
+    if (tela && tela.toLowerCase() !== 'todas as telas' && tela.toLowerCase() !== 'todas' && tela !== '') {
         filtrados = filtrados.filter(l => {
             let nomeBanco = (l.entidade || l.tela || l.tabela || '').toLowerCase();
-            
-            const limpaTexto = texto => texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[-_]/g, ' ').trim();
+            const limpaTexto = texto => String(texto).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[-_]/g, ' ').trim();
             
             const bancoLimpo = limpaTexto(nomeBanco);
             const filtroLimpo = limpaTexto(tela.toLowerCase());
@@ -233,21 +228,26 @@
         });
     }
 
-    // 2. FILTRANDO A AÇÃO
-    if (acao && acao.toLowerCase() !== 'todas as ações' && acao.toLowerCase() !== 'todas') {
+    // 2. FILTRO DE AÇÃO (Agora com Inteligência de Sinônimos)
+    if (acao && acao.toLowerCase() !== 'todas as ações' && acao.toLowerCase() !== 'todas' && acao !== '') {
         filtrados = filtrados.filter(l => {
-            let acaoBanco = (l.acao || l.action || '').toLowerCase();
-            
-            if (acaoBanco === 'create') acaoBanco = 'criado';
-            if (acaoBanco === 'update') acaoBanco = 'atualizado';
-            if (acaoBanco === 'delete') acaoBanco = 'excluído';
-            
-            const limpaTexto = texto => texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-            return limpaTexto(acaoBanco) === limpaTexto(acao.toLowerCase());
+            let acaoBanco = (l.acao || l.action || '').toLowerCase().trim();
+            let filtroLimpo = String(acao).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+
+            let sinonimos = '';
+            if (acaoBanco === 'create' || acaoBanco === 'criado') {
+                sinonimos = 'criado create criar inclusao novo';
+            } else if (acaoBanco === 'update' || acaoBanco === 'atualizado') {
+                sinonimos = 'atualizado update atualizar alteracao edicao alterar';
+            } else if (acaoBanco === 'delete' || acaoBanco === 'excluido') {
+                sinonimos = 'excluido delete excluir deletar remocao apagado';
+            }
+
+            return sinonimos.includes(filtroLimpo);
         });
     }
 
-    // 3. FILTRANDO O USUÁRIO
+    // 3. FILTRO DE USUÁRIO
     if (buscaUser) {
         filtrados = filtrados.filter(l => {
             const nomeUsuario = (l.usuario || l.usuario_nome || l.nome_usuario || '').toLowerCase();
@@ -255,6 +255,7 @@
         });
     }
 
+    console.log("✅ Resultados encontrados:", filtrados.length);
     renderizarLogs(filtrados);
 }
 
