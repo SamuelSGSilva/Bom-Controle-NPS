@@ -84,7 +84,16 @@ header {
     box-shadow: 0 10px 30px -14px rgba(0, 0, 0, .8);
 }
 
-header h1 { font-size: 20px; }
+header h1 { 
+    font-size: 20px; 
+}
+
+/* ADICIONE ESTE BLOCO PARA TRAVAR O TAMANHO DA LOGO */
+header h1 img {
+    height: 28px; /* Ajuste este valor se quiser a logo um pouco maior ou menor */
+    width: auto;  /* Garante que a imagem não fique esticada/distorcida */
+    display: block;
+}
 
 nav { display: flex; gap: 22px; flex-wrap: wrap; }
 
