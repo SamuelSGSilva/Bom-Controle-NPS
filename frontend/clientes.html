@@ -5,24 +5,223 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clientes</title>
+    <!-- Fonte moderna -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="responsive.css">
+    
+    <style>
+        /* Estilos Globais e Variáveis */
+        :root {
+            --bg-body: #0a0a0a;
+            --bg-card: #141414;
+            --border-color: #2a2a2a;
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            --color-primary: #cc0000;
+            --color-promotor: #00cc66;
+            --color-neutro: #f59e0b;
+            --color-detrator: #cc0000;
+            --color-info: #3b82f6;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            /* Espaço no topo para a navbar fixa não cobrir o conteúdo */
+            padding: 100px 24px 24px 24px; 
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Navbar Fixa (Garantia caso não esteja no style.css global) */
+        nav, .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 9999;
+            background-color: var(--bg-card);
+            padding: 0 24px;
+            box-sizing: border-box;
+            border-bottom: 2px solid var(--color-primary);
+        }
+
+        /* Cabeçalho da Página (Título, Busca e Botão) */
+        .page-header {
+            display: flex; 
+            flex-wrap: wrap; 
+            row-gap: 16px; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 24px;
+        }
+
+        .page-header h2 {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .header-actions {
+            display: flex; 
+            flex-wrap: wrap; 
+            row-gap: 12px; 
+            gap: 16px;
+        }
+
+        .input-busca {
+            padding: 10px 16px; 
+            background: var(--bg-card); 
+            border: 1px solid var(--border-color); 
+            border-radius: 8px; 
+            color: var(--text-main); 
+            font-size: 14px; 
+            font-family: 'Inter', sans-serif;
+            outline: none; 
+            width: 250px;
+            transition: border-color 0.2s ease;
+        }
+
+        .input-busca:focus {
+            border-color: #555555;
+        }
+
+        .btn-novo {
+            background-color: var(--color-primary);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn-novo:hover {
+            background-color: #a30000;
+        }
+
+        /* Tabela Moderna */
+        .table-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            min-width: 800px;
+            border-collapse: collapse;
+        }
+
+        th {
+            color: var(--text-muted);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: left;
+            padding: 16px;
+            background-color: #1a1a1a;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 16px;
+            font-size: 13px;
+            color: #cccccc;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        tr:last-child td { border-bottom: none; }
+
+        tr:hover td {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Botões de Ação na Tabela */
+        .acoes-container {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-acao {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s ease;
+        }
+
+        .btn-ver {
+            color: var(--text-muted);
+        }
+        .btn-ver:hover {
+            color: var(--color-info);
+            border-color: var(--color-info);
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+
+        .btn-editar {
+            color: var(--text-muted);
+        }
+        .btn-editar:hover {
+            color: var(--color-neutro);
+            border-color: var(--color-neutro);
+            background-color: rgba(245, 158, 11, 0.05);
+        }
+
+        .btn-deletar {
+            color: var(--text-muted);
+        }
+        .btn-deletar:hover {
+            color: var(--color-detrator);
+            border-color: var(--color-detrator);
+            background-color: rgba(204, 0, 0, 0.05);
+        }
+
+        /* Responsividade Básica */
+        @media (max-width: 600px) {
+            .input-busca {
+                width: 100%;
+            }
+            .header-actions {
+                width: 100%;
+            }
+            .btn-novo {
+                width: 100%;
+            }
+        }
+    </style>
+
     <script src="toast.js"></script>
     <script src="navbar.js" defer></script>
 </head>
 
 <body>
 
-
     <main>
-        <div style="display: flex; flex-wrap: wrap; row-gap: 12px; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div class="page-header">
             <h2>Clientes</h2>
-            <div style="display: flex; flex-wrap: wrap; row-gap: 12px; gap: 12px;">
-                <input type="text" id="busca" placeholder="Buscar por nome..." onkeyup="filtrarClientes()"
-                    style="padding: 10px 16px; background: #141414; border: 1px solid #2a2a2a; border-radius: 8px; color: #f1f1f1; font-size: 14px; outline: none; width: 250px;">
+            <div class="header-actions">
+                <input type="text" id="busca" class="input-busca" placeholder="Buscar por nome..." onkeyup="filtrarClientes()">
                 <button class="btn-novo" onclick="novoCliente()">+ Novo Cliente</button>
             </div>
         </div>
+
         <div class="table-container">
             <table>
                 <thead>
@@ -46,17 +245,20 @@
         if (!token) window.location.href = 'index.html';
 
         let todosClientes = [];
-
-        async function carregarClientes() {
-            const response = await fetch('/clientes', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            todosClientes = await response.json();
-            renderizarClientes(todosClientes);
-        }
-
         let paginaAtual = 1;
         const itensPorPagina = 10;
+
+        async function carregarClientes() {
+            try {
+                const response = await fetch('/clientes', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                todosClientes = await response.json();
+                renderizarClientes(todosClientes);
+            } catch (error) {
+                console.error("Erro ao carregar clientes", error);
+            }
+        }
 
         function renderizarClientes(clientes) {
             const tabela = document.getElementById('tabela-clientes');
@@ -69,7 +271,7 @@
             tabela.innerHTML = '';
 
             if (clientes.length === 0) {
-                tabela.innerHTML = '<tr><td colspan="6" style="text-align:center">Nenhum cliente encontrado</td></tr>';
+                tabela.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 30px; color: #888;">Nenhum cliente encontrado</td></tr>';
                 renderizarPaginacao([], 0);
                 return;
             }
@@ -77,17 +279,19 @@
             clientesPagina.forEach(cliente => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-            <td data-label="Nome">${cliente.nome}</td>
-            <td data-label="E-mail">${cliente.email}</td>
-            <td data-label="Telefone">${cliente.telefone || '--'}</td>
-            <td data-label="CPF/CNPJ">${cliente.cpf || cliente.cnpj || '--'}</td>
-            <td data-label="Cidade/Estado">${cliente.cidade || '--'}/${cliente.estado || '--'}</td>
-            <td data-label="Ações">
-                <button class="btn-ver" onclick="verHistorico(${cliente.id})">Ver</button>
-                <button class="btn-editar" onclick="editarCliente(${cliente.id})">Editar</button>
-                <button class="btn-deletar" onclick="deletarCliente(${cliente.id})">Excluir</button>
-            </td>
-        `;
+                    <td data-label="Nome" style="font-weight: 500; color: #fff;">${cliente.nome}</td>
+                    <td data-label="E-mail">${cliente.email}</td>
+                    <td data-label="Telefone">${cliente.telefone || '--'}</td>
+                    <td data-label="CPF/CNPJ">${cliente.cpf || cliente.cnpj || '--'}</td>
+                    <td data-label="Cidade/Estado">${cliente.cidade || '--'}/${cliente.estado || '--'}</td>
+                    <td data-label="Ações">
+                        <div class="acoes-container">
+                            <button class="btn-acao btn-ver" onclick="verHistorico(${cliente.id})">Ver</button>
+                            <button class="btn-acao btn-editar" onclick="editarCliente(${cliente.id})">Editar</button>
+                            <button class="btn-acao btn-deletar" onclick="deletarCliente(${cliente.id})">Excluir</button>
+                        </div>
+                    </td>
+                `;
                 tabela.appendChild(row);
             });
 
@@ -105,20 +309,40 @@
             paginacao.innerHTML = '';
             if (totalPaginas <= 1) return;
 
-            paginacao.style.cssText = 'display:flex; flex-wrap:wrap; gap:8px; margin-top:20px; justify-content:center;';
+            paginacao.style.cssText = 'display:flex; flex-wrap:wrap; gap:8px; margin-top:24px; justify-content:center;';
 
             for (let i = 1; i <= totalPaginas; i++) {
                 const btn = document.createElement('button');
                 btn.textContent = i;
+                
+                // Estilo moderno para a paginação
                 btn.style.cssText = `
-            padding: 8px 14px;
-            border-radius: 6px;
-            border: 1px solid ${i === paginaAtual ? '#cc0000' : '#2a2a2a'};
-            background: ${i === paginaAtual ? '#cc0000' : 'transparent'};
-            color: #f1f1f1;
-            cursor: pointer;
-            font-size: 13px;
-        `;
+                    padding: 6px 14px;
+                    border-radius: 6px;
+                    border: 1px solid ${i === paginaAtual ? '#cc0000' : '#2a2a2a'};
+                    background: ${i === paginaAtual ? '#cc0000' : '#141414'};
+                    color: ${i === paginaAtual ? '#ffffff' : '#888888'};
+                    cursor: pointer;
+                    font-size: 13px;
+                    font-weight: 500;
+                    font-family: 'Inter', sans-serif;
+                    transition: all 0.2s ease;
+                `;
+                
+                btn.onmouseover = () => {
+                    if (i !== paginaAtual) {
+                        btn.style.borderColor = '#444';
+                        btn.style.color = '#fff';
+                    }
+                };
+                
+                btn.onmouseout = () => {
+                    if (i !== paginaAtual) {
+                        btn.style.borderColor = '#2a2a2a';
+                        btn.style.color = '#888888';
+                    }
+                };
+
                 btn.onclick = () => {
                     paginaAtual = i;
                     renderizarClientes(todosClientes);
@@ -147,10 +371,10 @@
             });
 
             if (response.ok) {
-                toast('Cliente excluído com sucesso!');
+                if (typeof toast === 'function') toast('Cliente excluído com sucesso!');
                 carregarClientes();
             } else {
-                toast('Erro ao excluir cliente!', 'erro');
+                if (typeof toast === 'function') toast('Erro ao excluir cliente!', 'erro');
             }
         }
 

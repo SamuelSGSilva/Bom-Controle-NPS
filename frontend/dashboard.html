@@ -28,7 +28,21 @@
             background-color: var(--bg-body);
             color: var(--text-main);
             margin: 0;
-            padding: 24px;
+            /* AJUSTADO: 100px no topo para o conteúdo não ficar escondido atrás da navbar */
+            padding: 100px 24px 24px 24px; 
+        }
+
+        /* ADICIONADO: Configuração da Navbar Fixa */
+        nav, .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 9999;
+            background-color: var(--bg-card);
+            padding: 0 24px;
+            box-sizing: border-box;
+            border-bottom: 2px solid var(--color-detrator); /* Linha vermelha da sua imagem */
         }
 
         main {
@@ -209,9 +223,13 @@
         </div>
 
         <div class="grid-2col">
-            <div class="panel">
+            <!-- Adicionado Flexbox para o painel gerenciar a altura -->
+            <div class="panel" style="display: flex; flex-direction: column;">
                 <h3 class="section-title">Distribuição NPS</h3>
-                <div style="height: 220px;"><canvas id="grafico-nps"></canvas></div>
+                <!-- Flex-grow faz a div empurrar e preencher todo o espaço vazio -->
+                <div style="position: relative; flex-grow: 1; min-height: 220px;">
+                    <canvas id="grafico-nps"></canvas>
+                </div>
             </div>
 
             <div class="panel table-container">
