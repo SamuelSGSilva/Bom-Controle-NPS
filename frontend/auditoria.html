@@ -95,37 +95,39 @@
 
         // Função ajustada para procurar o ID "tabela-logs"
         async function carregarLogs() {
-            document.getElementById('loading').style.display = 'block';
+    document.getElementById('loading').style.display = 'block';
+    
+    const tabela = document.getElementById('tabela-logs');
+    if (tabela) tabela.innerHTML = '';
 
-            // CORREÇÃO AQUI: Mudamos de 'tabela-auditoria' para 'tabela-logs'
-            const tabela = document.getElementById('tabela-logs');
-            if (tabela) tabela.innerHTML = '';
+    try {
+        const response = await fetch('/logs-auditoria', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
 
-            try {
-                const response = await fetch('/logs-auditoria', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+        document.getElementById('loading').style.display = 'none';
 
-                document.getElementById('loading').style.display = 'none';
-
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        localStorage.removeItem('token');
-                        window.location.href = 'index.html';
-                        return;
-                    }
-                    if (typeof toast === 'function') toast('Erro ao carregar log de auditoria!', 'erro');
-                    return;
-                }
-
-                todosLogs = await response.json();
-                renderizarLogs(todosLogs);
-            } catch (error) {
-                document.getElementById('loading').style.display = 'none';
-                console.error("Erro ao carregar auditoria", error);
+        if (!response.ok) {
+            if (response.status === 401) {
+                localStorage.removeItem('token');
+                window.location.href = 'index.html';
+                return;
             }
+            if (typeof toast === 'function') toast('Erro ao carregar log de auditoria!', 'erro');
+            return;
         }
 
+        todosLogs = await response.json();
+        
+        // NOSSO ESPIÃO: Vai mostrar no Console (F12) como os dados estão vindo
+        console.log("Dados que chegaram do backend:", todosLogs[0]);
+        
+        renderizarLogs(todosLogs);
+    } catch (error) {
+        document.getElementById('loading').style.display = 'none';
+        console.error("Erro ao carregar auditoria", error);
+    }
+}
         function renderizarLogs(logs) {
     const tabela = document.getElementById('tabela-logs');
     
