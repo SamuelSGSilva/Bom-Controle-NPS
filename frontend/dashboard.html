@@ -5,19 +5,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
-    <!-- Adicionando uma fonte moderna -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="responsive.css">
+    
+    <!-- Chamando o seu global.css que já tem todas as cores, fontes e estilos -->
+    <link rel="stylesheet" href="global.css">
+    
+    <script src="toast.js"></script>
+    <script src="navbar.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
 
 <body>
+    <!-- A navbar será injetada aqui pelo navbar.js -->
 
     <main>
-        <div style="margin-bottom: 32px;">
-            <h2 id="boas-vindas" style="font-size: 22px; font-weight: 600; margin: 0 0 4px 0;">Olá! 👋</h2>
-            <p style="color: #888888; font-size: 14px; margin: 0;">Aqui está o resumo do dia.</p>
+        <!-- Cabeçalho da página -->
+        <div style="margin-bottom: 24px;">
+            <h2 id="boas-vindas">Olá! 👋</h2>
+            <p class="subtitulo">Aqui está o resumo do dia.</p>
         </div>
 
+        <!-- Cards (Usa a classe .cards e .card do seu global.css) -->
         <div class="cards">
             <div class="card">
                 <h3>Índice NPS</h3>
@@ -49,23 +56,29 @@
             </div>
         </div>
 
-        <div class="panel">
-            <h3 class="section-title">Evolução do NPS</h3>
-            <div style="height: 220px;"><canvas id="grafico-evolucao"></canvas></div>
+        <!-- Gráfico de Evolução (Usa a classe .secao do global.css) -->
+        <div class="secao">
+            <h3>Evolução do NPS</h3>
+            <!-- É crucial ter position: relative e uma altura aqui para o Chart.js não bugar -->
+            <div style="position: relative; height: 300px; width: 100%;">
+                <canvas id="grafico-evolucao"></canvas>
+            </div>
         </div>
 
-        <div class="grid-2col">
-            <!-- Adicionado Flexbox para o painel gerenciar a altura -->
-            <div class="panel" style="display: flex; flex-direction: column;">
-                <h3 class="section-title">Distribuição NPS</h3>
-                <!-- Flex-grow faz a div empurrar e preencher todo o espaço vazio -->
-                <div style="position: relative; flex-grow: 1; min-height: 220px;">
+        <!-- Grid para colocar o Gráfico de Distribuição e a Tabela lado a lado -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 24px;">
+            
+            <!-- Painel Esquerdo: Gráfico -->
+            <div class="secao" style="display: flex; flex-direction: column; margin-bottom: 0;">
+                <h3>Distribuição NPS</h3>
+                <div style="position: relative; flex-grow: 1; min-height: 250px; width: 100%;">
                     <canvas id="grafico-nps"></canvas>
                 </div>
             </div>
 
-            <div class="panel table-container">
-                <h3 class="section-title">Últimas Avaliações</h3>
+            <!-- Painel Direito: Tabela -->
+            <div class="secao table-container" style="margin-bottom: 0;">
+                <h3>Últimas Avaliações</h3>
                 <table>
                     <thead>
                         <tr>
@@ -78,6 +91,7 @@
                     <tbody id="tabela-ultimas-avaliacoes"></tbody>
                 </table>
             </div>
+
         </div>
     </main>
 
@@ -153,7 +167,7 @@
                 tabela.innerHTML = '';
 
                 if (!avaliacoes.length) {
-                    tabela.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:30px;">Nenhuma avaliação recente</td></tr>';
+                    tabela.innerHTML = '<tr><td colspan="4" class="vazio">Nenhuma avaliação recente</td></tr>';
                     return;
                 }
 
@@ -161,21 +175,28 @@
                 ultimas.forEach(a => {
                     const cliente = clientes.find(c => c.id === a.cliente_id);
                     const nome = cliente ? cliente.nome : `ID ${a.cliente_id}`;
-                    const cores = { promotor: 'var(--color-promotor)', neutro: 'var(--color-neutro)', detrator: 'var(--color-detrator)', semnota: 'var(--text-muted)' };
+                    
+                    // Ajuste visual para a nota
                     const temNota = a.nps_score !== null && a.nps_score !== undefined;
-                    const tipo = !temNota ? 'semnota' : a.nps_score === 5 ? 'promotor' : a.nps_score === 4 ? 'neutro' : 'detrator';
+                    let corNota = '#888';
+                    if (temNota) {
+                        if (a.nps_score === 5) corNota = '#00cc66';
+                        else if (a.nps_score === 4) corNota = '#f59e0b';
+                        else corNota = '#cc0000';
+                    }
                     const nota = temNota ? `${a.nps_score}/5` : '--';
                     
                     tabela.innerHTML += `
                     <tr>
-                        <td style="font-weight: 500;">${nome}</td>
+                        <td style="font-weight: 500; color: #fff;">${nome}</td>
                         <td>
-                            <span style="background: ${cores[tipo]}20; color: ${cores[tipo]}; padding: 4px 8px; border-radius: 4px; font-weight: 600; font-size: 12px;">
+                            <span style="color: ${corNota}; font-weight: 600; font-size: 14px;">
                                 ${nota}
                             </span>
                         </td>
-                        <td style="color: var(--text-muted);">${dataLocal(a.created_at).toLocaleDateString('pt-BR')}</td>
+                        <td style="color: var(--muted);">${dataLocal(a.created_at).toLocaleDateString('pt-BR')}</td>
                         <td>
+                            <!-- Usando o estilo de botão do seu global.css -->
                             <button class="btn-deletar" onclick="excluirAvaliacao(${a.id})">Excluir</button>
                         </td>
                     </tr>`;
@@ -202,18 +223,17 @@
             }
         }
 
-        // Configurações globais do Chart.js para o tema escuro
+        // Configurações globais do Chart.js
         if (window.Chart) { 
             Chart.defaults.font.family = "'Inter', sans-serif";
             Chart.defaults.font.size = 12; 
-            Chart.defaults.color = '#888888'; 
+            Chart.defaults.color = '#8b8b93'; 
         }
 
         let chartNPS = null;
         function renderizarGrafico(promotores, neutros, detratores) {
             const ctx = document.getElementById('grafico-nps').getContext('2d');
             
-            // Destroi o gráfico anterior para evitar sobreposição se a função for chamada novamente
             if(chartNPS) chartNPS.destroy(); 
 
             chartNPS = new Chart(ctx, {
@@ -222,31 +242,24 @@
                     labels: ['Satisfeitos', 'Indiferentes', 'Insatisfeitos'],
                     datasets: [{
                         data: [promotores, neutros, detratores],
-                        backgroundColor: ['#00cc66', '#f59e0b', '#cc0000'], // Cores originais do seu código
+                        backgroundColor: ['#00cc66', '#f59e0b', '#e01b1b'],
                         borderRadius: 6,
                         borderSkipped: false,
-                        
-                        // --- AQUI ESTÁ A CORREÇÃO DAS BARRAS GIGANTES ---
-                        maxBarThickness: 35,    // Trava a largura máxima da barra em pixels
-                        barPercentage: 0.5,     // Afina a barra dentro do espaço da categoria
-                        categoryPercentage: 0.8 // Ajusta o respiro entre as colunas
-                        // ------------------------------------------------
+                        maxBarThickness: 45, // Evita que barras fiquem gigantes
+                        barPercentage: 0.5,
+                        categoryPercentage: 0.8
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { display: false } 
-                    },
+                    maintainAspectRatio: false, // Fundamental para o gráfico esticar e preencher a div
+                    plugins: { legend: { display: false } },
                     scales: {
-                        x: { 
-                            grid: { display: false } // Remove as linhas verticais de fundo
-                        }, 
+                        x: { grid: { display: false } },
                         y: {
-                            grid: { color: 'rgba(255, 255, 255, 0.05)' }, // Linhas horizontais bem sutis
+                            grid: { color: 'rgba(255, 255, 255, 0.03)' },
                             beginAtZero: true,
-                            ticks: { stepSize: 1 } // Garante que o eixo Y ande de 1 em 1 (sem números quebrados)
+                            ticks: { stepSize: 1 }
                         }
                     }
                 }
@@ -281,12 +294,12 @@
                         datasets: [{
                             label: 'NPS',
                             data: valores,
-                            borderColor: '#cc0000',
-                            backgroundColor: 'rgba(204, 0, 0, 0.1)', // Fundo mais suave
+                            borderColor: '#e01b1b', // Vermelho padrão do seu CSS
+                            backgroundColor: 'rgba(224, 27, 27, 0.1)',
                             fill: true,
-                            tension: 0.4, // Curva mais suave
-                            pointBackgroundColor: '#141414', // Ponto combinando com o fundo
-                            pointBorderColor: '#cc0000',
+                            tension: 0.4,
+                            pointBackgroundColor: '#16161a',
+                            pointBorderColor: '#e01b1b',
                             pointBorderWidth: 2,
                             pointRadius: 4,
                             pointHoverRadius: 6
@@ -299,7 +312,7 @@
                         scales: {
                             x: { grid: { display: false } },
                             y: {
-                                grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                                grid: { color: 'rgba(255, 255, 255, 0.03)' },
                                 suggestedMin: -100,
                                 suggestedMax: 100
                             }
@@ -309,11 +322,6 @@
             } catch (error) {
                 console.error("Erro ao carregar evolução do NPS", error);
             }
-        }
-
-        function logout() {
-            localStorage.removeItem('token');
-            window.location.href = 'index.html';
         }
 
         carregarNPS();
