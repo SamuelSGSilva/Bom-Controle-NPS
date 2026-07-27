@@ -276,7 +276,7 @@
     titulo.innerHTML = `<span style="text-transform: capitalize;">${nomeTela}</span> <span class="${badgeClass}" style="font-size: 11px;">${acaoTexto}</span>`;
     subtitulo.textContent = `${nomeRegistro} · por ${nomeUsuario} em ${dataLocal(log.created_at).toLocaleString('pt-BR')}`;
 
-    // 5. TRADUTOR DE CAMPOS (Deixa os nomes bonitos)
+    // 5. TRADUTOR DE CAMPOS (Com "Cliente" no lugar de "Nome do Cliente")
     const dicionarioCampos = {
         "id": "ID",
         "numero_os": "Número da OS",
@@ -301,19 +301,14 @@
         "resp_entrega_tecnica": "Resp. pela Entrega Técnica",
         "cs_responsavel": "CS Responsável",
         "created_at": "Data de Criação",
-        "cliente_nome": "Cliente"
+        "cliente_nome": "Cliente" // <-- Nome limpo aqui
     };
 
-    // Função interna para limpar as horas longas
     function formatarDado(valor) {
         if (valor === null || valor === undefined || valor === '') return '--';
-        
-        // Se for texto longo de data (ex: 2026-07-27 18:23:45.730000+00:00)
         if (typeof valor === 'string' && valor.match(/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}/)) {
-            // Tenta criar uma data lidando com o fuso horário
             const data = new Date(valor.includes('+') || valor.endsWith('Z') ? valor : valor + 'Z');
             if (!isNaN(data.getTime())) {
-                // Retorna DD/MM/AAAA HH:MM (cortando os segundos e milissegundos)
                 return data.toLocaleDateString('pt-BR') + ' às ' + data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
             }
         }
@@ -327,10 +322,17 @@
 
     if (todasAsChaves.size > 0) {
         todasAsChaves.forEach(chave => {
-            // Se tiver no dicionário, usa o nome bonito. Se não, usa o original tirando o "underline"
-            const nomeAmigavel = dicionarioCampos[chave] || chave.replace(/_/g, ' '); 
+            // REGRA PARA ESCONDER O CLIENTE_ID
+            if (chave === 'cliente_id') {
+                return;
+            }
+
+            // Puxa o nome bonito do dicionário. Se não tiver lá, ele arruma os underlines sozinho.
+            let nomeAmigavel = dicionarioCampos[chave];
+            if (!nomeAmigavel) {
+                nomeAmigavel = chave.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            }
             
-            // Aplica a formatação de data/hora nos valores
             const valorAntes = formatarDado(objAntes[chave]);
             const valorDepois = formatarDado(objDepois[chave]);
 
@@ -338,9 +340,10 @@
                 return; 
             }
 
+            // Removi o text-transform: capitalize do HTML para respeitar as letras minúsculas do dicionário
             corpoTabela.innerHTML += `
                 <tr>
-                    <td style="font-weight: 500; color: #fff; width: 25%; text-transform: capitalize;">${nomeAmigavel}</td>
+                    <td style="font-weight: 500; color: #fff; width: 25%;">${nomeAmigavel}</td>
                     <td style="color: #ccc; word-break: break-word; white-space: pre-wrap; overflow-wrap: break-word;">${valorAntes}</td>
                     <td style="color: #ccc; word-break: break-word; white-space: pre-wrap; overflow-wrap: break-word;">${valorDepois}</td>
                 </tr>
