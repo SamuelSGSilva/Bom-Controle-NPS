@@ -94,7 +94,7 @@
         let todosLogs = [];
 
         // Função ajustada para procurar o ID "tabela-logs"
-        async function carregarLogs() {
+    async function carregarLogs() {
     document.getElementById('loading').style.display = 'block';
     
     const tabela = document.getElementById('tabela-logs');
@@ -146,19 +146,34 @@
     logs.forEach(log => {
         const row = document.createElement('tr');
 
+        // 1. ARRUMANDO A AÇÃO (Transformando create/update para Português)
+        let acaoTexto = log.acao || log.action || '--';
         let badgeClass = 'badge';
-        if (log.acao === 'Criado') badgeClass = 'badge badge-create';
-        else if (log.acao === 'Atualizado') badgeClass = 'badge badge-update';
-        else if (log.acao === 'Excluído') badgeClass = 'badge badge-delete';
+        
+        if (acaoTexto === 'create' || acaoTexto === 'Criado') {
+            acaoTexto = 'Criado';
+            badgeClass = 'badge badge-create';
+        } else if (acaoTexto === 'update' || acaoTexto === 'Atualizado') {
+            acaoTexto = 'Atualizado';
+            badgeClass = 'badge badge-update';
+        } else if (acaoTexto === 'delete' || acaoTexto === 'Excluído') {
+            acaoTexto = 'Excluído';
+            badgeClass = 'badge badge-delete';
+        }
 
-        // CORREÇÃO: Busca por todas as variações de nomes possíveis que o seu backend pode estar enviando
-        const nomeRegistro = log.registro || log.registro_nome || log.entidade_nome || log.cliente_nome || '--';
+        // 2. ARRUMANDO A TELA (Buscando o nome real que a API manda)
+        const nomeTela = log.tela || log.entidade || log.tabela || log.table_name || log.modulo || 'Desconhecida';
+
+        // 3. ARRUMANDO O REGISTRO (Buscando o nome ou o ID modificado)
+        const nomeRegistro = log.registro || log.registro_nome || log.cliente_nome || log.registro_id || log.id_registro || '--';
+        
+        // Mantendo o usuário que já estava funcionando
         const nomeUsuario = log.usuario || log.usuario_nome || log.nome_usuario || '--';
 
         row.innerHTML = `
             <td data-label="Quando">${dataLocal(log.created_at).toLocaleString('pt-BR')}</td>
-            <td data-label="Tela" style="font-weight: 500; color: #fff;">${log.tela}</td>
-            <td data-label="Ação"><span class="${badgeClass}">${log.acao}</span></td>
+            <td data-label="Tela" style="font-weight: 500; color: #fff;">${nomeTela}</td>
+            <td data-label="Ação"><span class="${badgeClass}">${acaoTexto}</span></td>
             <td data-label="Registro">${nomeRegistro}</td>
             <td data-label="Usuário">${nomeUsuario}</td>
             <td data-label="Detalhes">
