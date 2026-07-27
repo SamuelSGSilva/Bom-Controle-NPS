@@ -146,7 +146,7 @@
     logs.forEach(log => {
         const row = document.createElement('tr');
 
-        // 1. ARRUMANDO A AÇÃO (Transformando create/update para Português)
+        // Arrumando a Ação (create/update para Português)
         let acaoTexto = log.acao || log.action || '--';
         let badgeClass = 'badge';
         
@@ -161,14 +161,30 @@
             badgeClass = 'badge badge-delete';
         }
 
-        // 2. ARRUMANDO A TELA (Buscando o nome real que a API manda)
-        const nomeTela = log.tela || log.entidade || log.tabela || log.table_name || log.modulo || 'Desconhecida';
+        // Arrumando a Tela
+        const nomeTela = log.entidade || log.tela || log.tabela || 'Desconhecida';
 
-        // 3. ARRUMANDO O REGISTRO (Buscando o nome ou o ID modificado)
-        const nomeRegistro = log.registro || log.registro_nome || log.cliente_nome || log.registro_id || log.id_registro || '--';
+        // EXTRAINDO O REGISTRO DE DENTRO DO JSON (dados_depois ou dados_antes)
+        let nomeRegistro = '--';
+        const jsonTexto = log.dados_depois || log.dados_antes;
         
-        // Mantendo o usuário que já estava funcionando
-        const nomeUsuario = log.usuario || log.usuario_nome || log.nome_usuario || '--';
+        if (jsonTexto) {
+            try {
+                // Transforma o texto em objeto JavaScript de verdade
+                const objDados = JSON.parse(jsonTexto);
+                
+                // Procura pelas chaves mais comuns de identificação dentro do objeto
+                nomeRegistro = objDados.cliente_nome || 
+                               objDados.nome || 
+                               (objDados.numero_os ? `OS: ${objDados.numero_os}` : null) || 
+                               (objDados.id ? `ID: ${objDados.id}` : '--');
+            } catch (e) {
+                // Se der erro ao ler o JSON, deixa o padrão
+                nomeRegistro = '--';
+            }
+        }
+        
+        const nomeUsuario = log.usuario || log.usuario_nome || '--';
 
         row.innerHTML = `
             <td data-label="Quando">${dataLocal(log.created_at).toLocaleString('pt-BR')}</td>
