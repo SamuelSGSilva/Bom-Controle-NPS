@@ -33,9 +33,13 @@
             </div>
             <div class="form-group">
                 <label>Tipo de documento</label>
+                <!-- Container flexível que separa os botões -->
                 <div class="tipo-doc-toggle">
-                    <button type="button" class="tipo-doc-btn ativo" data-tipo="cpf">CPF</button>
-                    <button type="button" class="tipo-doc-btn" data-tipo="cnpj">CNPJ</button>
+                    <!-- Adicione a classe 'ativo' no botão que deve vir selecionado por padrão -->
+                    <button type="button" id="btn-cpf" class="tipo-doc-btn ativo"
+                        onclick="mudarTipoDoc('cpf')">CPF</button>
+                    <button type="button" id="btn-cnpj" class="tipo-doc-btn"
+                        onclick="mudarTipoDoc('cnpj')">CNPJ</button>
                 </div>
             </div>
             <div class="form-group" id="grupo-cpf">
@@ -127,7 +131,7 @@
             }
 
             if (cnpj && !validarCNPJ(cnpj)) {
-               toast('CNPJ inválido!', 'aviso');
+                toast('CNPJ inválido!', 'aviso');
                 return;
             }
 
@@ -207,10 +211,26 @@
             return resultado === parseInt(digitos.charAt(1));
         }
 
+        function mudarTipoDoc(tipo) {
+            const btnCpf = document.getElementById('btn-cpf');
+            const btnCnpj = document.getElementById('btn-cnpj');
+
+            if (tipo === 'cpf') {
+                btnCpf.classList.add('ativo');
+                btnCnpj.classList.remove('ativo');
+                // Aqui você pode também mudar o texto da label do campo de baixo para "CPF"
+            } else {
+                btnCnpj.classList.add('ativo');
+                btnCpf.classList.remove('ativo');
+                // Aqui você pode também mudar o texto da label do campo de baixo para "CNPJ"
+            }
+        }
+
         function logout() {
             localStorage.removeItem('token');
             window.location.href = 'index.html';
         }
     </script>
 </body>
+
 </html>
