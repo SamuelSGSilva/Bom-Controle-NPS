@@ -356,12 +356,15 @@ main:has(.pergunta) textarea,
 .busca input { width: 250px; }
 
 /* Foco visível por teclado (acessibilidade) */
-a:focus-visible, button:focus-visible,
-input:focus-visible, select:focus-visible, textarea:focus-visible {
+/* Foco visível por teclado (acessibilidade) */
+a:focus-visible, button:focus-visible {
     outline: 2px solid rgba(224, 27, 27, .7);
     outline-offset: 2px;
 }
 
+input:focus-visible, select:focus-visible, textarea:focus-visible {
+    outline: none;
+}
 /* Container que coloca os botões lado a lado com um pequeno espaço */
 .tipo-doc-toggle { 
     display: flex; 
