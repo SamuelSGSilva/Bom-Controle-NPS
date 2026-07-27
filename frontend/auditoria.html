@@ -238,8 +238,13 @@
             document.getElementById('modal-auditoria').classList.remove('ativo');
         }
 
+        todosLogs = await response.json();
+        
+        // ADICIONE ESTA LINHA AQUI PARA ESPIONARMOS OS DADOS:
+        console.log("Dados que chegaram do backend:", todosLogs[0]);
+
         // Chamando a função com o nome correto
-        carregarLogs();
+        carregarLogs(todosLogs);
     </script>
 </body>
 
