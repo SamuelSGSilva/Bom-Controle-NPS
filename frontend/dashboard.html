@@ -5,8 +5,160 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
+    <!-- Adicionando uma fonte moderna -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="responsive.css">
+    
+    <style>
+        /* Estilos globais e Reset */
+        :root {
+            --bg-body: #0a0a0a;
+            --bg-card: #141414;
+            --border-color: #2a2a2a;
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            --color-promotor: #00cc66;
+            --color-neutro: #f59e0b;
+            --color-detrator: #cc0000;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 24px;
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Tipografia */
+        .section-title {
+            color: var(--text-muted);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        /* Grid de Cards Menores */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            border-color: #444;
+        }
+
+        .card h3 {
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 500;
+            margin: 0 0 8px 0;
+        }
+
+        .card p {
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text-main);
+        }
+
+        /* Paineis Maiores (Gráficos e Tabela) */
+        .panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 24px;
+        }
+
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        /* Tabela Moderna */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            min-width: 400px;
+            border-collapse: collapse;
+        }
+
+        th {
+            color: var(--text-muted);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: left;
+            padding: 12px 16px;
+            background-color: #1a1a1a;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
+        th:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+
+        td {
+            padding: 14px 16px;
+            font-size: 13px;
+            color: #cccccc;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        tr:last-child td { border-bottom: none; }
+
+        tr:hover td {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Botão de Excluir Modernizado */
+        .btn-deletar {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .btn-deletar:hover {
+            border-color: var(--color-detrator);
+            color: var(--color-detrator);
+            background-color: rgba(204, 0, 0, 0.05);
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .grid-2col { grid-template-columns: 1fr; }
+        }
+    </style>
+
     <script src="toast.js"></script>
     <script src="navbar.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -15,9 +167,9 @@
 <body>
 
     <main>
-        <div style="margin-bottom: 28px;">
-            <h2 id="boas-vindas" style="font-size: 20px; font-weight: 700; color: #f1f1f1; letter-spacing: -0.3px;">Olá! 👋</h2>
-            <p style="color: #888888; font-size: 14px; margin-top: 4px;">Aqui está o resumo do dia.</p>
+        <div style="margin-bottom: 32px;">
+            <h2 id="boas-vindas" style="font-size: 22px; font-weight: 600; margin: 0 0 4px 0;">Olá! 👋</h2>
+            <p style="color: #888888; font-size: 14px; margin: 0;">Aqui está o resumo do dia.</p>
         </div>
 
         <div class="cards">
@@ -51,33 +203,31 @@
             </div>
         </div>
 
-        <div class="chart-card" style="margin-top: 32px;">
-            <div class="chart-card-title">Evolução do NPS</div>
-            <div style="height: 180px;"><canvas id="grafico-evolucao"></canvas></div>
+        <div class="panel">
+            <h3 class="section-title">Evolução do NPS</h3>
+            <div style="height: 220px;"><canvas id="grafico-evolucao"></canvas></div>
         </div>
 
-        <div class="grid-2col" style="display: grid; gap: 24px; margin-top: 24px;">
-
-            <div class="chart-card">
-                <div class="chart-card-title">Distribuição NPS</div>
-                <div style="height: 190px;"><canvas id="grafico-nps"></canvas></div>
+        <div class="grid-2col">
+            <div class="panel">
+                <h3 class="section-title">Distribuição NPS</h3>
+                <div style="height: 220px;"><canvas id="grafico-nps"></canvas></div>
             </div>
 
-            <div class="chart-card" style="overflow-x: auto;">
-                <div class="chart-card-title">Últimas Avaliações</div>
-                <table style="width: 100%; min-width: 320px; border-collapse: collapse;">
+            <div class="panel table-container">
+                <h3 class="section-title">Últimas Avaliações</h3>
+                <table>
                     <thead>
                         <tr>
-                            <th style="background: linear-gradient(180deg, #b81616 0%, #8f0f0f 100%); color: #f4f4f4; font-size: 11px; text-align: left; padding: 12px 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px;">Cliente</th>
-                            <th style="background: linear-gradient(180deg, #b81616 0%, #8f0f0f 100%); color: #f4f4f4; font-size: 11px; text-align: left; padding: 12px 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px;">Nota</th>
-                            <th style="background: linear-gradient(180deg, #b81616 0%, #8f0f0f 100%); color: #f4f4f4; font-size: 11px; text-align: left; padding: 12px 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px;">Data</th>
-                            <th style="background: linear-gradient(180deg, #b81616 0%, #8f0f0f 100%); color: #f4f4f4; font-size: 11px; text-align: left; padding: 12px 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px;">Ações</th>
+                            <th>Cliente</th>
+                            <th>Nota</th>
+                            <th>Data</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody id="tabela-ultimas-avaliacoes"></tbody>
                 </table>
             </div>
-
         </div>
     </main>
 
@@ -90,81 +240,99 @@
         }
 
         async function carregarNPS() {
-            const response = await fetch('/avaliacoes/relatorio/nps', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
+            try {
+                const response = await fetch('/avaliacoes/relatorio/nps', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
 
-            if (data.message) {
-                document.getElementById('nps-score').textContent = '--';
-                document.getElementById('promotores').textContent = '--';
-                document.getElementById('neutros').textContent = '--';
-                document.getElementById('detratores').textContent = '--';
-                document.getElementById('total').textContent = '0';
-                return;
+                if (data.message) {
+                    document.getElementById('nps-score').textContent = '--';
+                    document.getElementById('promotores').textContent = '--';
+                    document.getElementById('neutros').textContent = '--';
+                    document.getElementById('detratores').textContent = '--';
+                    document.getElementById('total').textContent = '0';
+                    return;
+                }
+
+                document.getElementById('nps-score').textContent = data.nps + '%';
+                document.getElementById('promotores').textContent = data.promotores;
+                document.getElementById('neutros').textContent = data.neutros;
+                document.getElementById('detratores').textContent = data.detratores;
+                document.getElementById('total').textContent = data.total_avaliacoes;
+
+                renderizarGrafico(data.promotores, data.neutros, data.detratores);
+            } catch (error) {
+                console.error("Erro ao carregar NPS", error);
             }
-
-            document.getElementById('nps-score').textContent = data.nps + '%';
-            document.getElementById('promotores').textContent = data.promotores;
-            document.getElementById('neutros').textContent = data.neutros;
-            document.getElementById('detratores').textContent = data.detratores;
-            document.getElementById('total').textContent = data.total_avaliacoes;
-
-            renderizarGrafico(data.promotores, data.neutros, data.detratores);
         }
 
         async function carregarResumo() {
-            const resClientes = await fetch('/clientes', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            try {
+                const resClientes = await fetch('/clientes', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
 
-            const username = localStorage.getItem('username');
-            document.getElementById('boas-vindas').textContent = `Olá, ${username}! 👋`;
+                const username = localStorage.getItem('username');
+                document.getElementById('boas-vindas').textContent = `Olá, ${username || 'Usuário'}! 👋`;
 
-            const clientes = await resClientes.json();
-            document.getElementById('total-clientes').textContent = clientes.length;
+                const clientes = await resClientes.json();
+                document.getElementById('total-clientes').textContent = clientes.length;
 
-            const resPosVendas = await fetch('/pos-venda', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const posvendas = await resPosVendas.json();
-            const pendentes = posvendas.filter(pv => pv.status === 'pendente').length;
-            document.getElementById('posvendas-pendentes').textContent = pendentes;
+                const resPosVendas = await fetch('/pos-venda', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const posvendas = await resPosVendas.json();
+                const pendentes = posvendas.filter(pv => pv.status === 'pendente').length;
+                document.getElementById('posvendas-pendentes').textContent = pendentes;
+            } catch (error) {
+                console.error("Erro ao carregar resumo", error);
+            }
         }
 
         async function carregarUltimasAvaliacoes() {
-            const [resNPS, resCli] = await Promise.all([
-                fetch('/avaliacoes', { headers: { 'Authorization': `Bearer ${token}` } }),
-                fetch('/clientes', { headers: { 'Authorization': `Bearer ${token}` } })
-            ]);
+            try {
+                const [resNPS, resCli] = await Promise.all([
+                    fetch('/avaliacoes', { headers: { 'Authorization': `Bearer ${token}` } }),
+                    fetch('/clientes', { headers: { 'Authorization': `Bearer ${token}` } })
+                ]);
 
-            const avaliacoes = await resNPS.json();
-            const clientes = await resCli.json();
-            const tabela = document.getElementById('tabela-ultimas-avaliacoes');
-            tabela.innerHTML = '';
+                const avaliacoes = await resNPS.json();
+                const clientes = await resCli.json();
+                const tabela = document.getElementById('tabela-ultimas-avaliacoes');
+                tabela.innerHTML = '';
 
-            if (!avaliacoes.length) {
-                tabela.innerHTML = '<tr><td colspan="4" style="color:#888888; text-align:center; padding:24px; font-size:13px;">Nenhuma avaliação registrada</td></tr>';
-                return;
+                if (!avaliacoes.length) {
+                    tabela.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:30px;">Nenhuma avaliação recente</td></tr>';
+                    return;
+                }
+
+                const ultimas = avaliacoes.slice(-5).reverse();
+                ultimas.forEach(a => {
+                    const cliente = clientes.find(c => c.id === a.cliente_id);
+                    const nome = cliente ? cliente.nome : `ID ${a.cliente_id}`;
+                    const cores = { promotor: 'var(--color-promotor)', neutro: 'var(--color-neutro)', detrator: 'var(--color-detrator)', semnota: 'var(--text-muted)' };
+                    const temNota = a.nps_score !== null && a.nps_score !== undefined;
+                    const tipo = !temNota ? 'semnota' : a.nps_score === 5 ? 'promotor' : a.nps_score === 4 ? 'neutro' : 'detrator';
+                    const nota = temNota ? `${a.nps_score}/5` : '--';
+                    
+                    tabela.innerHTML += `
+                    <tr>
+                        <td style="font-weight: 500;">${nome}</td>
+                        <td>
+                            <span style="background: ${cores[tipo]}20; color: ${cores[tipo]}; padding: 4px 8px; border-radius: 4px; font-weight: 600; font-size: 12px;">
+                                ${nota}
+                            </span>
+                        </td>
+                        <td style="color: var(--text-muted);">${dataLocal(a.created_at).toLocaleDateString('pt-BR')}</td>
+                        <td>
+                            <button class="btn-deletar" onclick="excluirAvaliacao(${a.id})">Excluir</button>
+                        </td>
+                    </tr>`;
+                });
+            } catch (error) {
+                console.error("Erro ao carregar últimas avaliações", error);
             }
-
-            const ultimas = avaliacoes.slice(-5).reverse();
-            ultimas.forEach(a => {
-                const cliente = clientes.find(c => c.id === a.cliente_id);
-                const nome = cliente ? cliente.nome : `ID ${a.cliente_id}`;
-                const temNota = a.nps_score !== null && a.nps_score !== undefined;
-                const nota = temNota ? `${a.nps_score}/5` : '--';
-                const badgeClass = temNota ? 'nota-badge' : 'nota-badge nota-semnota';
-                tabela.innerHTML += `
-            <tr style="border-bottom: 1px solid #1e1e1e;">
-                <td style="padding: 12px 10px; font-size: 13px; color: #cccccc;">${nome}</td>
-                <td style="padding: 12px 10px;"><span class="${badgeClass}">${nota}</span></td>
-                <td style="padding: 12px 10px; font-size: 12px; color: #888888;">${dataLocal(a.created_at).toLocaleDateString('pt-BR')}</td>
-                <td style="padding: 12px 10px;">
-                    <button class="btn-deletar" onclick="excluirAvaliacao(${a.id})">Excluir</button>
-                </td>
-            </tr>`;
-            });
         }
 
         async function excluirAvaliacao(id) {
@@ -176,106 +344,121 @@
             });
 
             if (response.ok) {
-                toast('Avaliação excluída com sucesso!');
+                if (typeof toast === 'function') toast('Avaliação excluída com sucesso!');
                 await carregarNPS();
                 await carregarUltimasAvaliacoes();
             } else {
-                toast('Erro ao excluir avaliação!', 'erro');
+                if (typeof toast === 'function') toast('Erro ao excluir avaliação!', 'erro');
             }
         }
 
-        if (window.Chart) { Chart.defaults.font.size = 11; Chart.defaults.color = '#888888'; }
+        // Configurações globais do Chart.js para o tema escuro
+        if (window.Chart) { 
+            Chart.defaults.font.family = "'Inter', sans-serif";
+            Chart.defaults.font.size = 12; 
+            Chart.defaults.color = '#888888'; 
+        }
 
+        let chartNPS = null;
         function renderizarGrafico(promotores, neutros, detratores) {
             const ctx = document.getElementById('grafico-nps').getContext('2d');
-            new Chart(ctx, {
+            
+            // Destroi o gráfico anterior para evitar sobreposição se a função for chamada novamente
+            if(chartNPS) chartNPS.destroy(); 
+
+            chartNPS = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: ['Satisfeitos', 'Indiferentes', 'Insatisfeitos'],
                     datasets: [{
                         data: [promotores, neutros, detratores],
-                        backgroundColor: [
-                            'rgba(204, 0, 0, 0.85)',
-                            'rgba(136, 136, 136, 0.5)',
-                            'rgba(60, 60, 60, 0.85)'
-                        ],
-                        borderRadius: 8,
+                        backgroundColor: ['#00cc66', '#f59e0b', '#cc0000'], // Cores originais do seu código
+                        borderRadius: 6,
                         borderSkipped: false,
-                        maxBarThickness: 90,
-                        categoryPercentage: 0.7,
-                        barPercentage: 0.9,
+                        
+                        // --- AQUI ESTÁ A CORREÇÃO DAS BARRAS GIGANTES ---
+                        maxBarThickness: 35,    // Trava a largura máxima da barra em pixels
+                        barPercentage: 0.5,     // Afina a barra dentro do espaço da categoria
+                        categoryPercentage: 0.8 // Ajusta o respiro entre as colunas
+                        // ------------------------------------------------
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    plugins: { 
+                        legend: { display: false } 
+                    },
                     scales: {
-                        x: {
-                            ticks: { color: '#888888' },
-                            grid: { color: '#1a1a1a' }
-                        },
+                        x: { 
+                            grid: { display: false } // Remove as linhas verticais de fundo
+                        }, 
                         y: {
-                            ticks: { color: '#888888', stepSize: 1 },
-                            grid: { color: '#1a1a1a' },
-                            beginAtZero: true
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' }, // Linhas horizontais bem sutis
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 } // Garante que o eixo Y ande de 1 em 1 (sem números quebrados)
                         }
                     }
                 }
             });
         }
 
+        let chartEvolucao = null;
         async function carregarEvolucaoNPS() {
-            const response = await fetch('/avaliacoes/relatorio/evolucao', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
+            try {
+                const response = await fetch('/avaliacoes/relatorio/evolucao', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
 
-            if (data.message || !data.evolucao || !data.evolucao.length) return;
+                if (data.message || !data.evolucao || !data.evolucao.length) return;
 
-            const meses = { '01': 'Jan', '02': 'Fev', '03': 'Mar', '04': 'Abr', '05': 'Mai', '06': 'Jun', '07': 'Jul', '08': 'Ago', '09': 'Set', '10': 'Out', '11': 'Nov', '12': 'Dez' };
-            const labels = data.evolucao.map(item => {
-                const [ano, mes] = item.mes.split('-');
-                return `${meses[mes]}/${ano.slice(2)}`;
-            });
-            const valores = data.evolucao.map(item => item.nps);
+                const meses = { '01': 'Jan', '02': 'Fev', '03': 'Mar', '04': 'Abr', '05': 'Mai', '06': 'Jun', '07': 'Jul', '08': 'Ago', '09': 'Set', '10': 'Out', '11': 'Nov', '12': 'Dez' };
+                const labels = data.evolucao.map(item => {
+                    const [ano, mes] = item.mes.split('-');
+                    return `${meses[mes]}/${ano.slice(2)}`;
+                });
+                const valores = data.evolucao.map(item => item.nps);
 
-            const ctx = document.getElementById('grafico-evolucao').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels,
-                    datasets: [{
-                        label: 'NPS',
-                        data: valores,
-                        borderColor: '#cc0000',
-                        backgroundColor: 'rgba(204, 0, 0, 0.12)',
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: '#cc0000',
-                        pointBorderColor: '#141414',
-                        pointBorderWidth: 2,
-                        pointRadius: 5
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: {
-                            ticks: { color: '#888888' },
-                            grid: { color: '#1a1a1a' }
-                        },
-                        y: {
-                            ticks: { color: '#888888' },
-                            grid: { color: '#1a1a1a' },
-                            suggestedMin: -100,
-                            suggestedMax: 100
+                const ctx = document.getElementById('grafico-evolucao').getContext('2d');
+                
+                if(chartEvolucao) chartEvolucao.destroy();
+
+                chartEvolucao = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [{
+                            label: 'NPS',
+                            data: valores,
+                            borderColor: '#cc0000',
+                            backgroundColor: 'rgba(204, 0, 0, 0.1)', // Fundo mais suave
+                            fill: true,
+                            tension: 0.4, // Curva mais suave
+                            pointBackgroundColor: '#141414', // Ponto combinando com o fundo
+                            pointBorderColor: '#cc0000',
+                            pointBorderWidth: 2,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { display: false } },
+                            y: {
+                                grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                                suggestedMin: -100,
+                                suggestedMax: 100
+                            }
                         }
                     }
-                }
-            });
+                });
+            } catch (error) {
+                console.error("Erro ao carregar evolução do NPS", error);
+            }
         }
 
         function logout() {
