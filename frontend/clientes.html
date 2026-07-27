@@ -1,28 +1,29 @@
 <!DOCTYPE html>
-<html lang="pt_BR">
+<html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clientes</title>
-    <!-- Fonte moderna -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="responsive.css">
+    
+    <!-- Chamando APENAS o seu global.css -->
+    <link rel="stylesheet" href="global.css">
     
     <script src="toast.js"></script>
-    <script src="navbar.js" defer></script>
+    <!-- Adicionando o ?v=2 para fugir do cache -->
+    <script src="navbar.js?v=2" defer></script>
 </head>
 
 <body>
+    <!-- A navbar é injetada aqui pelo navbar.js -->
 
     <main>
-        <div class="page-header">
-            <h2>Clientes</h2>
-            <div class="header-actions">
-                <input type="text" id="busca" class="input-busca" placeholder="Buscar por nome..." onkeyup="filtrarClientes()">
-                <button class="btn-novo" onclick="novoCliente()">+ Novo Cliente</button>
-            </div>
+        <h2 style="margin-bottom: 24px;">Clientes</h2>
+        
+        <!-- A classe .busca do seu global.css alinha o input e o botão lado a lado -->
+        <div class="busca">
+            <input type="text" id="busca" placeholder="Buscar por nome..." onkeyup="filtrarClientes()">
+            <button class="btn-novo" onclick="novoCliente()">+ Novo Cliente</button>
         </div>
 
         <div class="table-container">
@@ -41,6 +42,9 @@
                 </tbody>
             </table>
         </div>
+        
+        <!-- Container para a paginação -->
+        <div id="paginacao" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:24px; justify-content:center;"></div>
     </main>
 
     <script>
@@ -74,7 +78,7 @@
             tabela.innerHTML = '';
 
             if (clientes.length === 0) {
-                tabela.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 30px; color: #888;">Nenhum cliente encontrado</td></tr>';
+                tabela.innerHTML = '<tr><td colspan="6" class="vazio">Nenhum cliente encontrado</td></tr>';
                 renderizarPaginacao([], 0);
                 return;
             }
@@ -82,17 +86,16 @@
             clientesPagina.forEach(cliente => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td data-label="Nome" style="font-weight: 500; color: #fff;">${cliente.nome}</td>
+                    <td data-label="Nome" style="color: #fff; font-weight: 500;">${cliente.nome}</td>
                     <td data-label="E-mail">${cliente.email}</td>
                     <td data-label="Telefone">${cliente.telefone || '--'}</td>
                     <td data-label="CPF/CNPJ">${cliente.cpf || cliente.cnpj || '--'}</td>
                     <td data-label="Cidade/Estado">${cliente.cidade || '--'}/${cliente.estado || '--'}</td>
                     <td data-label="Ações">
-                        <div class="acoes-container">
-                            <button class="btn-acao btn-ver" onclick="verHistorico(${cliente.id})">Ver</button>
-                            <button class="btn-acao btn-editar" onclick="editarCliente(${cliente.id})">Editar</button>
-                            <button class="btn-acao btn-deletar" onclick="deletarCliente(${cliente.id})">Excluir</button>
-                        </div>
+                        <!-- Usando as classes exatas de botão do global.css -->
+                        <button class="btn-ver" onclick="verHistorico(${cliente.id})">Ver</button>
+                        <button class="btn-editar" onclick="editarCliente(${cliente.id})">Editar</button>
+                        <button class="btn-deletar" onclick="deletarCliente(${cliente.id})">Excluir</button>
                     </td>
                 `;
                 tabela.appendChild(row);
@@ -102,50 +105,28 @@
         }
 
         function renderizarPaginacao(clientes, totalPaginas) {
-            let paginacao = document.getElementById('paginacao');
-            if (!paginacao) {
-                paginacao = document.createElement('div');
-                paginacao.id = 'paginacao';
-                document.querySelector('main').appendChild(paginacao);
-            }
-
+            const paginacao = document.getElementById('paginacao');
             paginacao.innerHTML = '';
+            
             if (totalPaginas <= 1) return;
-
-            paginacao.style.cssText = 'display:flex; flex-wrap:wrap; gap:8px; margin-top:24px; justify-content:center;';
 
             for (let i = 1; i <= totalPaginas; i++) {
                 const btn = document.createElement('button');
                 btn.textContent = i;
                 
-                // Estilo moderno para a paginação
+                // Estilo simples de paginação alinhado com o tema escuro
                 btn.style.cssText = `
-                    padding: 6px 14px;
+                    padding: 6px 12px;
                     border-radius: 6px;
-                    border: 1px solid ${i === paginaAtual ? '#cc0000' : '#2a2a2a'};
-                    background: ${i === paginaAtual ? '#cc0000' : '#141414'};
-                    color: ${i === paginaAtual ? '#ffffff' : '#888888'};
+                    border: 1px solid ${i === paginaAtual ? 'var(--red)' : 'var(--line)'};
+                    background: ${i === paginaAtual ? 'var(--red)' : 'transparent'};
+                    color: #fff;
                     cursor: pointer;
                     font-size: 13px;
-                    font-weight: 500;
-                    font-family: 'Inter', sans-serif;
-                    transition: all 0.2s ease;
+                    font-weight: 600;
+                    transition: all 0.2s;
                 `;
                 
-                btn.onmouseover = () => {
-                    if (i !== paginaAtual) {
-                        btn.style.borderColor = '#444';
-                        btn.style.color = '#fff';
-                    }
-                };
-                
-                btn.onmouseout = () => {
-                    if (i !== paginaAtual) {
-                        btn.style.borderColor = '#2a2a2a';
-                        btn.style.color = '#888888';
-                    }
-                };
-
                 btn.onclick = () => {
                     paginaAtual = i;
                     renderizarClientes(todosClientes);
@@ -187,11 +168,6 @@
 
         function novoCliente() {
             window.location.href = 'novo-cliente.html';
-        }
-
-        function logout() {
-            localStorage.removeItem('token');
-            window.location.href = 'index.html';
         }
 
         carregarClientes();
