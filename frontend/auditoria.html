@@ -56,21 +56,30 @@
         </div>
     </main>
 
-    <div class="modal-fundo" id="modal-detalhes">
+    <!-- Modal de Detalhes -->
+    <div class="modal-fundo" id="modal-auditoria">
         <div class="modal-caixa">
-            <button class="modal-fechar" onclick="fecharModal()">&times;</button>
-            <h3><span id="modal-titulo-entidade">Detalhes</span><span class="badge" id="modal-titulo-badge"></span></h3>
-            <p class="subtitulo" id="modal-subtitulo"></p>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Campo</th>
-                        <th>Antes</th>
-                        <th>Depois</th>
-                    </tr>
-                </thead>
-                <tbody id="tabela-modal"></tbody>
-            </table>
+            <button class="modal-fechar" onclick="fecharModalAuditoria()">&times;</button>
+            
+            <h3 id="modal-titulo" style="font-size: 18px; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
+                Detalhes
+            </h3>
+            <p class="subtitulo" id="modal-subtitulo" style="font-size: 13px;"></p>
+
+            <div class="table-container" style="margin-top: 20px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Campo</th>
+                            <th>Antes</th>
+                            <th>Depois</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modal-tabela-corpo">
+                        <!-- O conteúdo das alterações será injetado aqui -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -176,33 +185,49 @@
         }
 
         function abrirModalAuditoria(log) {
-            let badgeClass = 'badge';
-            if (log.acao === 'Criado') badgeClass = 'badge badge-create';
-            else if (log.acao === 'Atualizado') badgeClass = 'badge badge-update';
-            else if (log.acao === 'Excluído') badgeClass = 'badge badge-delete';
+    // Escolhe a cor do botão baseado na ação
+    let badgeClass = 'badge';
+    if (log.acao === 'Criado') badgeClass = 'badge badge-create';
+    else if (log.acao === 'Atualizado') badgeClass = 'badge badge-update';
+    else if (log.acao === 'Excluído') badgeClass = 'badge badge-delete';
 
-            document.getElementById('modal-titulo').innerHTML = `${log.tela} <span class="${badgeClass}" style="font-size: 11px;">${log.acao}</span>`;
-            document.getElementById('modal-subtitulo').textContent = `${log.registro_nome || 'Registro'} · por ${log.usuario_nome || 'Sistema'} em ${dataLocal(log.created_at).toLocaleString('pt-BR')}`;
+    // Pega os elementos do HTML
+    const titulo = document.getElementById('modal-titulo');
+    const subtitulo = document.getElementById('modal-subtitulo');
+    const corpoTabela = document.getElementById('modal-tabela-corpo');
+    const modal = document.getElementById('modal-auditoria');
 
-            const corpoTabela = document.getElementById('modal-tabela-corpo');
-            corpoTabela.innerHTML = '';
+    // Se algum elemento não existir, avisa no console e para, sem quebrar a tela
+    if (!titulo || !subtitulo || !corpoTabela || !modal) {
+        console.error("Erro: Um dos elementos do modal não foi encontrado no HTML.");
+        return; 
+    }
 
-            if (log.detalhes && Array.isArray(log.detalhes)) {
-                log.detalhes.forEach(detalhe => {
-                    corpoTabela.innerHTML += `
+    // Preenche os dados
+    titulo.innerHTML = `${log.tela} <span class="${badgeClass}" style="font-size: 11px;">${log.acao}</span>`;
+    subtitulo.textContent = `${log.registro_nome || 'Registro'} · por ${log.usuario_nome || 'Sistema'} em ${dataLocal(log.created_at).toLocaleString('pt-BR')}`;
+
+    // Limpa a tabela anterior
+    corpoTabela.innerHTML = '';
+
+    // Verifica se existem detalhes e preenche a tabela
+    if (log.detalhes && Array.isArray(log.detalhes)) {
+        log.detalhes.forEach(detalhe => {
+            corpoTabela.innerHTML += `
                 <tr>
                     <td style="font-weight: 500; color: #fff;">${detalhe.campo}</td>
                     <td style="color: #ccc;">${detalhe.antes || '--'}</td>
                     <td style="color: #ccc;">${detalhe.depois || '--'}</td>
                 </tr>
             `;
-                });
-            } else {
-                corpoTabela.innerHTML = `<tr><td colspan="3" class="vazio">Nenhum detalhe adicional disponível para esta ação.</td></tr>`;
-            }
+        });
+    } else {
+        corpoTabela.innerHTML = `<tr><td colspan="3" class="vazio">Nenhum detalhe adicional disponível para esta ação.</td></tr>`;
+    }
 
-            document.getElementById('modal-auditoria').classList.add('ativo');
-        }
+    // Abre o modal
+    modal.classList.add('ativo');
+}
 
         function fecharModalAuditoria() {
             document.getElementById('modal-auditoria').classList.remove('ativo');
