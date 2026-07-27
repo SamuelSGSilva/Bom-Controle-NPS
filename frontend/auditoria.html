@@ -165,24 +165,32 @@
         }
 
         function aplicarFiltros() {
-            const tela = document.getElementById('filtro-tela').value;
-            const acao = document.getElementById('filtro-acao').value;
-            const buscaUser = document.getElementById('busca-usuario').value.trim().toLowerCase();
+    // 1. Buscamos os elementos no HTML
+    const elTela = document.getElementById('filtro-tela');
+    const elAcao = document.getElementById('filtro-acao');
+    const elUsuario = document.getElementById('busca-usuario');
 
-            let filtrados = todosLogs;
+    // 2. Se o elemento existir, pegamos o valor. Se não, usamos texto vazio ('').
+    const tela = elTela ? elTela.value : '';
+    const acao = elAcao ? elAcao.value : '';
+    const buscaUser = elUsuario ? elUsuario.value.trim().toLowerCase() : '';
 
-            if (tela) {
-                filtrados = filtrados.filter(l => l.tela === tela);
-            }
-            if (acao) {
-                filtrados = filtrados.filter(l => l.acao === acao);
-            }
-            if (buscaUser) {
-                filtrados = filtrados.filter(l => (l.usuario_nome || '').toLowerCase().includes(buscaUser));
-            }
+    let filtrados = todosLogs;
 
-            renderizarLogs(filtrados);
-        }
+    // 3. Aplicamos os filtros
+    if (tela) {
+        filtrados = filtrados.filter(l => l.tela === tela);
+    }
+    if (acao) {
+        filtrados = filtrados.filter(l => l.acao === acao);
+    }
+    if (buscaUser) {
+        filtrados = filtrados.filter(l => (l.usuario_nome || '').toLowerCase().includes(buscaUser));
+    }
+
+    // 4. Desenhamos a tabela novamente
+    renderizarLogs(filtrados);
+}
 
         function abrirModalAuditoria(log) {
     // Escolhe a cor do botão baseado na ação
