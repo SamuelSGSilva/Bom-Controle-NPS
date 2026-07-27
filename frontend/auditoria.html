@@ -4,39 +4,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auditoria</title>
+    <title>Log de Auditoria</title>
+    
+    <!-- Chamando APENAS o global.css -->
     <link rel="stylesheet" href="global.css">
-    <link rel="stylesheet" href="responsive.css">
+    
     <script src="toast.js"></script>
-    <script src="navbar.js" defer></script>
+    <script src="navbar.js?v=5" defer></script>
 </head>
 
 <body>
-
+    <!-- A navbar é injetada aqui pelo navbar.js -->
 
     <main>
-        <h2>Log de auditoria</h2>
+        <h2 style="margin-bottom: 4px;">Log de auditoria</h2>
         <p class="subtitulo">Histórico de tudo que foi criado, alterado ou excluído no sistema</p>
 
-        <div class="filtros">
-            <select id="filtro-entidade" onchange="aplicarFiltros()">
+        <!-- A classe .busca coloca todos os filtros lado a lado -->
+        <div class="busca">
+            <select id="filtro-tela" onchange="aplicarFiltros()">
                 <option value="">Todas as telas</option>
-                <option value="cliente">Clientes</option>
-                <option value="pos_venda">Pós-venda</option>
-                <option value="avaliacao">Avaliações</option>
+                <option value="Cliente">Cliente</option>
+                <option value="Pós-venda">Pós-venda</option>
+                <option value="Avaliação">Avaliação</option>
             </select>
+            
             <select id="filtro-acao" onchange="aplicarFiltros()">
                 <option value="">Todas as ações</option>
-                <option value="create">Criado</option>
-                <option value="update">Atualizado</option>
-                <option value="delete">Excluído</option>
+                <option value="Criado">Criado</option>
+                <option value="Atualizado">Atualizado</option>
+                <option value="Excluído">Excluído</option>
             </select>
-            <input type="text" id="busca-usuario" placeholder="Buscar por usuário..." oninput="aplicarFiltros()">
+            
+            <input type="text" id="busca-usuario" placeholder="Buscar por usuário..." onkeyup="aplicarFiltros()">
         </div>
 
         <div id="loading" style="text-align: center; padding: 40px; display: none;">
             <div class="spinner"></div>
-            <p style="color: #888888; margin-top: 12px;">Carregando...</p>
+            <p style="color: #888888; margin-top: 12px;">Carregando logs...</p>
         </div>
 
         <div class="table-container">
@@ -51,26 +56,36 @@
                         <th>Detalhes</th>
                     </tr>
                 </thead>
-                <tbody id="tabela-logs"></tbody>
+                <tbody id="tabela-auditoria"></tbody>
             </table>
         </div>
     </main>
 
-    <div class="modal-fundo" id="modal-detalhes">
+    <!-- Modal de Detalhes -->
+    <div class="modal-fundo" id="modal-auditoria">
         <div class="modal-caixa">
-            <button class="modal-fechar" onclick="fecharModal()">&times;</button>
-            <h3><span id="modal-titulo-entidade">Detalhes</span><span class="badge" id="modal-titulo-badge"></span></h3>
-            <p class="subtitulo" id="modal-subtitulo"></p>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Campo</th>
-                        <th>Antes</th>
-                        <th>Depois</th>
-                    </tr>
-                </thead>
-                <tbody id="tabela-modal"></tbody>
-            </table>
+            <!-- A classe modal-fechar e o &times; consertam o botão estranho da imagem 2 -->
+            <button class="modal-fechar" onclick="fecharModalAuditoria()">&times;</button>
+            
+            <h3 id="modal-titulo" style="font-size: 18px; margin-bottom: 4px; display: flex; align-items: center; gap: 10px;">
+                <!-- O título e a badge serão injetados aqui -->
+            </h3>
+            <p class="subtitulo" id="modal-subtitulo" style="font-size: 13px;"></p>
+
+            <div class="table-container" style="margin-top: 20px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Campo</th>
+                            <th>Antes</th>
+                            <th>Depois</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modal-tabela-corpo">
+                        <!-- O conteúdo das alterações será injetado aqui -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -78,198 +93,131 @@
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'index.html';
 
-        const NOMES_ENTIDADE = { cliente: 'Cliente', pos_venda: 'Pós-venda', avaliacao: 'Avaliação' };
-        const NOMES_ACAO = { create: 'Criado', update: 'Atualizado', delete: 'Excluído' };
-        const CLASSE_ACAO = { create: 'badge-create', update: 'badge-update', delete: 'badge-delete' };
-
-        const NOMES_CAMPO = {
-            cliente_id: 'Cliente', cliente_nome: 'Nome do cliente',
-            nome: 'Nome', email: 'E-mail', telefone: 'Telefone', cpf: 'CPF', cnpj: 'CNPJ',
-            cep: 'CEP', logradouro: 'Logradouro', numero: 'Número', bairro: 'Bairro',
-            cidade: 'Cidade', estado: 'Estado', data_nascimento: 'Data de nascimento',
-            bomcontrole_id: 'ID BomControle', bloqueado: 'Bloqueado',
-            feedback: 'Feedback', status: 'Status', data_retorno: 'Data de retorno',
-            observacoes: 'Observações internas',
-            numero_os: 'Número da OS', produto_servico: 'Produto/Serviço',
-            data_atendimento: 'Data de atendimento', cidade_estado: 'Cidade/Estado',
-            nota_primeiro_contato: 'Nota: primeiro contato',
-            nota_clareza_informacoes: 'Nota: clareza das informações',
-            nota_processo_fechamento: 'Nota: processo de fechamento',
-            nota_link_pagamento: 'Nota: link de pagamento',
-            nota_nota_fiscal: 'Nota: nota fiscal',
-            nota_entrega_prazo: 'Nota: entrega no prazo',
-            nota_embalagem: 'Nota: embalagem',
-            nota_entrega_tecnica: 'Nota: entrega técnica',
-            nota_suporte_produto: 'Nota: suporte ao produto',
-            avaliacao_geral: 'Avaliação geral', nps_score: 'NPS (indicação)',
-            o_que_gostou: 'O que gostou', o_que_melhorar: 'O que pode melhorar',
-            consideracoes: 'Considerações', media_geral: 'Média geral',
-            resp_entrega_tecnica: 'Responsável entrega técnica', cs_responsavel: 'CS responsável',
-            created_at: 'Criado em',
-        };
-
-        const CAMPOS_DATA = new Set(['data_nascimento', 'data_retorno', 'data_atendimento', 'created_at']);
-
-        function nomeCampo(campo) {
-            return NOMES_CAMPO[campo] || campo;
-        }
-
-        // O backend grava created_at em UTC sem indicar o fuso na string ISO;
-        // sem o "Z" o navegador interpreta como horário local, adiantando o valor.
         function dataLocal(isoSemFuso) {
             return new Date(isoSemFuso.endsWith('Z') ? isoSemFuso : isoSemFuso + 'Z');
         }
 
-        // Campos vindos do log de auditoria são strings cruas do Python (com ou sem fuso já embutido).
-        function parseDataAuditoria(valor) {
-            let s = String(valor).trim().replace(' ', 'T');
-            s = s.replace(/(\.\d{3})\d*/, '$1');
-            if (!/Z$|[+-]\d{2}:?\d{2}$/.test(s)) s += 'Z';
-            const d = new Date(s);
-            return isNaN(d.getTime()) ? null : d;
-        }
-
-        function formatarDataHora(d) {
-            const data = d.toLocaleDateString('pt-BR');
-            const hora = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-            return `${data}, ${hora}`;
-        }
-
-        function formatarValorCampo(campo, valor) {
-            if (valor === null || valor === undefined || valor === '') return '--';
-            if (CAMPOS_DATA.has(campo)) {
-                const d = parseDataAuditoria(valor);
-                if (d) return formatarDataHora(d);
-            }
-            if (typeof valor === 'boolean') return valor ? 'Sim' : 'Não';
-            return valor;
-        }
-
         let todosLogs = [];
 
-        function nomeRegistro(log) {
-            const dados = JSON.parse(log.dados_depois || log.dados_antes || '{}');
-            if (log.entidade === 'cliente') return dados.nome || `ID ${log.entidade_id}`;
-            if (log.entidade === 'pos_venda') return dados.cliente_nome || `ID ${log.entidade_id}`;
-            if (log.entidade === 'avaliacao') return dados.cliente_nome || `ID ${log.entidade_id}`;
-            return `ID ${log.entidade_id}`;
+        async function carregarAuditoria() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('tabela-auditoria').innerHTML = '';
+
+            try {
+                // Ajuste a URL abaixo para o endpoint correto da sua API
+                const response = await fetch('/auditoria', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                document.getElementById('loading').style.display = 'none';
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        localStorage.removeItem('token');
+                        window.location.href = 'index.html';
+                        return;
+                    }
+                    if (typeof toast === 'function') toast('Erro ao carregar auditoria!', 'erro');
+                    return;
+                }
+
+                todosLogs = await response.json();
+                renderizarLogs(todosLogs);
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                console.error("Erro ao carregar auditoria", error);
+            }
         }
 
-        async function carregarLogs() {
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('tabela-logs').innerHTML = '';
+        function renderizarLogs(logs) {
+            const tabela = document.getElementById('tabela-auditoria');
+            tabela.innerHTML = '';
 
-            const response = await fetch('/logs-auditoria', {
-                headers: { 'Authorization': `Bearer ${token}` }
+            if (logs.length === 0) {
+                tabela.innerHTML = '<tr><td colspan="6" class="vazio">Nenhum registro encontrado</td></tr>';
+                return;
+            }
+
+            logs.forEach(log => {
+                const row = document.createElement('tr');
+
+                // Escolhendo a classe de cor da badge baseada na ação
+                let badgeClass = 'badge';
+                if (log.acao === 'Criado') badgeClass = 'badge badge-create';
+                else if (log.acao === 'Atualizado') badgeClass = 'badge badge-update';
+                else if (log.acao === 'Excluído') badgeClass = 'badge badge-delete';
+
+                row.innerHTML = `
+                    <td data-label="Quando">${dataLocal(log.created_at).toLocaleString('pt-BR')}</td>
+                    <td data-label="Tela" style="font-weight: 500; color: #fff;">${log.tela}</td>
+                    <td data-label="Ação"><span class="${badgeClass}">${log.acao}</span></td>
+                    <td data-label="Registro">${log.registro_nome || '--'}</td>
+                    <td data-label="Usuário">${log.usuario_nome || '--'}</td>
+                    <td data-label="Detalhes">
+                        <button class="btn-ver" onclick='abrirModalAuditoria(${JSON.stringify(log).replace(/'/g, "&apos;")})'>Ver</button>
+                    </td>
+                `;
+                tabela.appendChild(row);
             });
-
-            document.getElementById('loading').style.display = 'none';
-
-            if (response.status === 401) {
-                localStorage.removeItem('token');
-                window.location.href = 'index.html';
-                return;
-            }
-
-            if (!response.ok) {
-                toast('Erro ao carregar log de auditoria!', 'erro');
-                return;
-            }
-
-            todosLogs = await response.json();
-
-            const params = new URLSearchParams(window.location.search);
-            const entidadeParam = params.get('entidade');
-            const acaoParam = params.get('acao');
-            if (entidadeParam) document.getElementById('filtro-entidade').value = entidadeParam;
-            if (acaoParam) document.getElementById('filtro-acao').value = acaoParam;
-
-            aplicarFiltros();
         }
 
         function aplicarFiltros() {
-            const entidade = document.getElementById('filtro-entidade').value;
+            const tela = document.getElementById('filtro-tela').value;
             const acao = document.getElementById('filtro-acao').value;
-            const usuario = document.getElementById('busca-usuario').value.trim().toLowerCase();
+            const buscaUser = document.getElementById('busca-usuario').value.trim().toLowerCase();
 
             let filtrados = todosLogs;
-            if (entidade) filtrados = filtrados.filter(l => l.entidade === entidade);
-            if (acao) filtrados = filtrados.filter(l => l.acao === acao);
-            if (usuario) filtrados = filtrados.filter(l => (l.usuario || '').toLowerCase().includes(usuario));
+
+            if (tela) {
+                filtrados = filtrados.filter(l => l.tela === tela);
+            }
+            if (acao) {
+                filtrados = filtrados.filter(l => l.acao === acao);
+            }
+            if (buscaUser) {
+                filtrados = filtrados.filter(l => (l.usuario_nome || '').toLowerCase().includes(buscaUser));
+            }
 
             renderizarLogs(filtrados);
         }
 
-        function renderizarLogs(logs) {
-            const tabela = document.getElementById('tabela-logs');
-            tabela.innerHTML = '';
+        function abrirModalAuditoria(log) {
+            // Estilizando a badge do título
+            let badgeClass = 'badge';
+            if (log.acao === 'Criado') badgeClass = 'badge badge-create';
+            else if (log.acao === 'Atualizado') badgeClass = 'badge badge-update';
+            else if (log.acao === 'Excluído') badgeClass = 'badge badge-delete';
 
-            if (logs.length === 0) {
-                tabela.innerHTML = '<tr><td colspan="6" style="text-align:center">Nenhum registro encontrado</td></tr>';
-                return;
+            document.getElementById('modal-titulo').innerHTML = `${log.tela} <span class="${badgeClass}" style="font-size: 11px;">${log.acao}</span>`;
+            document.getElementById('modal-subtitulo').textContent = `${log.registro_nome || 'Registro'} · por ${log.usuario_nome || 'Sistema'} em ${dataLocal(log.created_at).toLocaleString('pt-BR')}`;
+
+            const corpoTabela = document.getElementById('modal-tabela-corpo');
+            corpoTabela.innerHTML = '';
+
+            // Se o log tiver campos detalhados (ex: JSON de antes e depois)
+            if (log.detalhes && Array.isArray(log.detalhes)) {
+                log.detalhes.forEach(detalhe => {
+                    corpoTabela.innerHTML += `
+                        <tr>
+                            <td style="font-weight: 500; color: #fff;">${detalhe.campo}</td>
+                            <td style="color: #ccc;">${detalhe.antes || '--'}</td>
+                            <td style="color: #ccc;">${detalhe.depois || '--'}</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                corpoTabela.innerHTML = `<tr><td colspan="3" class="vazio">Nenhum detalhe adicional disponível para esta ação.</td></tr>`;
             }
 
-            logs.forEach((log, indice) => {
-                const quando = formatarDataHora(dataLocal(log.created_at));
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td data-label="Quando">${quando}</td>
-                    <td data-label="Tela">${NOMES_ENTIDADE[log.entidade] || log.entidade}</td>
-                    <td data-label="Ação"><span class="badge ${CLASSE_ACAO[log.acao] || ''}">${NOMES_ACAO[log.acao] || log.acao}</span></td>
-                    <td data-label="Registro">${nomeRegistro(log)}</td>
-                    <td data-label="Usuário">${log.usuario || '--'}</td>
-                    <td data-label="Detalhes"><button class="btn-ver" onclick="abrirModal(${indice})">Ver</button></td>
-                `;
-                tabela.appendChild(row);
-            });
-
-            window.__logsExibidos = logs;
+            // Exibe o modal adicionando a classe ativa
+            document.getElementById('modal-auditoria').classList.add('ativo');
         }
 
-        function abrirModal(indice) {
-            const log = window.__logsExibidos[indice];
-            const antes = log.dados_antes ? JSON.parse(log.dados_antes) : {};
-            const depois = log.dados_depois ? JSON.parse(log.dados_depois) : {};
-            const campos = new Set([...Object.keys(antes), ...Object.keys(depois)]);
-
-            document.getElementById('modal-titulo-entidade').textContent = NOMES_ENTIDADE[log.entidade] || log.entidade;
-            const badge = document.getElementById('modal-titulo-badge');
-            badge.textContent = NOMES_ACAO[log.acao] || log.acao;
-            badge.className = `badge ${CLASSE_ACAO[log.acao] || ''}`;
-            document.getElementById('modal-subtitulo').textContent = `${nomeRegistro(log)} · por ${log.usuario || '--'} em ${formatarDataHora(dataLocal(log.created_at))}`;
-
-            const tabelaModal = document.getElementById('tabela-modal');
-            tabelaModal.innerHTML = '';
-
-            campos.forEach(campo => {
-                if (campo === 'id') return;
-                const valorAntes = formatarValorCampo(campo, antes[campo]);
-                const valorDepois = formatarValorCampo(campo, depois[campo]);
-                if (valorAntes === '--' && valorDepois === '--') return;
-                const mudou = log.acao === 'update' && valorAntes !== valorDepois;
-                tabelaModal.innerHTML += `
-                    <tr>
-                        <td>${nomeCampo(campo)}</td>
-                        <td class="${mudou ? 'campo-alterado' : ''}">${valorAntes}</td>
-                        <td class="${mudou ? 'campo-alterado' : ''}">${valorDepois}</td>
-                    </tr>
-                `;
-            });
-
-            document.getElementById('modal-detalhes').classList.add('ativo');
+        function fecharModalAuditoria() {
+            document.getElementById('modal-auditoria').classList.remove('ativo');
         }
 
-        function fecharModal() {
-            document.getElementById('modal-detalhes').classList.remove('ativo');
-        }
-
-        function logout() {
-            localStorage.removeItem('token');
-            window.location.href = 'index.html';
-        }
-
-        carregarLogs();
+        carregarAuditoria();
     </script>
 </body>
-
 </html>
