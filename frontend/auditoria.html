@@ -201,30 +201,58 @@
 }
 
         function aplicarFiltros() {
-    // 1. Buscamos os elementos no HTML
     const elTela = document.getElementById('filtro-tela');
     const elAcao = document.getElementById('filtro-acao');
     const elUsuario = document.getElementById('busca-usuario');
 
-    // 2. Se o elemento existir, pegamos o valor. Se não, usamos texto vazio ('').
-    const tela = elTela ? elTela.value : '';
-    const acao = elAcao ? elAcao.value : '';
+    // Pega os valores selecionados (em minúsculo para facilitar a busca)
+    const tela = elTela ? elTela.value.toLowerCase() : '';
+    const acao = elAcao ? elAcao.value.toLowerCase() : '';
     const buscaUser = elUsuario ? elUsuario.value.trim().toLowerCase() : '';
 
     let filtrados = todosLogs;
 
-    // 3. Aplicamos os filtros
-    if (tela) {
-        filtrados = filtrados.filter(l => l.tela === tela);
-    }
-    if (acao) {
-        filtrados = filtrados.filter(l => l.acao === acao);
-    }
-    if (buscaUser) {
-        filtrados = filtrados.filter(l => (l.usuario_nome || '').toLowerCase().includes(buscaUser));
+    // 1. FILTRANDO A TELA
+    if (tela && tela !== 'todas as telas' && tela !== 'todas') {
+        filtrados = filtrados.filter(l => {
+            // Pega o nome que vem do banco (entidade)
+            let nomeBanco = (l.entidade || l.tela || l.tabela || '').toLowerCase();
+            
+            // Função para limpar acentos, underlines e traços
+            const limpaTexto = texto => texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[-_]/g, ' ').trim();
+            
+            const bancoLimpo = limpaTexto(nomeBanco);
+            const filtroLimpo = limpaTexto(tela);
+            
+            // Compara de forma flexível (ex: "avaliacoes" inclui "avaliacao")
+            return bancoLimpo.includes(filtroLimpo) || filtroLimpo.includes(bancoLimpo);
+        });
     }
 
-    // 4. Desenhamos a tabela novamente
+    // 2. FILTRANDO A AÇÃO
+    if (acao && acao !== 'todas as ações' && acao !== 'todas') {
+        filtrados = filtrados.filter(l => {
+            let acaoBanco = (l.acao || l.action || '').toLowerCase();
+            
+            // Traduz a ação do banco para o português para bater com o filtro
+            if (acaoBanco === 'create') acaoBanco = 'criado';
+            if (acaoBanco === 'update') acaoBanco = 'atualizado';
+            if (acaoBanco === 'delete') acaoBanco = 'excluído';
+            
+            const limpaTexto = texto => texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+            return limpaTexto(acaoBanco) === limpaTexto(acao);
+        });
+    }
+
+    // 3. FILTRANDO O USUÁRIO
+    if (buscaUser) {
+        filtrados = filtrados.filter(l => {
+            const nomeUsuario = (l.usuario || l.usuario_nome || l.nome_usuario || '').toLowerCase();
+            return nomeUsuario.includes(buscaUser);
+        });
+    }
+
+    // Redesenha a tabela só com os dados filtrados
     renderizarLogs(filtrados);
 }
 
