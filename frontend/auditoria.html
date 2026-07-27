@@ -248,10 +248,25 @@
     }
 
     // 3. FILTRO DE USUÁRIO
+    // 3. FILTRO DE PESQUISA GERAL (Busca por Usuário ou por Cliente)
     if (buscaUser) {
         filtrados = filtrados.filter(l => {
+            // 1. Procura no nome do usuário (quem fez a ação)
             const nomeUsuario = (l.usuario || l.usuario_nome || l.nome_usuario || '').toLowerCase();
-            return nomeUsuario.includes(buscaUser);
+            
+            // 2. Procura no nome do cliente (que está escondido no JSON)
+            let nomeCliente = '';
+            const jsonTexto = l.dados_depois || l.dados_antes;
+            
+            if (jsonTexto) {
+                try {
+                    const objDados = JSON.parse(jsonTexto);
+                    nomeCliente = (objDados.cliente_nome || objDados.nome || '').toLowerCase();
+                } catch (e) {}
+            }
+
+            // Se o texto digitado bater com o Usuário OU com o Cliente, ele mostra na tela!
+            return nomeUsuario.includes(buscaUser) || nomeCliente.includes(buscaUser);
         });
     }
 
