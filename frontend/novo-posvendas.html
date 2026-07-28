@@ -17,7 +17,7 @@
     <!-- O global.css detecta o :has(.form-group) e já centraliza o card principal -->
     <main>
         <h2>Novo Pós-Vendas</h2>
-        <form id="form-posvendas">
+       <form id="form-posvendas">
             <div class="form-group">
                 <div class="label-header">
                     <label style="margin-bottom: 0;">Nome do Cliente</label>
@@ -31,6 +31,13 @@
                 </div>
                 <div class="cliente-info" id="cliente-info"></div>
             </div>
+
+            <!-- 👇 O CAMPO DO PRODUTO ENTROU AQUI 👇 -->
+            <div class="form-group">
+                <label>Produto/Serviço</label>
+                <input type="text" id="produto" placeholder="Digite o nome do produto">
+            </div>
+            <!-- 👆 FIM DO CAMPO DO PRODUTO 👆 -->
 
             <div class="form-group">
                 <label>Feedback</label>
