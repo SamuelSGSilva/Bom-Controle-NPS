@@ -741,31 +741,26 @@
             resultado.style.display = 'none';
 
             try {
-                const res = await fetch(`/bomcontrole/venda/${os}`, {
+                const res = await fetch(`/buscar-por-os/${encodeURIComponent(os)}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!res.ok) {
                     const err = await res.json().catch(() => ({}));
-                    toast(err.detail || 'OS não encontrada no BomControle', 'erro');
+                    toast(err.detail || 'OS não encontrada', 'erro');
                     return;
                 }
-                const data = await res.json();
+                const cliente = await res.json();
 
-                if (data.cliente_local) {
-                    respostas.cliente_id = data.cliente_local.id;
-                    if (inputClienteNome) inputClienteNome.value = data.cliente_local.nome;
-                    if (clienteInfo) {
-                        clienteInfo.innerHTML = `<strong>${data.cliente_local.nome}</strong><br>${data.cliente_local.email || '--'} · ${data.cliente_local.telefone || '--'}`;
-                        clienteInfo.style.display = 'block';
-                    }
-                    resultado.innerHTML = `<span style="color:#00cc66;">&#10003;</span> Cliente encontrado: <strong style="color:#fff;">${data.cliente_local.nome}</strong>`;
-                } else {
-                    const bc = data.cliente_bomcontrole;
-                    resultado.innerHTML = `<span style="color:#f0ad4e;">&#9888;</span> Cliente do BomControle: <strong style="color:#fff;">${bc.nome || '--'}</strong> (${bc.email || 'sem email'}) — não cadastrado localmente`;
+                respostas.cliente_id = cliente.id;
+                if (inputClienteNome) inputClienteNome.value = cliente.nome;
+                if (clienteInfo) {
+                    clienteInfo.innerHTML = `<strong>${cliente.nome}</strong><br>${cliente.email || '--'} · ${cliente.telefone || '--'}`;
+                    clienteInfo.style.display = 'block';
                 }
+                resultado.innerHTML = `<span style="color:#00cc66;">&#10003;</span> Cliente encontrado: <strong style="color:#fff;">${cliente.nome}</strong>`;
                 resultado.style.display = 'block';
             } catch (e) {
-                toast('Erro ao buscar OS no BomControle', 'erro');
+                toast('Erro ao buscar OS', 'erro');
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'Buscar';
