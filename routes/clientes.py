@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from auth import verificar_token
 from datetime import datetime
 from services.auditoria import registrar_log
-from services.bomcontrole_api import obter_cliente, mapear_cliente, alterar_bloqueio_cliente
+from services.bomcontrole_api import obter_cliente, obter_venda, mapear_cliente, alterar_bloqueio_cliente
 from services.sincronizacao_clientes import sincronizar_todos_clientes, CAMPOS_SEMPRE_SINCRONIZADOS
 
 router = APIRouter()
@@ -141,6 +141,26 @@ def alterar_bloqueio(id: int, dados: BloqueioSchema, db: Session = Depends(get_d
     db.commit()
     db.refresh(cliente)
     return cliente
+
+@router.get("/bomcontrole/venda/{numero_os}")
+def buscar_cliente_por_os(numero_os: int, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
+    try:
+        venda = obter_venda(numero_os)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc))
+
+    cliente_bc = venda.get("Cliente") or {}
+    mapeado = mapear_cliente(cliente_bc)
+
+    cliente_local = None
+    bc_id = mapeado.get("bomcontrole_id")
+    if bc_id:
+        cliente_local = db.query(Cliente).filter(Cliente.bomcontrole_id == bc_id).first()
+
+    return {
+        "cliente_local": _serializar_cliente(cliente_local) if cliente_local else None,
+        "cliente_bomcontrole": mapeado,
+    }
 
 @router.put("/clientes/{id}")
 def editar_cliente(id: int, cliente: ClienteSchema, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):

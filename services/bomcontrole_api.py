@@ -98,6 +98,26 @@ def mapear_cliente(dados: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def obter_venda(id: int) -> Dict[str, Any]:
+    url = f"{BASE_URL}/Venda/Obter/{id}"
+    request = urllib.request.Request(url, headers=_headers())
+
+    try:
+        with urllib.request.urlopen(request, timeout=15, context=_ssl_context) as response:
+            conteudo = response.read().decode("utf-8")
+    except urllib.error.HTTPError as exc:
+        corpo = exc.read().decode("utf-8", errors="ignore")
+        raise RuntimeError(
+            f"BomControle retornou erro {exc.code} ao buscar a venda {id}: {corpo}"
+        ) from exc
+    except urllib.error.URLError as exc:
+        raise RuntimeError(
+            f"Não foi possível acessar a API do BomControle: {exc.reason}"
+        ) from exc
+
+    return json.loads(conteudo)
+
+
 def alterar_bloqueio_cliente(bomcontrole_id: int, bloquear: bool) -> None:
     url = f"{BASE_URL}/Cliente/AlterarBloqueio/{bomcontrole_id}"
     headers = _headers()

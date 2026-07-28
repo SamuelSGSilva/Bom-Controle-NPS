@@ -336,7 +336,11 @@
 
                 <div class="pergunta">
                     <label>Número da OS (Ordem de Serviço)</label>
-                    <input type="text" id="numero_os" placeholder="Ex: 12345">
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <input type="text" id="numero_os" placeholder="Ex: 12345" style="flex:1;">
+                        <button type="button" id="btn-buscar-os" onclick="buscarPorOS()" style="padding:10px 18px; background:linear-gradient(135deg,#e01b1b,#a40d0d); color:#fff; border:none; border-radius:8px; font-weight:600; cursor:pointer; white-space:nowrap;">Buscar</button>
+                    </div>
+                    <div id="os-resultado" style="display:none; margin-top:8px; padding:10px 14px; background:#1a1a1a; border:1px solid #2a2a2a; border-radius:8px; font-size:13px; color:#ccc;"></div>
                 </div>
 
                 <div class="pergunta">
@@ -724,6 +728,48 @@
             toast('Responda todas as perguntas de nota antes de enviar', 'aviso');
             irParaEtapa(primeiraEtapa);
             return false;
+        }
+
+        async function buscarPorOS() {
+            const os = document.getElementById('numero_os').value.trim();
+            if (!os) { toast('Digite o número da OS', 'aviso'); return; }
+
+            const btn = document.getElementById('btn-buscar-os');
+            const resultado = document.getElementById('os-resultado');
+            btn.disabled = true;
+            btn.textContent = 'Buscando...';
+            resultado.style.display = 'none';
+
+            try {
+                const res = await fetch(`/bomcontrole/venda/${os}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    toast(err.detail || 'OS não encontrada no BomControle', 'erro');
+                    return;
+                }
+                const data = await res.json();
+
+                if (data.cliente_local) {
+                    respostas.cliente_id = data.cliente_local.id;
+                    if (inputClienteNome) inputClienteNome.value = data.cliente_local.nome;
+                    if (clienteInfo) {
+                        clienteInfo.innerHTML = `<strong>${data.cliente_local.nome}</strong><br>${data.cliente_local.email || '--'} · ${data.cliente_local.telefone || '--'}`;
+                        clienteInfo.style.display = 'block';
+                    }
+                    resultado.innerHTML = `<span style="color:#00cc66;">&#10003;</span> Cliente encontrado: <strong style="color:#fff;">${data.cliente_local.nome}</strong>`;
+                } else {
+                    const bc = data.cliente_bomcontrole;
+                    resultado.innerHTML = `<span style="color:#f0ad4e;">&#9888;</span> Cliente do BomControle: <strong style="color:#fff;">${bc.nome || '--'}</strong> (${bc.email || 'sem email'}) — não cadastrado localmente`;
+                }
+                resultado.style.display = 'block';
+            } catch (e) {
+                toast('Erro ao buscar OS no BomControle', 'erro');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Buscar';
+            }
         }
 
         async function enviarAvaliacao() {
