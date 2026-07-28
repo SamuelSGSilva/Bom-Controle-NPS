@@ -204,51 +204,65 @@
     `;
         }
         async function carregarPainel() {
-            const response = await fetch('/avaliacoes/relatorio/painel', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
+            try {
+                const response = await fetch('/avaliacoes/relatorio/painel', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const data = await response.json();
+                
+                // 👇 O NOSSO ESPIÃO: Vai imprimir os dados no console do navegador!
+                console.log("📥 DADOS RECEBIDOS DO SERVIDOR:", data);
 
-            if (data.message) return;
+                if (data.message) {
+                    console.warn("⚠️ O servidor enviou uma mensagem de aviso e o código parou:", data.message);
+                    return; // Se tem mensagem, ele aborta o preenchimento
+                }
 
-            document.getElementById('p-total').textContent = data.resumo.total_avaliacoes;
-            document.getElementById('p-media').textContent = data.resumo.media_geral ?? '--';
-            document.getElementById('classificacao-media').textContent = data.resumo.media_geral != null ? `Média geral: ${data.resumo.media_geral}` : '';
-            document.getElementById('p-min').textContent = data.resumo.nota_min ?? '--';
-            document.getElementById('p-max').textContent = data.resumo.nota_max ?? '--';
+                document.getElementById('p-total').textContent = data.resumo.total_avaliacoes;
+                document.getElementById('p-media').textContent = data.resumo.media_geral ?? '--';
+                document.getElementById('classificacao-media').textContent = data.resumo.media_geral != null ? `Média geral: ${data.resumo.media_geral}` : '';
+                document.getElementById('p-min').textContent = data.resumo.nota_min ?? '--';
+                document.getElementById('p-max').textContent = data.resumo.nota_max ?? '--';
 
-            const npsEl = document.getElementById('p-nps');
-            npsEl.textContent = data.nps.score;
-            npsEl.style.color = data.nps.score >= 50 ? '#00cc66' : data.nps.score >= 0 ? '#f59e0b' : '#cc0000';
+                const npsEl = document.getElementById('p-nps');
+                npsEl.textContent = data.nps.score;
+                npsEl.style.color = data.nps.score >= 50 ? '#00cc66' : data.nps.score >= 0 ? '#f59e0b' : '#cc0000';
 
-            const statusEl = document.getElementById('p-status');
-            statusEl.textContent = data.nps.status;
-            statusEl.style.color = data.nps.score >= 50 ? '#00cc66' : data.nps.score >= 0 ? '#f59e0b' : '#cc0000';
+                const statusEl = document.getElementById('p-status');
+                statusEl.textContent = data.nps.status;
+                statusEl.style.color = data.nps.score >= 50 ? '#00cc66' : data.nps.score >= 0 ? '#f59e0b' : '#cc0000';
 
-            const blocos = [
-                ['Vendas — Primeiro contato', data.medias_por_bloco.vendas_primeiro_contato],
-                ['Vendas — Clareza das informações', data.medias_por_bloco.vendas_clareza],
-                ['Vendas — Processo de fechamento', data.medias_por_bloco.vendas_fechamento],
-                ['Financeiro — Link de pagamento', data.medias_por_bloco.financeiro_link],
-                ['Financeiro — Nota fiscal', data.medias_por_bloco.financeiro_nf],
-                ['Transporte — Entrega no prazo', data.medias_por_bloco.transporte_prazo],
-                ['Transporte — Embalagem/sem avarias', data.medias_por_bloco.transporte_embalagem],
-                ['Suporte — Entrega técnica', data.medias_por_bloco.suporte_entrega],
-                ['Suporte — Suporte ao produto', data.medias_por_bloco.suporte_produto],
-                ['Avaliação geral da empresa', data.medias_por_bloco.avaliacao_geral],
-            ];
+                const blocos = [
+                    ['Vendas — Primeiro contato', data.medias_por_bloco.vendas_primeiro_contato],
+                    ['Vendas — Clareza das informações', data.medias_por_bloco.vendas_clareza],
+                    ['Vendas — Processo de fechamento', data.medias_por_bloco.vendas_fechamento],
+                    ['Financeiro — Link de pagamento', data.medias_por_bloco.financeiro_link],
+                    ['Financeiro — Nota fiscal', data.medias_por_bloco.financeiro_nf],
+                    ['Transporte — Entrega no prazo', data.medias_por_bloco.transporte_prazo],
+                    ['Transporte — Embalagem/sem avarias', data.medias_por_bloco.transporte_embalagem],
+                    ['Suporte — Entrega técnica', data.medias_por_bloco.suporte_entrega],
+                    ['Suporte — Suporte ao produto', data.medias_por_bloco.suporte_produto],
+                    ['Avaliação geral da empresa', data.medias_por_bloco.avaliacao_geral],
+                ];
 
-            const tbody = document.getElementById('p-blocos');
-            blocos.forEach(([label, valor]) => {
-                const estrela = valor >= 4.5 ? '★ Ótimo' : valor >= 3 ? '★ Bom' : valor ? '★ Regular' : '--';
-                const cor = valor >= 4.5 ? '#00cc66' : valor >= 3 ? '#f59e0b' : '#cc0000';
-                tbody.innerHTML += `
-            <tr style="border-bottom: 1px solid #2a2a2a;">
-                <td style="padding: 10px 0; color: #ccc; font-size: 14px;">${label}</td>
-                <td style="padding: 10px 0; font-weight: 700; text-align: center; width: 60px; color: #fff;">${valor ?? '--'}</td>
-                <td style="padding: 10px 0; font-size: 13px; color: ${cor}; text-align: right;">${valor ? estrela : ''}</td>
-            </tr>`;
-            });
+                const tbody = document.getElementById('p-blocos');
+                tbody.innerHTML = ''; // Limpa antes de preencher
+                
+                blocos.forEach(([label, valor]) => {
+                    const estrela = valor >= 4.5 ? '★ Ótimo' : valor >= 3 ? '★ Bom' : valor ? '★ Regular' : '--';
+                    const cor = valor >= 4.5 ? '#00cc66' : valor >= 3 ? '#f59e0b' : '#cc0000';
+                    tbody.innerHTML += `
+                <tr style="border-bottom: 1px solid #2a2a2a;">
+                    <td style="padding: 10px 0; color: #ccc; font-size: 14px;">${label}</td>
+                    <td style="padding: 10px 0; font-weight: 700; text-align: center; width: 60px; color: #fff;">${valor ?? '--'}</td>
+                    <td style="padding: 10px 0; font-size: 13px; color: ${cor}; text-align: right;">${valor ? estrela : ''}</td>
+                </tr>`;
+                });
+                
+            } catch (erro) {
+                console.error("❌ ERRO GRAVE: Falha ao buscar os dados da API!", erro);
+            }
         }
 
         function logout() {
