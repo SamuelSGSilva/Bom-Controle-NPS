@@ -120,10 +120,6 @@ def relatorio_nps(db: Session = Depends(get_db), token: dict = Depends(verificar
         "nps": round(nps, 2)
     }
 
-@router.get("/avaliacoes/{cliente_id}")
-def buscar_avaliacoes_cliente(cliente_id: int, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
-    return db.query(Avaliacao).filter(Avaliacao.cliente_id == cliente_id).all()
-
 @router.get("/avaliacoes/relatorio/painel")
 def painel_resultados(db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
     avaliacoes = db.query(Avaliacao).all()
@@ -299,3 +295,7 @@ def importar_google_sheets(db: Session = Depends(get_db), token: dict = Depends(
 
     db.commit()
     return {"message": f"{importados} avaliações importadas do Google Sheets com sucesso!"}
+
+@router.get("/avaliacoes/{cliente_id}")
+def buscar_avaliacoes_cliente(cliente_id: int, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
+    return db.query(Avaliacao).filter(Avaliacao.cliente_id == cliente_id).all()
