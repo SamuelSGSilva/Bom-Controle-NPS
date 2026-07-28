@@ -8,9 +8,7 @@
             <nav id="nav-menu">
                 <a href="dashboard.html" data-page="dashboard.html">Dashboard</a>
                 <a href="clientes.html" data-page="clientes.html">Clientes</a>
-                <a href="novo-cliente.html" data-page="novo-cliente.html">Novo Cliente</a>
                 <a href="posvendas.html" data-page="posvendas.html">Pós-venda</a>
-                <a href="novo-posvendas.html" data-page="novo-posvendas.html">Novo Pós-Vendas</a>
                 <a href="relatorios.html" data-page="relatorios.html">Relatórios</a>
                 <a href="avaliacao-completa.html" data-page="avaliacao-completa.html">Avaliações</a>
                 <a href="importar.html" data-page="importar.html">Importar</a>
