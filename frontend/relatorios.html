@@ -54,62 +54,79 @@
 
         <div id="painel" style="margin-top: 40px;">
             <h2 style="margin-bottom: 20px; font-size: 18px;">Painel de Resultados</h2>
-            
-            <div class="grid-2col" style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; margin-bottom: 24px;">
+
+            <div class="grid-2col"
+                style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; margin-bottom: 24px;">
 
                 <!-- CARD 1: RESUMO GERAL -->
-                <div style="background: #141414; border-radius: 12px; padding: 24px; border-left: 4px solid #cc0000; min-width: 0; box-sizing: border-box; overflow: hidden;">
-                    <h3 style="color: #888; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">
+                <div
+                    style="background: #141414; border-radius: 12px; padding: 24px; border-left: 4px solid #cc0000; min-width: 0; box-sizing: border-box; overflow: hidden;">
+                    <h3
+                        style="color: #888; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">
                         Resumo Geral
                     </h3>
                     <table style="width: 100%; border-collapse: collapse; table-layout: fixed; word-wrap: break-word;">
                         <tr style="border-bottom: 1px solid #2a2a2a;">
                             <td style="padding: 10px 0; color: #ccc; font-size: 14px;">Total de avaliações</td>
-                            <td style="padding: 10px 0; color: #fff; font-weight: 700; text-align: right;" id="p-total">--</td>
+                            <td style="padding: 10px 0; color: #fff; font-weight: 700; text-align: right;" id="p-total">
+                                --</td>
                         </tr>
                         <tr style="border-bottom: 1px solid #2a2a2a;">
                             <td style="padding: 10px 0; color: #ccc; font-size: 14px;">Média geral</td>
-                            <td style="padding: 10px 0; color: #fff; font-weight: 700; text-align: right;" id="p-media">--</td>
+                            <td style="padding: 10px 0; color: #fff; font-weight: 700; text-align: right;" id="p-media">
+                                --</td>
                         </tr>
                         <tr style="border-bottom: 1px solid #2a2a2a;">
                             <td style="padding: 10px 0; color: #ccc; font-size: 14px;">Nota mais baixa</td>
-                            <td style="padding: 10px 0; color: #fff; font-weight: 700; text-align: right;" id="p-min">--</td>
+                            <td style="padding: 10px 0; color: #fff; font-weight: 700; text-align: right;" id="p-min">--
+                            </td>
                         </tr>
                         <tr>
                             <td style="padding: 10px 0; color: #ccc; font-size: 14px;">Nota mais alta</td>
-                            <td style="padding: 10px 0; color: #fff; font-weight: 700; text-align: right;" id="p-max">--</td>
+                            <td style="padding: 10px 0; color: #fff; font-weight: 700; text-align: right;" id="p-max">--
+                            </td>
                         </tr>
                     </table>
                 </div>
 
                 <!-- CARD 2: NPS -->
-                <div style="background: #141414; border-radius: 12px; padding: 24px; border-left: 4px solid #cc0000; min-width: 0; box-sizing: border-box; overflow: hidden;">
-                    <h3 style="color: #888; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">
+                <div
+                    style="background: #141414; border-radius: 12px; padding: 24px; border-left: 4px solid #cc0000; min-width: 0; box-sizing: border-box; overflow: hidden;">
+                    <h3
+                        style="color: #888; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">
                         NPS
                     </h3>
                     <table style="width: 100%; border-collapse: collapse; table-layout: fixed; word-wrap: break-word;">
                         <tr style="border-bottom: 1px solid #2a2a2a;">
                             <td style="padding: 10px 0; color: #ccc; font-size: 14px;">Score NPS</td>
-                            <td style="padding: 10px 0; font-weight: 700; text-align: right; font-size: 24px;" id="p-nps">--</td>
+
+                            <!-- 👇 ADICIONADO color: #fff; AQUI 👇 -->
+                            <td style="padding: 10px 0; font-weight: 700; text-align: right; font-size: 24px; color: #fff;"
+                                id="p-nps">--</td>
+
                         </tr>
                         <tr>
                             <td style="padding: 10px 0; color: #ccc; font-size: 14px;">Status</td>
-                            <td style="padding: 10px 0; font-weight: 700; text-align: right;" id="p-status">--</td>
+
+                            <!-- 👇 ADICIONADO color: #fff; AQUI 👇 -->
+                            <td style="padding: 10px 0; font-weight: 700; text-align: right; color: #fff;"
+                                id="p-status">--</td>
+
                         </tr>
                     </table>
                 </div>
+                <!-- CARD 3: MÉDIAS POR BLOCO -->
+                <div
+                    style="background: #141414; border-radius: 12px; padding: 24px; border-left: 4px solid #cc0000; min-width: 0; box-sizing: border-box; overflow: hidden;">
+                    <h3
+                        style="color: #888; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">
+                        Médias por Bloco
+                    </h3>
+                    <table style="width: 100%; border-collapse: collapse; table-layout: fixed; word-wrap: break-word;">
+                        <tbody id="p-blocos"></tbody>
+                    </table>
+                </div>
             </div>
-
-            <!-- CARD 3: MÉDIAS POR BLOCO -->
-            <div style="background: #141414; border-radius: 12px; padding: 24px; border-left: 4px solid #cc0000; min-width: 0; box-sizing: border-box; overflow: hidden;">
-                <h3 style="color: #888; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">
-                    Médias por Bloco
-                </h3>
-                <table style="width: 100%; border-collapse: collapse; table-layout: fixed; word-wrap: break-word;">
-                    <tbody id="p-blocos"></tbody>
-                </table>
-            </div>
-        </div>
     </main>
 
     <script>
