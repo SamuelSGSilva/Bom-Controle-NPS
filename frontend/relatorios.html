@@ -63,7 +63,7 @@
                     <h3 style="color: #888; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">
                         Resumo Geral
                     </h3>
-                    <table style="width: 100%; border-collapse: collapse;">
+                    <table style="width: 100%; min-width: 0; border-collapse: collapse; table-layout: auto;">
                         <tr style="border-bottom: 1px solid #2a2a2a;">
                             <!-- Definimos 70% para o texto e 30% para o número logo na primeira linha -->
                             <td style="padding: 10px 0; color: #ccc; font-size: 14px; width: 70%;">Total de avaliações</td>
@@ -89,7 +89,7 @@
                     <h3 style="color: #888; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">
                         NPS
                     </h3>
-                    <table style="width: 100%; border-collapse: collapse;">
+                    <table style="width: 100%; min-width: 0; border-collapse: collapse; table-layout: auto;">
                         <tr style="border-bottom: 1px solid #2a2a2a;">
                             <!-- Aqui também, 70/30 para travar o conteúdo -->
                             <td style="padding: 10px 0; color: #ccc; font-size: 14px; width: 70%;">Score NPS</td>
@@ -108,7 +108,7 @@
                         style="color: #888; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px;">
                         Médias por Bloco
                     </h3>
-                    <table style="width: 100%; border-collapse: collapse; table-layout: fixed; word-wrap: break-word;">
+                    <table style="width: 100%; min-width: 0; border-collapse: collapse; table-layout: auto; word-wrap: break-word;">
                         <tbody id="p-blocos"></tbody>
                     </table>
                 </div>
@@ -195,15 +195,15 @@
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 
-                const data = await response.json();
-                
-                // 👇 O NOSSO ESPIÃO: Vai imprimir os dados no console do navegador!
-                console.log("📥 DADOS RECEBIDOS DO SERVIDOR:", data);
-
-                if (data.message) {
-                    console.warn("⚠️ O servidor enviou uma mensagem de aviso e o código parou:", data.message);
-                    return; // Se tem mensagem, ele aborta o preenchimento
+                if (!response.ok) {
+                    console.error("Erro HTTP no painel:", response.status);
+                    return;
                 }
+
+                const data = await response.json();
+                console.log("Dados do painel:", data);
+
+                if (data.message) return;
 
                 document.getElementById('p-total').textContent = data.resumo.total_avaliacoes;
                 document.getElementById('p-media').textContent = data.resumo.media_geral ?? '--';
@@ -211,13 +211,17 @@
                 document.getElementById('p-min').textContent = data.resumo.nota_min ?? '--';
                 document.getElementById('p-max').textContent = data.resumo.nota_max ?? '--';
 
+                const npsData = data.nps || {};
+                const npsScore = npsData.score ?? '--';
+                const npsStatus = npsData.status || '--';
+
                 const npsEl = document.getElementById('p-nps');
-                npsEl.textContent = data.nps.score;
-                npsEl.style.color = data.nps.score >= 50 ? '#00cc66' : data.nps.score >= 0 ? '#f59e0b' : '#cc0000';
+                npsEl.textContent = npsScore !== '--' ? npsScore + '%' : '--';
+                npsEl.style.color = npsScore >= 50 ? '#00cc66' : npsScore >= 0 ? '#f59e0b' : '#cc0000';
 
                 const statusEl = document.getElementById('p-status');
-                statusEl.textContent = data.nps.status;
-                statusEl.style.color = data.nps.score >= 50 ? '#00cc66' : data.nps.score >= 0 ? '#f59e0b' : '#cc0000';
+                statusEl.textContent = npsStatus;
+                statusEl.style.color = npsScore >= 50 ? '#00cc66' : npsScore >= 0 ? '#f59e0b' : '#cc0000';
 
                 const blocos = [
                     ['Vendas — Primeiro contato', data.medias_por_bloco.vendas_primeiro_contato],
