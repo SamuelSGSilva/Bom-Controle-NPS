@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from database import get_db
 from models.models import Cliente
 from pydantic import BaseModel
@@ -145,7 +146,7 @@ def alterar_bloqueio(id: int, dados: BloqueioSchema, db: Session = Depends(get_d
 
 @router.get("/buscar-por-os/{numero_os}")
 def buscar_cliente_por_os(numero_os: str, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
-    avaliacao = db.query(Avaliacao).filter(Avaliacao.numero_os == numero_os).order_by(Avaliacao.id.desc()).first()
+    avaliacao = db.query(Avaliacao).filter(func.trim(Avaliacao.numero_os) == numero_os.strip()).order_by(Avaliacao.id.desc()).first()
     if not avaliacao:
         raise HTTPException(status_code=404, detail="Nenhuma avaliação encontrada com essa OS")
 
