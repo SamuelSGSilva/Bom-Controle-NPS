@@ -77,17 +77,15 @@
             </div>
 
             <!-- Painel Direito: Tabela -->
-            <div class="secao table-container" style="margin-bottom: 0;">
+            <div class="secao table-container" style="margin-bottom: 0; overflow-x: auto;">
                 <h3>Últimas Avaliações</h3>
-                <table style="width: 100%; border-collapse: collapse;">
+                <table style="width: 100%; min-width: 0; table-layout: auto;">
                     <thead>
                         <tr>
                             <th>Cliente</th>
                             <th>Nota</th>
                             <th>Data</th>
                             <th>Ações</th>
-                            <!-- 👇 COLUNA FANTASMA: Tira a cor vermelha e ocupa o resto do espaço -->
-                            <th style="background-color: transparent !important; width: 100%;"></th>
                         </tr>
                     </thead>
                     <tbody id="tabela-ultimas-avaliacoes"></tbody>
@@ -170,7 +168,7 @@
 
                 if (!avaliacoes.length) {
                     // 👇 AJUSTE: O colspan mudou de 4 para 5 por causa da coluna fantasma
-                    tabela.innerHTML = '<tr><td colspan="5" class="vazio">Nenhuma avaliação recente</td></tr>';
+                    tabela.innerHTML = '<tr><td colspan="4" class="vazio">Nenhuma avaliação recente</td></tr>';
                     return;
                 }
 
@@ -192,18 +190,9 @@
                     tabela.innerHTML += `
                     <tr>
                         <td style="font-weight: 500; color: #fff;">${nome}</td>
-                        <td>
-                            <span style="color: ${corNota}; font-weight: 600; font-size: 14px;">
-                                ${nota}
-                            </span>
-                        </td>
+                        <td><span style="color: ${corNota}; font-weight: 600;">${nota}</span></td>
                         <td style="color: var(--muted);">${dataLocal(a.created_at).toLocaleDateString('pt-BR')}</td>
-                        <td>
-                            <!-- Usando o estilo de botão do seu global.css -->
-                            <button class="btn-deletar" onclick="excluirAvaliacao(${a.id})">Excluir</button>
-                        </td>
-                        <!-- 👇 COLUNA FANTASMA: Adicionada aqui para fechar a conta das 5 colunas -->
-                        <td></td>
+                        <td><button class="btn-deletar" onclick="excluirAvaliacao(${a.id})">Excluir</button></td>
                     </tr>`;
                 });
             } catch (error) {
