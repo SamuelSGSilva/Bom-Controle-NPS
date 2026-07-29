@@ -9,7 +9,7 @@
         // 4. Montamos o HTML da Navbar incluindo o botão dinâmico
         const headerHTML = `
             <div class="header-logo-wrapper">
-                <a href="dashboard.html"><img src="assets/logo.png" alt="Bom Controle NPS" class="header-logo" style="height: 28px !important; width: auto !important; display: block;"></a>
+                <a href="dashboard.html"><img src="assets/logo.png" alt="Bom Controle NPS" class="header-logo" style="height: 38px !important; width: auto !important; display: block;"></a>
             </div>
             <nav id="nav-menu">
                 <a href="dashboard.html" data-page="dashboard.html">Dashboard</a>
@@ -45,10 +45,21 @@
         });
     }
 
+    function injectFavicon() {
+        if (!document.querySelector('link[rel="icon"]')) {
+            const link = document.createElement('link');
+            link.rel = 'icon';
+            link.type = 'image/png';
+            link.href = 'assets/favicon.png';
+            document.head.appendChild(link);
+        }
+    }
+
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', renderNavbar);
+        document.addEventListener('DOMContentLoaded', () => { renderNavbar(); injectFavicon(); });
     } else {
         renderNavbar();
+        injectFavicon();
     }
 })();
 
