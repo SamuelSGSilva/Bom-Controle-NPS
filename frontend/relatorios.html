@@ -9,6 +9,14 @@
     <link rel="stylesheet" href="responsive.css">
     <script src="toast.js"></script>
     <script src="navbar.js" defer></script>
+    <style>
+        .autocomplete-wrapper { position: relative; flex: 1; }
+        .autocomplete-lista { display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #0a0a0a; border: 1px solid #2a2a2a; border-radius: 8px; max-height: 220px; overflow-y: auto; z-index: 10; }
+        .autocomplete-item { padding: 10px 14px; cursor: pointer; font-size: 14px; color: #f1f1f1; border-bottom: 1px solid #1a1a1a; }
+        .autocomplete-item:last-child { border-bottom: none; }
+        .autocomplete-item:hover, .autocomplete-item.ativo { background: #2a0a0a; color: #ff6b6b; }
+        .autocomplete-item span { display: block; font-size: 12px; color: #888888; }
+    </style>
 </head>
 
 <body>
@@ -46,7 +54,10 @@
 
         <h2>Histórico do Cliente</h2>
         <div class="busca">
-            <input type="text" id="cliente-id" placeholder="Digite o nome do cliente">
+            <div class="autocomplete-wrapper">
+                <input type="text" id="cliente-id" placeholder="Digite o nome do cliente" autocomplete="off" oninput="filtrarSugestoes()">
+                <div class="autocomplete-lista" id="lista-sugestoes"></div>
+            </div>
             <button onclick="buscarHistorico()">Buscar</button>
         </div>
 
@@ -162,6 +173,41 @@
             document.getElementById('classificacao').textContent = classificacao;
             document.getElementById('classificacao').style.color = cor;
         }
+
+        let todosClientes = [];
+        const inputCliente = document.getElementById('cliente-id');
+        const listaSugestoes = document.getElementById('lista-sugestoes');
+
+        async function carregarClientes() {
+            const res = await fetch('/clientes', { headers: { 'Authorization': `Bearer ${token}` } });
+            if (res.ok) todosClientes = await res.json();
+        }
+
+        function filtrarSugestoes() {
+            const texto = inputCliente.value.trim().toLowerCase();
+            if (texto.length < 2) { listaSugestoes.style.display = 'none'; listaSugestoes.innerHTML = ''; return; }
+            const filtrados = todosClientes.filter(c => c.nome.toLowerCase().includes(texto)).slice(0, 8);
+            if (filtrados.length === 0) { listaSugestoes.style.display = 'none'; listaSugestoes.innerHTML = ''; return; }
+            listaSugestoes.innerHTML = filtrados.map(c => `
+                <div class="autocomplete-item" onclick="selecionarSugestao('${c.nome.replace(/'/g, "\\'")}')">
+                    ${c.nome}<span>${c.email || ''}</span>
+                </div>
+            `).join('');
+            listaSugestoes.style.display = 'block';
+        }
+
+        function selecionarSugestao(nome) {
+            inputCliente.value = nome;
+            listaSugestoes.style.display = 'none';
+            listaSugestoes.innerHTML = '';
+            buscarHistorico();
+        }
+
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.autocomplete-wrapper')) { listaSugestoes.style.display = 'none'; }
+        });
+
+        carregarClientes();
 
         async function buscarHistorico() {
             const nome = document.getElementById('cliente-id').value;
