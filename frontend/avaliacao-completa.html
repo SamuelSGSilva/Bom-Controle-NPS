@@ -537,6 +537,8 @@
                 inputClienteNome.value = cliente.nome;
                 clienteInfo.innerHTML = `<strong>${cliente.nome}</strong><br>${cliente.email || '--'} · ${cliente.telefone || '--'}`;
                 clienteInfo.style.display = 'block';
+                const cidadeEstado = [cliente.cidade, cliente.estado].filter(Boolean).join(' / ');
+                if (cidadeEstado) document.getElementById('cidade_estado').value = cidadeEstado;
             } else {
                 respostas.cliente_id = null;
                 clienteInfo.style.display = 'none';
@@ -646,6 +648,7 @@
             document.getElementById('btn-sair').style.display = 'block';
             document.getElementById('campo-cliente').style.display = 'block';
             document.getElementById('campo-cs-responsavel').style.display = 'block';
+            document.getElementById('cs_responsavel').value = 'Laís';
 
             fetch('/clientes', {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -757,6 +760,8 @@
                     clienteInfo.innerHTML = `<strong>${cliente.nome}</strong><br>${cliente.email || '--'} · ${cliente.telefone || '--'}`;
                     clienteInfo.style.display = 'block';
                 }
+                const cidadeEstado = [cliente.cidade, cliente.estado].filter(Boolean).join(' / ');
+                if (cidadeEstado) document.getElementById('cidade_estado').value = cidadeEstado;
                 resultado.innerHTML = `<span style="color:#00cc66;">&#10003;</span> Cliente encontrado: <strong style="color:#fff;">${cliente.nome}</strong>`;
                 resultado.style.display = 'block';
             } catch (e) {
