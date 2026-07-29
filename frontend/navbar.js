@@ -3,16 +3,6 @@
         // 1. Descobrimos qual é a página atual primeiro
         const path = window.location.pathname.split('/').pop() || 'dashboard.html';
         
-        // 2. Criamos uma variável para guardar o botão dinâmico
-        let botaoNovoHTML = '';
-
-        // 3. Verificamos a tela e injetamos o botão correto
-        if (path === 'clientes.html') {
-            botaoNovoHTML = `<button onclick="abrirModalNovoCliente()" style="background-color: #007bff; color: #fff; padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; margin-right: 15px;">+ Novo Cliente</button>`;
-        } else if (path === 'posvendas.html') {
-            // Nota: Coloquei 'novo_pos_venda.html' como exemplo. Ajuste se o nome do seu arquivo for diferente!
-            botaoNovoHTML = `<button onclick="window.location.href='novo_pos_venda.html'" style="background-color: #d93025; color: #fff; padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; margin-right: 15px;">+ Novo Pós-Vendas</button>`;
-        }
 
         const existingHeader = document.querySelector('header');
         
@@ -31,8 +21,6 @@
                 <a href="auditoria.html" data-page="auditoria.html">Auditoria</a>
             </nav>
             <div style="display: flex; align-items: center;">
-                <!-- O botão dinâmico aparece aqui, do lado do botão Sair -->
-                ${botaoNovoHTML}
                 <button class="btn-logout" onclick="logout()" style="background: transparent; border: 1px solid var(--red); color: var(--red); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600;">Sair</button>
             </div>
         `;
