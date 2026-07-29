@@ -741,7 +741,7 @@
             resultado.style.display = 'none';
 
             try {
-                const res = await fetch(`/buscar-por-os/${encodeURIComponent(os)}`, {
+                const res = await fetch(`/clientes/buscar-por-os/${encodeURIComponent(os)}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!res.ok) {

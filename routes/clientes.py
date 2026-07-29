@@ -144,7 +144,7 @@ def alterar_bloqueio(id: int, dados: BloqueioSchema, db: Session = Depends(get_d
     db.refresh(cliente)
     return cliente
 
-@router.get("/buscar-por-os/{numero_os}")
+@router.get("/clientes/buscar-por-os/{numero_os}")
 def buscar_cliente_por_os(numero_os: str, db: Session = Depends(get_db), token: dict = Depends(verificar_token)):
     avaliacao = db.query(Avaliacao).filter(Avaliacao.numero_os.contains(numero_os.strip())).order_by(Avaliacao.id.desc()).first()
     if not avaliacao:
