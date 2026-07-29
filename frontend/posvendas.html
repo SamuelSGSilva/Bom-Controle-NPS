@@ -17,11 +17,9 @@
     <main>
         <div style="display: flex; flex-wrap: wrap; row-gap: 12px; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <div style="display: flex; flex-wrap: wrap; row-gap: 12px; gap: 12px;">
-                <div class="autocomplete-wrapper">
-                    <input type="text" id="busca-cliente" placeholder="Buscar por cliente..." autocomplete="off"
-                        style="padding: 10px 16px; background: #141414; border: 1px solid #2a2a2a; border-radius: 8px; color: #f1f1f1; font-size: 14px; outline: none;">
-                    <div class="autocomplete-lista" id="lista-sugestoes-busca"></div>
-                </div>
+                <input type="text" id="busca-cliente" placeholder="Buscar por cliente..." autocomplete="off"
+                    style="padding: 10px 16px; background: #141414; border: 1px solid #2a2a2a; border-radius: 8px; color: #f1f1f1; font-size: 14px; outline: none;"
+                    oninput="aplicarFiltros()">
                 <select id="filtro-status" onchange="aplicarFiltros()"
                     style="padding: 10px 16px; background: #141414; border: 1px solid #2a2a2a; border-radius: 8px; color: #f1f1f1; font-size: 14px; outline: none; cursor: pointer;">
                     <option value="">Todos</option>
@@ -32,7 +30,6 @@
                 <input type="date" id="filtro-periodo-de" title="Cadastrado a partir de" onchange="aplicarFiltros()">
                 <input type="date" id="filtro-periodo-ate" title="Cadastrado até" onchange="aplicarFiltros()">
                 <button class="btn-novo" onclick="novoPosVendas()">+ Novo Pós-Vendas</button>
-                <a class="btn-editar" href="auditoria.html?entidade=pos_venda" style="text-decoration: none; display: inline-flex; align-items: center;">Ver Excluídos</a>
             </div>
             <div id="loading" style="text-align: center; padding: 40px; display: none;">
                 <div class="spinner"></div>
@@ -131,57 +128,6 @@
             }
         }
 
-        const inputBusca = document.getElementById('busca-cliente');
-        const listaSugestoesBusca = document.getElementById('lista-sugestoes-busca');
-        let sugestoesBusca = [];
-
-        function esconderSugestoesBusca() {
-            listaSugestoesBusca.style.display = 'none';
-            listaSugestoesBusca.innerHTML = '';
-            sugestoesBusca = [];
-        }
-
-        function renderizarSugestoesBusca(texto) {
-            const nomesUnicos = new Set();
-            sugestoesBusca = todosClientesPV.filter(c => {
-                const nome = c.nome.toLowerCase();
-                if (!nome.includes(texto.toLowerCase()) || nomesUnicos.has(nome)) return false;
-                nomesUnicos.add(nome);
-                return true;
-            }).slice(0, 8);
-
-            if (sugestoesBusca.length === 0) {
-                esconderSugestoesBusca();
-                return;
-            }
-
-            listaSugestoesBusca.innerHTML = sugestoesBusca.map((c, i) => `
-                <div class="autocomplete-item" data-indice="${i}">${c.nome}</div>
-            `).join('');
-            listaSugestoesBusca.style.display = 'block';
-
-            listaSugestoesBusca.querySelectorAll('.autocomplete-item').forEach(item => {
-                item.addEventListener('mousedown', function (e) {
-                    e.preventDefault();
-                    const cliente = sugestoesBusca[Number(item.dataset.indice)];
-                    inputBusca.value = cliente.nome;
-                    esconderSugestoesBusca();
-                    aplicarFiltros();
-                });
-            });
-        }
-
-        inputBusca.addEventListener('input', function () {
-            const texto = inputBusca.value.trim();
-            aplicarFiltros();
-            if (texto) {
-                renderizarSugestoesBusca(texto);
-            } else {
-                esconderSugestoesBusca();
-            }
-        });
-
-        inputBusca.addEventListener('blur', esconderSugestoesBusca);
 
         function aplicarFiltros() {
             const status = document.getElementById('filtro-status').value;
@@ -243,7 +189,6 @@
             <td data-label="Feedback">${pv.feedback || '--'}</td>
             <td data-label="Ações">
                <button class="btn-ver" onclick="verCliente(${pv.cliente_id})">Ver</button>
-                <button class="btn-editar" onclick="abrirModalDetalhes(${pv.id})">Detalhes</button>
                 <button class="btn-editar" onclick="editarPosVenda(${pv.id})">Editar</button>
                 <button class="btn-deletar" onclick="deletarPosVenda(${pv.id})">Excluir</button>
             </td>
